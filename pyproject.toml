@@ -1,0 +1,231 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phylodater"
+version = "0.1.0"
+description = "PhyloDater: A multi-software parallel platform for phylogenetic molecular dating"
+readme = "README.md"
+license = "MIT"
+authors = [
+    {name = "Zichao Zeng (曾子超)", email = "zengzichao@sjtu.edu.cn"}
+]
+maintainers = [
+    {name = "Zichao Zeng (曾子超)", email = "zengzichao@sjtu.edu.cn"}
+]
+keywords = [
+    "phylogenetics",
+    "molecular-dating",
+    "evolution",
+    "bioinformatics",
+    "phylogeny",
+    "divergence-time",
+    "molecular-clock",
+    "paml",
+    "mcmctree",
+    "lsd2",
+    "treepl",
+    "r8s"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: OS Independent",
+    "Natural Language :: English",
+    "Typing :: Typed",
+]
+# 支持矩阵（2026-09-30 用 uv 0.12.21 在 Linux x86_64 上逐版本实装验证，证据见
+# test-data/benchmark/results/PYTHON_SUPPORT_MATRIX.txt）：
+#   * 3.8 —— 不支持。依赖能解析上，但 ``import phylodater`` 后跑可视化数据层会
+#     在 ``importlib.resources.files``（Python 3.9+）上报 AttributeError，
+#     ``pytest tests/unit`` 实测 6 failed / 1099 passed。
+#   * 3.9 / 3.10 / 3.11 / 3.13 / 3.14 —— ``pytest tests/unit`` 1105 passed,
+#     3 skipped（3 个 skip 是引擎/可选依赖相关的合理跳过）。
+#   * 3.12 —— 完整 ``pytest tests`` 1487 passed, 2 skipped，也是发版验证环境。
+# 上限曾是 "<3.13"，那是为 ete3 3.1.x 而设——ete3 无条件导入标准库 ``cgi``，
+# 而 ``cgi`` 已在 Python 3.13 被移除（PEP 594），因此在 3.13+ 上 ete3 整个包
+# 不可导入（已实测：ModuleNotFoundError: No module named 'cgi'）。现在 ete3 已是
+# **真正可选** 的后端：模型层（phylodater/models/tree.py）自带零依赖的 Newick
+# 游走器来完成 MRCA、单系性、定根与 MCMCTree 校准标注写树，只有可视化层在需要
+# "ete 形状的树对象" 时才用到它。因此核心不再需要版本上限；ete3 自身的适用范围
+# 改由下面的 extra 标记表达。
+requires-python = ">=3.9"
+dependencies = [
+    "biopython>=1.79,<2.0",
+    "dendropy>=4.5.0",
+    "pyyaml>=6.0,<7.0",
+    "scipy>=1.9.0,<2.0",
+    "numpy>=1.21.0",
+    # 上限 <6.0 会让 Python 3.13/3.14 上的 `pip install .` 直接失败：psutil 5.9.x
+    # 没有对应的新解释器 wheel，源码构建也失败。psutil 在本项目里只用于
+    # CPU/内存探测，放宽上限即可让"无 extra 的普通安装"在新解释器上跑通。
+    "psutil>=5.9.0",
+    "matplotlib>=3.5.0",
+    "pandas>=1.3.0",
+]
+
+[project.optional-dependencies]
+# NOTE: ETE3 is GPLv3-licensed. It is deliberately kept as an optional dependency
+# to preserve the MIT license of PhyloDater's core functionality. When ETE3 is
+# imported, visualization modules fall under GPLv3 terms.
+#
+# ete3 3.1.x 在 Python >= 3.13 上根本无法导入（依赖已被移除的 stdlib
+# ``cgi``，已实测），所以这里用环境标记把它限定在 **Python <= 3.12**：在更新的
+# 解释器上 ``pip install 'phylodater[ete3]'`` 会安静地什么都不装，而不是装进一个
+# 坏掉的包。需要 ete 形状后端的用户请改用 ``[ete4]``（不依赖 ``cgi``，3.13+ 可用）。
+# PhyloDater 的核心功能（含 MCMCTree 校准标注写树、定根）在两种情况下都可用。
+ete3 = ["ete3>=3.1.2,<4.0; python_version <= '3.12'"]
+ete4 = ["ete4>=3.0.0"]
+all = [
+    "ete3>=3.1.2,<4.0; python_version <= '3.12'",
+    "ete4>=3.0.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=3.0",
+    "pytest-xdist>=2.5",
+    "black>=22.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
+    "isort>=5.10",
+]
+docs = [
+    "sphinx>=6.0",
+    "sphinx-rtd-theme>=1.0",
+    "numpydoc>=1.5",
+]
+
+[project.urls]
+Homepage = "https://github.com/ZengZichao/phylodater"
+Documentation = "https://github.com/ZengZichao/phylodater/tree/main/docs"
+Repository = "https://github.com/ZengZichao/phylodater.git"
+"Bug Tracker" = "https://github.com/ZengZichao/phylodater/issues"
+
+[project.scripts]
+phylodater = "phylodater.cli.main:main"
+
+[tool.setuptools]
+packages = [
+    "phylodater",
+    "phylodater.adapters",
+    "phylodater.cli",
+    "phylodater.core",
+    "phylodater.infrastructure",
+    "phylodater.models",
+    "phylodater.services",
+    "phylodater.viz",
+    "phylodater.viz.data",
+]
+
+[tool.setuptools.package-data]
+phylodater = ["py.typed"]
+"phylodater.viz.data" = ["*.csv"]
+
+[tool.black]
+line-length = 88
+# 下限与 requires-python 一致（决定 black 可以输出哪些语法）；上限只到 py312，
+# 因为 black 的安全校验要用"跟 target 同代或更新"的解释器重新解析产物：在钉到
+# 3.12 的 CI/验证环境里列 py313/py314 会每次都输出一条
+# "Python 3.12 cannot parse code formatted for Python 3.14" 的告警，而
+# 多列它们并不给 black 任何新的自由度（代码必须能在 3.9 上运行）。
+target-version = ['py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.pytest_cache
+  | __pycache__
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.ruff]
+line-length = 88
+# 目标版本取下限（与 requires-python 一致）：这决定 ruff 允许哪些语法。
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E203", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# These modules must put the project root on sys.path before importing phylodater.
+"tests/integration/full_pipeline/*.py" = ["E402"]
+
+[tool.mypy]
+# Type checking targets the interpreter the release is validated on (3.12, the
+# same interpreter the lint/docs/mypy job in CI pins). numpy's shipped stubs use
+# PEP 695 `type` statements, which an older python_version makes mypy reject
+# before it ever reaches PhyloDater's own code -- so this stays at 3.12 even
+# though the *runtime* floor is 3.9. Code itself must therefore stay 3.9-syntax
+# compatible; only the checker's target is 3.12.
+python_version = "3.12"
+warn_unused_configs = true
+ignore_missing_imports = true
+# The two strictness switches below used to be off because ``mypy phylodater``
+# reported 397 errors with them on and 759 with them enabled. That debt is now
+# paid: every adapter's ``config`` is typed precisely (``DatingMethod[ConfigT]``
+# instead of duck-typed ``ToolConfig``), every function in ``phylodater/``
+# carries parameter and return annotations, and ``None`` paths are narrowed
+# explicitly. Both switches are therefore **on**, and CI fails if the count
+# moves off zero -- see CONTRIBUTING.md ("Type checking") and the mypy step in
+# .github/workflows/ci.yml.
+disallow_untyped_defs = true
+warn_return_any = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+markers = [
+    "slow: runs a real external dating engine (seconds to minutes)",
+    "security: path safety, injection and input-validation tests",
+    "requires_mcmctree: requires PAML/MCMCTree",
+    "requires_treepl: requires treePL",
+    "requires_pathd8: requires PATHd8",
+    "requires_lsd2: requires IQ-TREE 2 (LSD2)",
+    "requires_r8s: requires r8s or pyr8s",
+    "requires_wlogdate: requires wLogDate",
+    "requires_mdcat: requires MD-Cat",
+]
+
+[tool.coverage.run]
+source = ["phylodater"]
+omit = ["tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+# Measured on the validated environment (Python 3.12.14, conda env `phylodater`,
+# all seven engines present): `pytest tests --cov=phylodater` = 67.87%
+# (1487 passed, 2 skipped) and `pytest tests -m "not slow" --cov=phylodater` =
+# 67.89% -- i.e. the number is not engine-dependent, because the adapter modules
+# are covered by mocked unit tests. The gate is therefore raised from the old
+# placeholder 40 to 60: still ~8 points of headroom for platform differences in
+# CI (macOS runners, optional backends), but no longer trivially satisfied.
+fail_under = 60
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

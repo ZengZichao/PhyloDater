@@ -1,0 +1,18 @@
+calibrations:
+  - name: "HumanChimp"
+    mrca_pair: ["human", "chimp"]
+    constraint:
+      type: "gamma"
+      alpha: 50.0
+      beta: 8.333333333333334
+  - name: "GreatApes"
+    mrca_pair: ["human", "gorilla"]
+    constraint:
+      type: "gamma"
+      alpha: 50.0
+      beta: 5.555555555555555
+  - name: "Root"
+    is_root: true
+    constraint:
+      type: "maximum"
+      max: 15.0

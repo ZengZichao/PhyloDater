@@ -1,0 +1,3 @@
+HumanChimp=human+chimp	6.0
+GreatApes=human+gorilla	9.0
+Root=human+chimp+bonobo+gorilla+orangutan+sumatran	7.5

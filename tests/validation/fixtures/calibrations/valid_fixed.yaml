@@ -1,0 +1,6 @@
+calibrations:
+  - name: "Rodents"
+    mrca_pair: ["mouse", "rat"]
+    constraint:
+      type: "fixed"
+      age: 65.0

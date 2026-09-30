@@ -1,0 +1,12 @@
+calibrations:
+  - name: "AB"
+    mrca_pair: ["A", "B"]
+    constraint:
+      type: "uniform"
+      min: 10.0
+      max: 20.0
+  - name: "Root"
+    is_root: true
+    constraint:
+      type: "maximum"
+      max: 50.0

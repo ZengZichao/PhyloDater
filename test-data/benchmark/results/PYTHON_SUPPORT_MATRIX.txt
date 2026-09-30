@@ -1,0 +1,129 @@
+PhyloDater — Python support matrix, measured (P0-7 evidence)
+============================================================
+
+Date of measurement : 2026-09-30
+Host                : Linux x86_64 (Ubuntu 22.04)
+Resolver/installer  : uv 0.12.21 (x86_64-unknown-linux-gnu)
+CPython builds      : uv-managed (uv venv --python X), i.e. real interpreters,
+                      not just metadata resolution.
+Package under test  : working tree of this repo, put on sys.path with
+                      PYTHONPATH (the package is not pip-installed into these
+                      scratch venvs; `import phylodater` therefore exercises
+                      exactly the source that is committed).
+
+Input constraint set (verbatim from pyproject.toml [project].dependencies):
+    biopython>=1.79,<2.0
+    dendropy>=4.5.0
+    pyyaml>=6.0,<7.0
+    scipy>=1.9.0,<2.0
+    numpy>=1.21.0
+    psutil>=5.9.0
+    matplotlib>=3.5.0
+    pandas>=1.3.0
+
+------------------------------------------------------------
+1) `uv pip compile --python-version X --python-platform linux` (resolution)
+------------------------------------------------------------
+The constraint set RESOLVES on every version tried -- 3.8, 3.9, 3.10, 3.11,
+3.12, 3.13, 3.14. Resolution is therefore NOT what bounds the matrix; the
+pinned result per version is:
+
+  3.8   biopython==1.83  dendropy==5.1.0  matplotlib==3.7.5   numpy==1.24.4  pandas==2.0.3  psutil==7.2.2  scipy==1.10.1
+  3.9   biopython==1.85  dendropy==5.1.0  matplotlib==3.9.4   numpy==2.0.2   pandas==2.3.3  psutil==7.2.2  scipy==1.13.1
+  3.10  biopython==1.88  dendropy==5.1.0  matplotlib==3.10.9  numpy==2.2.6   pandas==2.3.3  psutil==7.2.2  scipy==1.15.3
+  3.11  biopython==1.88  dendropy==5.1.0  matplotlib==3.11.2  numpy==2.4.6   pandas==3.0.6  psutil==7.2.2  scipy==1.17.1
+  3.12  biopython==1.88  dendropy==5.1.0  matplotlib==3.11.2  numpy==2.5.3   pandas==3.0.6  psutil==7.2.2  scipy==1.18.1
+  3.13  biopython==1.88  dendropy==5.1.0  matplotlib==3.11.2  numpy==2.5.3   pandas==3.0.6  psutil==7.2.2  scipy==1.18.1
+  3.14  biopython==1.88  dendropy==5.1.0  matplotlib==3.11.2  numpy==2.5.3   pandas==3.0.6  psutil==7.2.2  scipy==1.18.1
+
+------------------------------------------------------------
+2) Install + import + unit suite, per interpreter
+------------------------------------------------------------
+Commands actually run, for each of 3.8/3.9/3.10/3.11/3.12/3.13/3.14:
+
+    uv venv --python <X> .pd_helpers/v<tag>
+    uv pip install --python .pd_helpers/v<tag>/bin/python -r <core-deps.txt>
+    uv pip install --python .pd_helpers/v<tag>/bin/python "pytest>=7.0"
+    PYTHONPATH=<repo> .pd_helpers/v<tag>/bin/python -c "import phylodater"
+    PYTHONPATH=<repo> .pd_helpers/v<tag>/bin/python -m pytest tests/unit -q
+
+  python  interpreter   import phylodater   pytest tests/unit
+  ------- ------------- -----------------   ------------------
+  3.8     3.8.20        OK                  6 FAILED, 1099 passed, 3 skipped
+  3.9     managed       OK                  1105 passed, 3 skipped
+  3.10    managed       OK                  1105 passed, 3 skipped
+  3.11    managed       OK                  1105 passed, 3 skipped
+  3.12    managed       OK                  1107 passed, 1 skipped   (*)
+  3.13    3.13.15       OK                  1105 passed, 3 skipped
+  3.14    managed       OK                  1105 passed, 3 skipped
+
+  (*) 3.12 is the only scratch interpreter where ete3 was installed, so two
+      ete3-gated tests run instead of skipping. The project's release
+      environment (conda env `phylodater`, Python 3.12.14) runs the FULL suite:
+      1487 passed, 2 skipped.
+
+  Why 3.8 fails -- all six failures are the same root cause, in
+  phylodater/viz/data (loading the bundled geological-period table):
+
+      AttributeError: module 'importlib.resources' has no attribute 'files'
+
+  `importlib.resources.files()` was added in Python 3.9. This is a hard runtime
+  requirement of the shipped code, so 3.8 cannot be claimed as supported.
+
+------------------------------------------------------------
+3) `python -m phylodater check` on the scratch interpreters
+------------------------------------------------------------
+    3.8   : 总计: 24 项检查, 23 通过, 1 失败   -- failure = "依赖: ete3 [FAIL] 未安装"
+    3.13  : 总计: 24 项检查, 23 通过, 1 失败   -- same single ete3 entry
+    3.14  : 总计: 24 项检查, 23 通过, 1 失败   -- same single ete3 entry
+    3.12 (conda env phylodater, ete3 installed): 24 项检查, 24 通过, 0 失败
+
+  Every non-ete3 check passes on 3.8/3.13/3.14, i.e. nothing else in the
+  self-test is version-sensitive. The single failing entry is the ete3 probe --
+  see item 5 below: ete3 is an OPTIONAL backend, so it must not be reported as
+  a hard failure on interpreters where it cannot be installed at all.
+
+  NOTE (read before reusing these four lines): they were captured with the
+  self-test as it stood *before* commit a44439c, which (i) moved ete3 from the
+  required to the optional section -- so on 3.13/3.14 the ete3 row now reports
+  an optional-dependency note instead of failing the run -- and (ii) added the
+  emd (MD-Cat) and pyr8s probes, so the entry count is 26, not 24. The current
+  numbers are in docs/TEST_RESULTS.md section 5 and, verbatim, in
+  test-data/benchmark/results/validation_log.txt. What stays valid here is the
+  version-sensitivity conclusion: only the ete3 row differed across 3.8/3.12/
+  3.13/3.14.
+
+------------------------------------------------------------
+4) ete3 on the boundary (verifies the existing PEP 508 marker)
+------------------------------------------------------------
+    uv pip install --python .pd_helpers/v313/bin/python "ete3>=3.1.2,<4.0"   -> installs
+    .pd_helpers/v313/bin/python -c "import ete3"
+        ModuleNotFoundError: No module named 'cgi'
+    .pd_helpers/v312/bin/python -c "import ete3"  -> import OK
+
+  Confirms: ete3 3.1.x is unimportable on >= 3.13 because PEP 594 removed the
+  `cgi` module. pyproject.toml therefore keeps
+  `ete3 = ["ete3>=3.1.2,<4.0; python_version <= '3.12'"]`
+  and users needing an ete-shaped tree on 3.13+ use the `ete4` extra.
+
+------------------------------------------------------------
+5) Decisions recorded by this measurement (P0-7)
+------------------------------------------------------------
+  requires-python               >=3.8  ->  >=3.9
+  classifiers                   drop "Programming Language :: Python :: 3.8"
+                                          (3.9 .. 3.14 kept, now all measured)
+  CI strategy.matrix.python-version
+                                ["3.9","3.10","3.11","3.12"]
+                             -> ["3.9","3.10","3.11","3.12","3.13","3.14"]
+  README / README_CN badge      "3.8 -- 3.12"  ->  "3.9 -- 3.14"
+  [tool.black] target-version   py38..py312  ->  py39..py314
+  [tool.ruff]  target-version   py38         ->  py39
+  [tool.mypy]  python_version   stays 3.12: numpy 2.5's stubs use PEP 695
+                                `type` statements, which mypy rejects when the
+                                target is older. The *runtime* floor and the
+                                *checker* target are intentionally different,
+                                and pyproject says so at [tool.mypy].
+  environment.yml               python>=3.8,<3.13 -> python>=3.9,<3.13
+                                (that file pins ete3 in its pip section, so it
+                                keeps the ete3-driven upper bound; the core
+                                itself is measured good through 3.14)

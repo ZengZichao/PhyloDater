@@ -1,0 +1,982 @@
+{
+  "dataset": {
+    "name": "phylodater-accuracy-benchmark",
+    "seed": 20260929,
+    "alignment_length": 3000,
+    "substitution_model": "JC69 (equal base frequencies)",
+    "molecular_clock": "strict (single rate for all branches)",
+    "substitution_rate_per_site_per_myr": 0.0015,
+    "tip_sampling_time": 0.0,
+    "taxa": 13,
+    "internal_nodes": 12
+  },
+  "tree_variant": "tree.nwk",
+  "generated_utc": "2026-09-30T04:35:43Z",
+  "runs": [
+    {
+      "method": "mcmctree",
+      "status": "completed",
+      "exit_code": 0,
+      "wall_seconds": 14.19,
+      "software_version": "MCMCTREE in paml version 4.10.10, 29 Jan 2026",
+      "checks": {
+        "tips_complete": true,
+        "topology_identical": true,
+        "ages_nonnegative": true,
+        "chronology_monotone": true,
+        "calibrations_honoured": true,
+        "all_nodes_recovered": true
+      },
+      "accuracy": {
+        "nodes_scored": 12,
+        "mae_ma": 0.721,
+        "rmse_ma": 0.863,
+        "max_abs_error_ma": 1.641,
+        "max_relative_error": 0.284,
+        "median_relative_error": 0.025
+      },
+      "warnings": [],
+      "disclosed_limitations": [],
+      "errors": [],
+      "node_ages": [
+        {
+          "node": "root",
+          "mrca_pair": [
+            "Human",
+            "Dog"
+          ],
+          "true_age_ma": 105.0,
+          "estimate_ma": 104.911
+        },
+        {
+          "node": "Euarchontoglires",
+          "mrca_pair": [
+            "Human",
+            "Rat"
+          ],
+          "true_age_ma": 95.0,
+          "estimate_ma": 94.374
+        },
+        {
+          "node": "Primates",
+          "mrca_pair": [
+            "Human",
+            "Lemur"
+          ],
+          "true_age_ma": 75.0,
+          "estimate_ma": 73.46
+        },
+        {
+          "node": "Simiiformes",
+          "mrca_pair": [
+            "Human",
+            "Marmoset"
+          ],
+          "true_age_ma": 43.0,
+          "estimate_ma": 42.436
+        },
+        {
+          "node": "Catarrhini",
+          "mrca_pair": [
+            "Human",
+            "Macaque"
+          ],
+          "true_age_ma": 30.0,
+          "estimate_ma": 29.249
+        },
+        {
+          "node": "Hominoidea",
+          "mrca_pair": [
+            "Human",
+            "Gibbon"
+          ],
+          "true_age_ma": 20.0,
+          "estimate_ma": 18.899
+        },
+        {
+          "node": "Hominidae",
+          "mrca_pair": [
+            "Human",
+            "Orangutan"
+          ],
+          "true_age_ma": 14.0,
+          "estimate_ma": 13.369
+        },
+        {
+          "node": "Homininae",
+          "mrca_pair": [
+            "Human",
+            "Gorilla"
+          ],
+          "true_age_ma": 9.0,
+          "estimate_ma": 9.003
+        },
+        {
+          "node": "Hominini",
+          "mrca_pair": [
+            "Human",
+            "Bonobo"
+          ],
+          "true_age_ma": 6.0,
+          "estimate_ma": 6.536
+        },
+        {
+          "node": "Pan",
+          "mrca_pair": [
+            "Chimp",
+            "Bonobo"
+          ],
+          "true_age_ma": 2.0,
+          "estimate_ma": 2.568
+        },
+        {
+          "node": "Glires",
+          "mrca_pair": [
+            "Rabbit",
+            "Rat"
+          ],
+          "true_age_ma": 70.0,
+          "estimate_ma": 70.606
+        },
+        {
+          "node": "Rodentia",
+          "mrca_pair": [
+            "Mouse",
+            "Rat"
+          ],
+          "true_age_ma": 12.0,
+          "estimate_ma": 10.359
+        }
+      ],
+      "output_dir": "runs/mcmctree"
+    },
+    {
+      "method": "lsd2",
+      "status": "completed",
+      "exit_code": 0,
+      "wall_seconds": 4.14,
+      "software_version": "IQ-TREE version 3.1.3 for Linux x86 64-bit built Jul 26 2026",
+      "checks": {
+        "tips_complete": true,
+        "topology_identical": true,
+        "ages_nonnegative": true,
+        "chronology_monotone": true,
+        "calibrations_honoured": true,
+        "all_nodes_recovered": true
+      },
+      "accuracy": {
+        "nodes_scored": 12,
+        "mae_ma": 1.881,
+        "rmse_ma": 2.373,
+        "max_abs_error_ma": 4.912,
+        "max_relative_error": 0.3028,
+        "median_relative_error": 0.0573
+      },
+      "warnings": [
+        "LSD2: 13/13 tip(s) carry no sampling date and were written as 0 Ma (contemporaneous sampling): Human, Chimp, Bonobo, Gorilla, Orangutan.... Heterochronous (tip-dating) analyses need the real sampling dates in the tree (name suffix after '|' or a [&&DATE=...] annotation); otherwise rate and age estimates assume a single sampling time."
+      ],
+      "disclosed_limitations": [],
+      "errors": [],
+      "node_ages": [
+        {
+          "node": "root",
+          "mrca_pair": [
+            "Human",
+            "Dog"
+          ],
+          "true_age_ma": 105.0,
+          "estimate_ma": 101.965
+        },
+        {
+          "node": "Euarchontoglires",
+          "mrca_pair": [
+            "Human",
+            "Rat"
+          ],
+          "true_age_ma": 95.0,
+          "estimate_ma": 90.7948
+        },
+        {
+          "node": "Primates",
+          "mrca_pair": [
+            "Human",
+            "Lemur"
+          ],
+          "true_age_ma": 75.0,
+          "estimate_ma": 70.0877
+        },
+        {
+          "node": "Simiiformes",
+          "mrca_pair": [
+            "Human",
+            "Marmoset"
+          ],
+          "true_age_ma": 43.0,
+          "estimate_ma": 40.5362
+        },
+        {
+          "node": "Catarrhini",
+          "mrca_pair": [
+            "Human",
+            "Macaque"
+          ],
+          "true_age_ma": 30.0,
+          "estimate_ma": 28.3636
+        },
+        {
+          "node": "Hominoidea",
+          "mrca_pair": [
+            "Human",
+            "Gibbon"
+          ],
+          "true_age_ma": 20.0,
+          "estimate_ma": 18.4586
+        },
+        {
+          "node": "Hominidae",
+          "mrca_pair": [
+            "Human",
+            "Orangutan"
+          ],
+          "true_age_ma": 14.0,
+          "estimate_ma": 13.3354
+        },
+        {
+          "node": "Homininae",
+          "mrca_pair": [
+            "Human",
+            "Gorilla"
+          ],
+          "true_age_ma": 9.0,
+          "estimate_ma": 9.0003
+        },
+        {
+          "node": "Hominini",
+          "mrca_pair": [
+            "Human",
+            "Bonobo"
+          ],
+          "true_age_ma": 6.0,
+          "estimate_ma": 6.6068
+        },
+        {
+          "node": "Pan",
+          "mrca_pair": [
+            "Chimp",
+            "Bonobo"
+          ],
+          "true_age_ma": 2.0,
+          "estimate_ma": 2.6056
+        },
+        {
+          "node": "Glires",
+          "mrca_pair": [
+            "Rabbit",
+            "Rat"
+          ],
+          "true_age_ma": 70.0,
+          "estimate_ma": 68.6489
+        },
+        {
+          "node": "Rodentia",
+          "mrca_pair": [
+            "Mouse",
+            "Rat"
+          ],
+          "true_age_ma": 12.0,
+          "estimate_ma": 10.4503
+        }
+      ],
+      "output_dir": "runs/lsd2"
+    },
+    {
+      "method": "r8s",
+      "status": "completed",
+      "exit_code": 0,
+      "wall_seconds": 4.36,
+      "software_version": "pyr8s 0.3.1 (NPRS only)",
+      "checks": {
+        "tips_complete": true,
+        "topology_identical": true,
+        "ages_nonnegative": true,
+        "chronology_monotone": true,
+        "calibrations_honoured": true,
+        "all_nodes_recovered": true
+      },
+      "accuracy": {
+        "nodes_scored": 12,
+        "mae_ma": 0.183,
+        "rmse_ma": 0.256,
+        "max_abs_error_ma": 0.528,
+        "max_relative_error": 0.0129,
+        "median_relative_error": 0.0049
+      },
+      "warnings": [
+        "pyr8s backend: CONSTRAIN ranges are ADVISORY, not enforced by NPRS (measured: pyr8s 0.3.1 returns ages outside the requested bounds for Primates, Glires, Root). Only FIXAGE (point) calibrations are honoured. Use mcmctree/treepl if the requested range must be respected, or convert these calibrations to fixed ages. The post-run check below reports whether each range was actually satisfied."
+      ],
+      "disclosed_limitations": [],
+      "errors": [],
+      "node_ages": [
+        {
+          "node": "root",
+          "mrca_pair": [
+            "Human",
+            "Dog"
+          ],
+          "true_age_ma": 105.0,
+          "estimate_ma": 104.4715
+        },
+        {
+          "node": "Euarchontoglires",
+          "mrca_pair": [
+            "Human",
+            "Rat"
+          ],
+          "true_age_ma": 95.0,
+          "estimate_ma": 94.5184
+        },
+        {
+          "node": "Primates",
+          "mrca_pair": [
+            "Human",
+            "Lemur"
+          ],
+          "true_age_ma": 75.0,
+          "estimate_ma": 74.6276
+        },
+        {
+          "node": "Simiiformes",
+          "mrca_pair": [
+            "Human",
+            "Marmoset"
+          ],
+          "true_age_ma": 43.0,
+          "estimate_ma": 42.7906
+        },
+        {
+          "node": "Catarrhini",
+          "mrca_pair": [
+            "Human",
+            "Macaque"
+          ],
+          "true_age_ma": 30.0,
+          "estimate_ma": 29.9344
+        },
+        {
+          "node": "Hominoidea",
+          "mrca_pair": [
+            "Human",
+            "Gibbon"
+          ],
+          "true_age_ma": 20.0,
+          "estimate_ma": 19.9452
+        },
+        {
+          "node": "Hominidae",
+          "mrca_pair": [
+            "Human",
+            "Orangutan"
+          ],
+          "true_age_ma": 14.0,
+          "estimate_ma": 13.9359
+        },
+        {
+          "node": "Homininae",
+          "mrca_pair": [
+            "Human",
+            "Gorilla"
+          ],
+          "true_age_ma": 9.0,
+          "estimate_ma": 9.0
+        },
+        {
+          "node": "Hominini",
+          "mrca_pair": [
+            "Human",
+            "Bonobo"
+          ],
+          "true_age_ma": 6.0,
+          "estimate_ma": 6.0766
+        },
+        {
+          "node": "Pan",
+          "mrca_pair": [
+            "Chimp",
+            "Bonobo"
+          ],
+          "true_age_ma": 2.0,
+          "estimate_ma": 2.0257
+        },
+        {
+          "node": "Glires",
+          "mrca_pair": [
+            "Rabbit",
+            "Rat"
+          ],
+          "true_age_ma": 70.0,
+          "estimate_ma": 69.7309
+        },
+        {
+          "node": "Rodentia",
+          "mrca_pair": [
+            "Mouse",
+            "Rat"
+          ],
+          "true_age_ma": 12.0,
+          "estimate_ma": 11.9541
+        }
+      ],
+      "output_dir": "runs/r8s"
+    },
+    {
+      "method": "treepl",
+      "status": "completed",
+      "exit_code": 0,
+      "wall_seconds": 64.39,
+      "software_version": "treePL version 1.0",
+      "checks": {
+        "tips_complete": true,
+        "topology_identical": true,
+        "ages_nonnegative": true,
+        "chronology_monotone": true,
+        "calibrations_honoured": true,
+        "all_nodes_recovered": true
+      },
+      "accuracy": {
+        "nodes_scored": 12,
+        "mae_ma": 1.099,
+        "rmse_ma": 1.527,
+        "max_abs_error_ma": 3.044,
+        "max_relative_error": 0.0294,
+        "median_relative_error": 0.0274
+      },
+      "warnings": [],
+      "disclosed_limitations": [],
+      "errors": [],
+      "node_ages": [
+        {
+          "node": "root",
+          "mrca_pair": [
+            "Human",
+            "Dog"
+          ],
+          "true_age_ma": 105.0,
+          "estimate_ma": 108.044
+        },
+        {
+          "node": "Euarchontoglires",
+          "mrca_pair": [
+            "Human",
+            "Rat"
+          ],
+          "true_age_ma": 95.0,
+          "estimate_ma": 97.7535
+        },
+        {
+          "node": "Primates",
+          "mrca_pair": [
+            "Human",
+            "Lemur"
+          ],
+          "true_age_ma": 75.0,
+          "estimate_ma": 77.1826
+        },
+        {
+          "node": "Simiiformes",
+          "mrca_pair": [
+            "Human",
+            "Marmoset"
+          ],
+          "true_age_ma": 43.0,
+          "estimate_ma": 44.2623
+        },
+        {
+          "node": "Catarrhini",
+          "mrca_pair": [
+            "Human",
+            "Macaque"
+          ],
+          "true_age_ma": 30.0,
+          "estimate_ma": 30.7717
+        },
+        {
+          "node": "Hominoidea",
+          "mrca_pair": [
+            "Human",
+            "Gibbon"
+          ],
+          "true_age_ma": 20.0,
+          "estimate_ma": 20.4833
+        },
+        {
+          "node": "Hominidae",
+          "mrca_pair": [
+            "Human",
+            "Orangutan"
+          ],
+          "true_age_ma": 14.0,
+          "estimate_ma": 14.2939
+        },
+        {
+          "node": "Homininae",
+          "mrca_pair": [
+            "Human",
+            "Gorilla"
+          ],
+          "true_age_ma": 9.0,
+          "estimate_ma": 9.0005
+        },
+        {
+          "node": "Hominini",
+          "mrca_pair": [
+            "Human",
+            "Bonobo"
+          ],
+          "true_age_ma": 6.0,
+          "estimate_ma": 6.0962
+        },
+        {
+          "node": "Pan",
+          "mrca_pair": [
+            "Chimp",
+            "Bonobo"
+          ],
+          "true_age_ma": 2.0,
+          "estimate_ma": 2.0391
+        },
+        {
+          "node": "Glires",
+          "mrca_pair": [
+            "Rabbit",
+            "Rat"
+          ],
+          "true_age_ma": 70.0,
+          "estimate_ma": 71.9337
+        },
+        {
+          "node": "Rodentia",
+          "mrca_pair": [
+            "Mouse",
+            "Rat"
+          ],
+          "true_age_ma": 12.0,
+          "estimate_ma": 12.3293
+        }
+      ],
+      "output_dir": "runs/treepl"
+    },
+    {
+      "method": "pathd8",
+      "status": "completed",
+      "exit_code": 0,
+      "wall_seconds": 4.4,
+      "software_version": "PATHd8 (no version banner)",
+      "checks": {
+        "tips_complete": true,
+        "topology_identical": true,
+        "ages_nonnegative": true,
+        "chronology_monotone": true,
+        "calibrations_honoured": true,
+        "all_nodes_recovered": true
+      },
+      "accuracy": {
+        "nodes_scored": 12,
+        "mae_ma": 0.509,
+        "rmse_ma": 0.794,
+        "max_abs_error_ma": 1.659,
+        "max_relative_error": 0.0189,
+        "median_relative_error": 0.0097
+      },
+      "warnings": [
+        "PATHd8 exited with code 1. This is the code the bundled build prints after an ordinary successful run ('Calculation finished.'), so it is neither an error nor a guarantee that your constraints survived; the constraint reconciliation in parse_results decides whether the ages honour the calibrations you supplied."
+      ],
+      "disclosed_limitations": [],
+      "errors": [],
+      "node_ages": [
+        {
+          "node": "root",
+          "mrca_pair": [
+            "Human",
+            "Dog"
+          ],
+          "true_age_ma": 105.0,
+          "estimate_ma": 106.659
+        },
+        {
+          "node": "Euarchontoglires",
+          "mrca_pair": [
+            "Human",
+            "Rat"
+          ],
+          "true_age_ma": 95.0,
+          "estimate_ma": 96.4529
+        },
+        {
+          "node": "Primates",
+          "mrca_pair": [
+            "Human",
+            "Lemur"
+          ],
+          "true_age_ma": 75.0,
+          "estimate_ma": 76.0504
+        },
+        {
+          "node": "Simiiformes",
+          "mrca_pair": [
+            "Human",
+            "Marmoset"
+          ],
+          "true_age_ma": 43.0,
+          "estimate_ma": 43.4152
+        },
+        {
+          "node": "Catarrhini",
+          "mrca_pair": [
+            "Human",
+            "Macaque"
+          ],
+          "true_age_ma": 30.0,
+          "estimate_ma": 30.2427
+        },
+        {
+          "node": "Hominoidea",
+          "mrca_pair": [
+            "Human",
+            "Gibbon"
+          ],
+          "true_age_ma": 20.0,
+          "estimate_ma": 20.0001
+        },
+        {
+          "node": "Hominidae",
+          "mrca_pair": [
+            "Human",
+            "Orangutan"
+          ],
+          "true_age_ma": 14.0,
+          "estimate_ma": 14.0378
+        },
+        {
+          "node": "Homininae",
+          "mrca_pair": [
+            "Human",
+            "Gorilla"
+          ],
+          "true_age_ma": 9.0,
+          "estimate_ma": 9.0001
+        },
+        {
+          "node": "Hominini",
+          "mrca_pair": [
+            "Human",
+            "Bonobo"
+          ],
+          "true_age_ma": 6.0,
+          "estimate_ma": 6.0378
+        },
+        {
+          "node": "Pan",
+          "mrca_pair": [
+            "Chimp",
+            "Bonobo"
+          ],
+          "true_age_ma": 2.0,
+          "estimate_ma": 2.0378
+        },
+        {
+          "node": "Glires",
+          "mrca_pair": [
+            "Rabbit",
+            "Rat"
+          ],
+          "true_age_ma": 70.0,
+          "estimate_ma": 71.1699
+        },
+        {
+          "node": "Rodentia",
+          "mrca_pair": [
+            "Mouse",
+            "Rat"
+          ],
+          "true_age_ma": 12.0,
+          "estimate_ma": 12.0001
+        }
+      ],
+      "output_dir": "runs/pathd8"
+    },
+    {
+      "method": "wlogdate",
+      "status": "completed",
+      "exit_code": 0,
+      "wall_seconds": 6.14,
+      "software_version": "wLogDate 1.0.2",
+      "checks": {
+        "tips_complete": true,
+        "topology_identical": true,
+        "ages_nonnegative": true,
+        "chronology_monotone": true,
+        "calibrations_honoured": true,
+        "all_nodes_recovered": true
+      },
+      "accuracy": {
+        "nodes_scored": 12,
+        "mae_ma": 0.0,
+        "rmse_ma": 0.0,
+        "max_abs_error_ma": 0.0,
+        "max_relative_error": 0.0,
+        "median_relative_error": 0.0
+      },
+      "warnings": [],
+      "disclosed_limitations": [],
+      "errors": [],
+      "node_ages": [
+        {
+          "node": "root",
+          "mrca_pair": [
+            "Human",
+            "Dog"
+          ],
+          "true_age_ma": 105.0,
+          "estimate_ma": 105.0
+        },
+        {
+          "node": "Euarchontoglires",
+          "mrca_pair": [
+            "Human",
+            "Rat"
+          ],
+          "true_age_ma": 95.0,
+          "estimate_ma": 95.0
+        },
+        {
+          "node": "Primates",
+          "mrca_pair": [
+            "Human",
+            "Lemur"
+          ],
+          "true_age_ma": 75.0,
+          "estimate_ma": 75.0
+        },
+        {
+          "node": "Simiiformes",
+          "mrca_pair": [
+            "Human",
+            "Marmoset"
+          ],
+          "true_age_ma": 43.0,
+          "estimate_ma": 43.0
+        },
+        {
+          "node": "Catarrhini",
+          "mrca_pair": [
+            "Human",
+            "Macaque"
+          ],
+          "true_age_ma": 30.0,
+          "estimate_ma": 30.0
+        },
+        {
+          "node": "Hominoidea",
+          "mrca_pair": [
+            "Human",
+            "Gibbon"
+          ],
+          "true_age_ma": 20.0,
+          "estimate_ma": 20.0
+        },
+        {
+          "node": "Hominidae",
+          "mrca_pair": [
+            "Human",
+            "Orangutan"
+          ],
+          "true_age_ma": 14.0,
+          "estimate_ma": 14.0
+        },
+        {
+          "node": "Homininae",
+          "mrca_pair": [
+            "Human",
+            "Gorilla"
+          ],
+          "true_age_ma": 9.0,
+          "estimate_ma": 9.0
+        },
+        {
+          "node": "Hominini",
+          "mrca_pair": [
+            "Human",
+            "Bonobo"
+          ],
+          "true_age_ma": 6.0,
+          "estimate_ma": 6.0
+        },
+        {
+          "node": "Pan",
+          "mrca_pair": [
+            "Chimp",
+            "Bonobo"
+          ],
+          "true_age_ma": 2.0,
+          "estimate_ma": 2.0
+        },
+        {
+          "node": "Glires",
+          "mrca_pair": [
+            "Rabbit",
+            "Rat"
+          ],
+          "true_age_ma": 70.0,
+          "estimate_ma": 70.0
+        },
+        {
+          "node": "Rodentia",
+          "mrca_pair": [
+            "Mouse",
+            "Rat"
+          ],
+          "true_age_ma": 12.0,
+          "estimate_ma": 12.0
+        }
+      ],
+      "output_dir": "runs/wlogdate"
+    },
+    {
+      "method": "mdcat",
+      "status": "completed",
+      "exit_code": 0,
+      "wall_seconds": 10.45,
+      "software_version": "1.0.1",
+      "checks": {
+        "tips_complete": true,
+        "topology_identical": true,
+        "ages_nonnegative": true,
+        "chronology_monotone": true,
+        "calibrations_honoured": true,
+        "all_nodes_recovered": true
+      },
+      "accuracy": {
+        "nodes_scored": 12,
+        "mae_ma": 0.081,
+        "rmse_ma": 0.106,
+        "max_abs_error_ma": 0.163,
+        "max_relative_error": 0.0686,
+        "median_relative_error": 0.0054
+      },
+      "warnings": [],
+      "disclosed_limitations": [],
+      "errors": [],
+      "node_ages": [
+        {
+          "node": "root",
+          "mrca_pair": [
+            "Human",
+            "Dog"
+          ],
+          "true_age_ma": 105.0,
+          "estimate_ma": 105.0
+        },
+        {
+          "node": "Euarchontoglires",
+          "mrca_pair": [
+            "Human",
+            "Rat"
+          ],
+          "true_age_ma": 95.0,
+          "estimate_ma": 94.9541
+        },
+        {
+          "node": "Primates",
+          "mrca_pair": [
+            "Human",
+            "Lemur"
+          ],
+          "true_age_ma": 75.0,
+          "estimate_ma": 75.0
+        },
+        {
+          "node": "Simiiformes",
+          "mrca_pair": [
+            "Human",
+            "Marmoset"
+          ],
+          "true_age_ma": 43.0,
+          "estimate_ma": 43.1599
+        },
+        {
+          "node": "Catarrhini",
+          "mrca_pair": [
+            "Human",
+            "Macaque"
+          ],
+          "true_age_ma": 30.0,
+          "estimate_ma": 30.1632
+        },
+        {
+          "node": "Hominoidea",
+          "mrca_pair": [
+            "Human",
+            "Gibbon"
+          ],
+          "true_age_ma": 20.0,
+          "estimate_ma": 20.1633
+        },
+        {
+          "node": "Hominidae",
+          "mrca_pair": [
+            "Human",
+            "Orangutan"
+          ],
+          "true_age_ma": 14.0,
+          "estimate_ma": 14.0996
+        },
+        {
+          "node": "Homininae",
+          "mrca_pair": [
+            "Human",
+            "Gorilla"
+          ],
+          "true_age_ma": 9.0,
+          "estimate_ma": 9.0
+        },
+        {
+          "node": "Hominini",
+          "mrca_pair": [
+            "Human",
+            "Bonobo"
+          ],
+          "true_age_ma": 6.0,
+          "estimate_ma": 6.0639
+        },
+        {
+          "node": "Pan",
+          "mrca_pair": [
+            "Chimp",
+            "Bonobo"
+          ],
+          "true_age_ma": 2.0,
+          "estimate_ma": 2.1371
+        },
+        {
+          "node": "Glires",
+          "mrca_pair": [
+            "Rabbit",
+            "Rat"
+          ],
+          "true_age_ma": 70.0,
+          "estimate_ma": 70.0
+        },
+        {
+          "node": "Rodentia",
+          "mrca_pair": [
+            "Mouse",
+            "Rat"
+          ],
+          "true_age_ma": 12.0,
+          "estimate_ma": 12.1433
+        }
+      ],
+      "output_dir": "runs/mdcat"
+    }
+  ]
+}

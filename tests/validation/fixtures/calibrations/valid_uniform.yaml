@@ -1,0 +1,7 @@
+calibrations:
+  - name: "Primates"
+    mrca_pair: ["human", "cat"]
+    constraint:
+      type: "uniform"
+      min: 70.0
+      max: 90.0

@@ -1,0 +1,17 @@
+calibrations:
+  - name: Hominidae
+    mrca_pair: [human, chimp]
+    constraint:
+      type: fixed
+      age: 15.0
+  - name: Rodentia
+    mrca_pair: [mouse, rat]
+    constraint:
+      type: uniform
+      min: 11.0
+      max: 13.0
+  - name: Root
+    is_root: true
+    constraint:
+      type: maximum
+      max: 60.0

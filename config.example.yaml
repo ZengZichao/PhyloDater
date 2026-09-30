@@ -1,0 +1,76 @@
+# PhyloDater 配置文件模板
+# 命令行参数优先级高于配置文件：CLI > Config > 默认值
+
+# ===== 软件路径配置 =====
+software_paths:
+  # 多版本 PAML 共存时：
+  #   - 推荐只指定 paml_path，适配器会自动使用 <paml_path>/bin/mcmctree 等；
+  #   - 若 PATH 中已有同名命令，可通过完整路径强制选择版本，例如
+  #     mcmctree_bin: /opt/paml-4.10.8/bin/mcmctree
+  mcmctree_bin: mcmctree      # PAML MCMCTree 可执行文件
+  paml_path: /usr/local/paml   # PAML 安装目录（如需指定）
+  iqtree_bin: iqtree2          # IQ-TREE2 可执行文件（LSD2 依赖）
+  r8s_bin: r8s                 # r8s 可执行文件
+  treepl_bin: treePL           # treePL 可执行文件
+  pathd8_bin: PATHd8           # PATHd8 可执行文件
+  wlogdate_bin: wlogdate       # wLogDate 可执行文件
+  mdcat_bin: MD-Cat            # MD-Cat 可执行文件
+
+# ===== 各方法参数配置 =====
+# 所有方法参数必须位于 software: 块下，由 Configuration.load_from_file() 解析。
+software:
+  # 全局共享参数（可选）
+  common:
+    seed: 42                   # 全局随机种子
+    threads: 4                 # 默认线程数
+    timeout: 3600              # 单方法超时时间（秒）
+
+  # ===== MCMCTree 参数 =====
+  mcmctree:
+    clock: 2                     # 分子钟模型（1=严格钟，2=独立速率，3=自相关速率）
+    num_runs: 2                  # MCMC 独立运行次数
+    burnin: 20000                # 预烧期代数
+    nsample: 50000               # 采样数
+    sampfreq: 5                  # 采样频率
+    # 阶段 0 速率估算开关：默认 false=运行 baseml/codeml (clock=1) 估算总体替换
+    # 速率并以其作为 rgene_gamma 先验均值（结果存于 mcmctree_rate_estimation.txt）。
+    # true=跳过估算，直接用默认 rgene_gamma 先验。
+    # 各 PAML 版本行为差异见 README "PAML 4.8 支持"一节（4.9i 因 bug 无速率输出，
+    # 4.8 与 4.9j+/4.10.x 均正常）。
+    skip_rate_estimation: false
+    # 运行前会解析 mcmctree 可执行文件的 banner 版本，并与 paml_version 严格比对；
+    # 不一致时跳过 MCMCTree 并提示错误，防止控制文件格式错误。
+    paml_version: "4.10.8"       # PAML 版本（4.8 或 4.10.8）
+
+  # ===== r8s 参数 =====
+  r8s:
+    method: PL                   # 方法（PL=惩罚似然，NPRS=非参数速率平滑）
+    smoothing: null              # 平滑参数（null=不写入NEXUS）
+    algorithm: TN                # 树搜索算法
+
+  # ===== treePL 参数 =====
+  treepl:
+    initial_smooth: 100.0        # 初始平滑参数
+    cvstart: 1000.0              # 交叉验证起始值
+    cvstop: 0.1                  # 交叉验证终止值
+    cviter: 10                   # 交叉验证迭代次数
+    cvmultstep: 0.1              # 交叉验证乘子步长
+
+  # ===== LSD2 参数 =====
+  lsd2:
+    model: "LG+G"                # 替换模型
+    date_ci: 100                 # 置信区间自助重复次数
+    clock_sd: 0.2                # 分子钟标准差
+
+  # ===== wLogDate 参数 =====
+  wlogdate:
+    backward_time: true          # 使用反向时间方向
+    num_replicates: 1            # 重复次数
+    max_iter: 50000              # 最大迭代次数
+    pseudocount: 0.01            # 分支长度伪计数
+
+  # ===== MD-Cat 参数 =====
+  mdcat:
+    ncat: 50                     # 速率类别数
+    nrep: 100                    # 随机初始化次数
+    max_iter: 100                # 最大EM迭代次数

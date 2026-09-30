@@ -1,0 +1,6 @@
+#NEXUS
+
+Begin trees;
+	tree tree1 = ((human:0.1,chimp:0.1):0.2,(mouse:0.3,rat:0.3):0.1);
+	tree tree2 = ((human:0.15,chimp:0.15):0.25,(mouse:0.35,rat:0.35):0.15);
+End;

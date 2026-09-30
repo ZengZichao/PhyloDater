@@ -1,0 +1,33 @@
+include LICENSE
+include README.md
+include README_CN.md
+include QUICKSTART.md
+include QUICKSTART_CN.md
+include CONTRIBUTING.md
+include CONTRIBUTING_CN.md
+include CODE_OF_CONDUCT.md
+include CODE_OF_CONDUCT_CN.md
+include SECURITY.md
+include SECURITY_CN.md
+include THIRD_PARTY_LICENSES.md
+include THIRD_PARTY_LICENSES_CN.md
+include CITATION.cff
+include CITATION.md
+include CITATION_CN.md
+include requirements.txt
+include pyproject.toml
+include environment.yml
+include config.example.yaml
+
+recursive-include phylodater *.py *.typed *.pyi
+recursive-include examples *.yaml *.fasta *.nwk *.phy *.nex *.sha256
+recursive-include docs *.md *.rst *.txt
+recursive-include test-data *.md *.nwk *.fasta *.yaml *.phy *.nex *.tsv *.json *.sha256 *.py *.txt
+
+# The shipped test data, harness and validation suite are part of the release:
+# test-data/benchmark/ + scripts/run_reference_benchmark.py + tests/validation/.
+recursive-include scripts *.py
+recursive-include tests *.py *.yaml *.nwk *.fasta *.tsv *.json
+
+global-exclude *.py[cod]
+global-exclude .DS_Store

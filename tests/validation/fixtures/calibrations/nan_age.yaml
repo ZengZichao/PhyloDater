@@ -1,0 +1,6 @@
+calibrations:
+  - name: "Bad"
+    mrca_pair: ["A", "B"]
+    constraint:
+      type: "fixed"
+      age: .nan

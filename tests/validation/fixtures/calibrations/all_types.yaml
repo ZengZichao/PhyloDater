@@ -1,0 +1,31 @@
+calibrations:
+  - name: "Fixed"
+    mrca_pair: ["A", "B"]
+    constraint:
+      type: "fixed"
+      age: 10.0
+  - name: "Uniform"
+    mrca_pair: ["A", "B"]
+    constraint:
+      type: "uniform"
+      min: 8.0
+      max: 12.0
+  - name: "SoftLower"
+    mrca_pair: ["A", "B"]
+    constraint:
+      type: "soft_lower"
+      min: 8.0
+      p: 0.1
+      c: 1.0
+  - name: "Maximum"
+    mrca_pair: ["A", "B"]
+    constraint:
+      type: "maximum"
+      max: 12.0
+  - name: "SoftBounds"
+    mrca_pair: ["A", "B"]
+    constraint:
+      type: "soft_bounds"
+      min: 8.0
+      max: 12.0
+      p: 0.025

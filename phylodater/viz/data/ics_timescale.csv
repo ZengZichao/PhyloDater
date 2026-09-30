@@ -1,0 +1,170 @@
+name,start,end,rank,parent,color
+Phanerozoic,0.0,541.0,Eon,Earth,#9AD9DD
+Proterozoic,541.0,2500.0,Eon,Earth,#F73563
+Archean,2500.0,4000.0,Eon,Earth,#F99BC1
+Hadean,4000.0,4600.0,Eon,Earth,#6A0DAD
+Cenozoic,0.0,66.0,Era,Phanerozoic,#F2F91D
+Mesozoic,66.0,252.2,Era,Phanerozoic,#67C5CA
+Paleozoic,252.2,541.0,Era,Phanerozoic,#99C08D
+Neoproterozoic,541.0,1000.0,Era,Proterozoic,#FEB342
+Mesoproterozoic,1000.0,1600.0,Era,Proterozoic,#FDB462
+Paleoproterozoic,1600.0,2500.0,Era,Proterozoic,#F74370
+Neoarchean,2500.0,2800.0,Era,Archean,#F99BC1
+Mesoarchean,2800.0,3200.0,Era,Archean,#F768A9
+Paleoarchean,3200.0,3600.0,Era,Archean,#F4449F
+Eoarchean,3600.0,4000.0,Era,Archean,#DC148C
+Quaternary,0.0,2.58,Period,Cenozoic,#F9F97F
+Neogene,2.58,23.03,Period,Cenozoic,#FFE619
+Paleogene,23.03,66.0,Period,Cenozoic,#FD9A52
+Holocene,0.0,0.0117,Epoch,Quaternary,#FEEBD2
+Pleistocene,0.0117,2.58,Epoch,Quaternary,#FFEFAF
+Gelasian,2.58,1.80,Age,Pleistocene,#FFEDB3
+Calabrian,1.80,0.774,Age,Pleistocene,#FFF2BA
+Chibanian,0.774,0.126,Age,Pleistocene,#FFF2C7
+Northgrippian,0.0117,0.0082,Age,Holocene,#FDECE4
+Meghalayan,0.0082,0.0,Age,Holocene,#FDEDEC
+Greenlandian,0.0117,0.0082,Age,Holocene,#FEECDB
+Pliocene,2.58,5.333,Epoch,Neogene,#FFFF99
+Miocene,5.333,23.03,Epoch,Neogene,#FFFF00
+Zanclean,2.58,3.600,Age,Pliocene,#FFFFB3
+Piacenzian,3.600,5.333,Age,Pliocene,#FFFFBF
+Messinian,5.333,7.246,Age,Miocene,#FFFF73
+Tortonian,7.246,11.63,Age,Miocene,#FFFF66
+Serravallian,11.63,13.82,Age,Miocene,#FFFF59
+Langhian,13.82,15.97,Age,Miocene,#FFFF4D
+Burdigalian,15.97,20.44,Age,Miocene,#FFFF41
+Aquitanian,20.44,23.03,Age,Miocene,#FFFF33
+Oligocene,23.03,33.9,Epoch,Paleogene,#FEC07A
+Eocene,33.9,56.0,Epoch,Paleogene,#FDB46C
+Paleocene,56.0,66.0,Epoch,Paleogene,#FDA75F
+Chattian,28.1,33.9,Age,Oligocene,#FEE6AA
+Rupelian,23.03,28.1,Age,Oligocene,#FED99A
+Priabonian,37.8,33.9,Age,Eocene,#FDCDA1
+Bartonian,41.2,37.8,Age,Eocene,#FDC091
+Lutetian,47.8,41.2,Age,Eocene,#FDB482
+Ypresian,56.0,47.8,Age,Eocene,#FCA773
+Thanetian,59.2,56.0,Age,Paleocene,#FDBF6F
+Selandian,61.6,59.2,Age,Paleocene,#FEBF65
+Danian,66.0,61.6,Age,Paleocene,#FDB462
+Cretaceous,66.0,145.0,Period,Mesozoic,#7FC64E
+Jurassic,145.0,201.3,Period,Mesozoic,#34B2C9
+Triassic,201.3,252.2,Period,Mesozoic,#812B92
+Upper Cretaceous,66.0,100.5,Epoch,Cretaceous,#A6D84A
+Lower Cretaceous,100.5,145.0,Epoch,Cretaceous,#8CCD57
+Maastrichtian,72.1,66.0,Age,Upper Cretaceous,#F2FA8C
+Campanian,83.6,72.1,Age,Upper Cretaceous,#E6F47F
+Santonian,86.3,83.6,Age,Upper Cretaceous,#D9EF74
+Coniacian,89.8,86.3,Age,Upper Cretaceous,#CCE968
+Turonian,93.9,89.8,Age,Upper Cretaceous,#BFE35D
+Cenomanian,100.5,93.9,Age,Upper Cretaceous,#B3DE53
+Albian,113.0,100.5,Age,Lower Cretaceous,#CCEA97
+Aptian,125.0,113.0,Age,Lower Cretaceous,#BFE48A
+Barremian,129.4,125.0,Age,Lower Cretaceous,#B3DF7F
+Hauterivian,132.9,129.4,Age,Lower Cretaceous,#A6D975
+Valanginian,139.8,132.9,Age,Lower Cretaceous,#99D36A
+Berriasian,145.0,139.8,Age,Lower Cretaceous,#8CCD60
+Upper Jurassic,145.0,163.5,Epoch,Jurassic,#B3E3EE
+Middle Jurassic,163.5,174.1,Epoch,Jurassic,#80CFD8
+Lower Jurassic,174.1,201.3,Epoch,Jurassic,#42AED0
+Tithonian,152.1,145.0,Age,Upper Jurassic,#D9F1F7
+Kimmeridgian,157.3,152.1,Age,Upper Jurassic,#CCECF4
+Oxfordian,163.5,157.3,Age,Upper Jurassic,#BFE7F1
+Callovian,166.1,163.5,Age,Middle Jurassic,#BFE7E5
+Bathonian,168.3,166.1,Age,Middle Jurassic,#B3E2E3
+Bajocian,170.3,168.3,Age,Middle Jurassic,#A6DDE0
+Aalenian,174.1,170.3,Age,Middle Jurassic,#9AD9DD
+Toarcian,182.7,174.1,Age,Lower Jurassic,#99CEE3
+Pliensbachian,190.8,182.7,Age,Lower Jurassic,#80C5DD
+Sinemurian,199.3,190.8,Age,Lower Jurassic,#67BCD8
+Hettangian,201.3,199.3,Age,Lower Jurassic,#4EB3D3
+Upper Triassic,201.3,237.0,Epoch,Triassic,#BD8CC3
+Middle Triassic,237.0,247.2,Epoch,Triassic,#B168B1
+Lower Triassic,247.2,252.2,Epoch,Triassic,#983999
+Rhaetian,208.5,201.3,Age,Upper Triassic,#E3B9DB
+Norian,227.0,208.5,Age,Upper Triassic,#D6AAD3
+Carnian,237.0,227.0,Age,Upper Triassic,#C99BCB
+Ladinian,242.0,237.0,Age,Middle Triassic,#C983BF
+Anisian,247.2,242.0,Age,Middle Triassic,#BC75B7
+Olenekian,251.2,247.2,Age,Lower Triassic,#B051A5
+Induan,252.2,251.2,Age,Lower Triassic,#A4469F
+Permian,252.2,298.9,Period,Paleozoic,#F04028
+Carboniferous,298.9,358.9,Period,Paleozoic,#67A599
+Devonian,358.9,419.2,Period,Paleozoic,#CB8C37
+Silurian,419.2,443.8,Period,Paleozoic,#B3E1B6
+Ordovician,443.8,485.4,Period,Paleozoic,#009270
+Cambrian,485.4,541.0,Period,Paleozoic,#7FA056
+Lopingian,252.2,259.1,Epoch,Permian,#FCC0B2
+Guadalupian,259.1,272.3,Epoch,Permian,#E38776
+Cisuralian,272.3,298.9,Epoch,Permian,#F04028
+Changhsingian,254.1,252.2,Age,Lopingian,#FCC0B2
+Wuchiapingian,259.1,254.1,Age,Lopingian,#FCB4A2
+Capitanian,265.1,259.1,Age,Guadalupian,#E38776
+Wordian,268.8,265.1,Age,Guadalupian,#E38776
+Roadian,272.3,268.8,Age,Guadalupian,#E38776
+Kungurian,283.5,272.3,Age,Cisuralian,#E38776
+Artinskian,290.1,283.5,Age,Cisuralian,#F04028
+Sakmarian,295.0,290.1,Age,Cisuralian,#F04028
+Asselian,298.9,295.0,Age,Cisuralian,#F04028
+Pennsylvanian,298.9,323.2,Epoch,Carboniferous,#7EBCC6
+Mississippian,323.2,358.9,Epoch,Carboniferous,#678F66
+Gzhelian,303.7,298.9,Age,Pennsylvanian,#CCD4C7
+Kasimovian,307.0,303.7,Age,Pennsylvanian,#BFD0C5
+Moscovian,315.2,307.0,Age,Pennsylvanian,#7EBCC6
+Bashkirian,323.2,315.2,Age,Pennsylvanian,#7EBCC6
+Serpukhovian,330.9,323.2,Age,Mississippian,#678F66
+Visean,346.7,330.9,Age,Mississippian,#678F66
+Tournaisian,358.9,346.7,Age,Mississippian,#678F66
+Upper Devonian,358.9,382.7,Epoch,Devonian,#F2EDAD
+Middle Devonian,382.7,393.3,Epoch,Devonian,#F1D576
+Lower Devonian,393.3,419.2,Epoch,Devonian,#E5B75A
+Famennian,372.2,358.9,Age,Upper Devonian,#F2EDB3
+Frasnian,382.7,372.2,Age,Upper Devonian,#F2EDAD
+Givetian,387.7,382.7,Age,Middle Devonian,#F1E185
+Eifelian,393.3,387.7,Age,Middle Devonian,#F1D576
+Emsian,407.6,393.3,Age,Lower Devonian,#E5D075
+Pragian,410.8,407.6,Age,Lower Devonian,#E5C468
+Lochkovian,419.2,410.8,Age,Lower Devonian,#E5B75A
+Pridoli,419.2,423.0,Epoch,Silurian,#E6F5E1
+Ludlow,423.0,427.4,Epoch,Silurian,#D9F0DF
+Wenlock,427.4,433.4,Epoch,Silurian,#CCEBD1
+Llandovery,433.4,443.8,Epoch,Silurian,#A6DCB5
+Ludfordian,427.4,423.0,Age,Ludlow,#D9F0DF
+Gorstian,427.4,425.6,Age,Ludlow,#CCECDD
+Homerian,433.4,427.4,Age,Wenlock,#CCEBD1
+Sheinwoodian,433.4,430.5,Age,Wenlock,#BFE6C3
+Telychian,433.4,427.4,Age,Llandovery,#BFE6CF
+Aeronian,433.4,430.5,Age,Llandovery,#B3E1C2
+Rhuddanian,443.8,433.4,Age,Llandovery,#A6DCB5
+Upper Ordovician,443.8,458.4,Epoch,Ordovician,#A6DBAB
+Middle Ordovician,458.4,470.0,Epoch,Ordovician,#74C69C
+Lower Ordovician,470.0,485.4,Epoch,Ordovician,#33A97E
+Hirnantian,445.8,443.8,Age,Upper Ordovician,#A6DBAB
+Katian,453.0,445.8,Age,Upper Ordovician,#99D69F
+Sandbian,458.4,453.0,Age,Upper Ordovician,#8CD094
+Darriwilian,467.3,458.4,Age,Middle Ordovician,#74C69C
+Dapingian,470.0,467.3,Age,Middle Ordovician,#66C092
+Floian,477.7,470.0,Age,Lower Ordovician,#41B087
+Tremadocian,485.4,477.7,Age,Lower Ordovician,#33A97E
+Furongian,485.4,497.0,Epoch,Cambrian,#D9F0BB
+Miaolingian,497.0,509.0,Epoch,Cambrian,#B3D492
+Terreneuvian,509.0,541.0,Epoch,Cambrian,#99B575
+Stage 10,489.5,485.4,Age,Furongian,#E6F5C9
+Jiangshanian,494.0,489.5,Age,Furongian,#D9F0BB
+Paibian,497.0,494.0,Age,Furongian,#CCEBAE
+Guzhangian,500.5,497.0,Age,Miaolingian,#CCDFAA
+Drumian,504.5,500.5,Age,Miaolingian,#BFD99D
+Wuliuan,509.0,504.5,Age,Miaolingian,#B3D492
+Stage 4,514.0,509.0,Age,Terreneuvian,#B3CA8E
+Stage 3,521.0,514.0,Age,Terreneuvian,#A6C583
+Stage 2,529.0,521.0,Age,Terreneuvian,#A6BA80
+Fortunian,541.0,529.0,Age,Terreneuvian,#99B575
+Ediacaran,541.0,635.0,Period,Neoproterozoic,#FED96A
+Cryogenian,635.0,720.0,Period,Neoproterozoic,#FECC5C
+Tonian,720.0,1000.0,Period,Neoproterozoic,#FEBF4E
+Stenian,1000.0,1200.0,Period,Mesoproterozoic,#FED99A
+Ectasian,1200.0,1400.0,Period,Mesoproterozoic,#FDCC8A
+Calymmian,1400.0,1600.0,Period,Mesoproterozoic,#FDC07A
+Statherian,1800.0,1600.0,Period,Paleoproterozoic,#F875A7
+Orosirian,2050.0,1800.0,Period,Paleoproterozoic,#F76898
+Rhyacian,2300.0,2050.0,Period,Paleoproterozoic,#F75B89
+Siderian,2500.0,2300.0,Period,Paleoproterozoic,#F74F7C

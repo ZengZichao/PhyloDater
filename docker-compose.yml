@@ -1,0 +1,96 @@
+# PhyloDater Docker Compose Configuration
+# 文档: https://docs.docker.com/compose/
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # 基础服务 - 仅 PhyloDater 核心
+  # ============================================================================
+  phylodater:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: phylodater/phylodater:latest
+    container_name: phylodater
+    volumes:
+      - ./data:/data:ro
+      - ./output:/output
+    environment:
+      - PHYLODATER_LOG_LEVEL=INFO
+    command: ["phylodater", "--help"]
+
+  # ============================================================================
+  # 完整服务 - 包含所有外部工具
+  # ============================================================================
+  phylodater-complete:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: complete
+    image: phylodater/phylodater:complete
+    container_name: phylodater-complete
+    volumes:
+      - ./data:/data:ro
+      - ./output:/output
+    environment:
+      - PHYLODATER_LOG_LEVEL=INFO
+    # 示例运行命令
+    command: >
+      phylodater
+      --tree /data/tree.nwk
+      --alignment /data/alignment.fasta
+      --calibrations /data/calibrations.yaml
+      --output /output
+      --methods mcmctree lsd2 pathd8
+
+  # ============================================================================
+  # 教程服务 - 包含 Jupyter Lab
+  # ============================================================================
+  phylodater-tutorial:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tutorial
+    image: phylodater/phylodater:tutorial
+    container_name: phylodater-tutorial
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data:/data:ro
+      - ./output:/output
+      - ./tutorials:/app/tutorials
+    environment:
+      - PHYLODATER_LOG_LEVEL=INFO
+      - JUPYTER_ENABLE_LAB=yes
+
+  # ============================================================================
+  # 开发服务 - 用于开发调试
+  # ============================================================================
+  phylodater-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: complete
+    image: phylodater/phylodater:dev
+    container_name: phylodater-dev
+    volumes:
+      - .:/app
+      - ./data:/data:ro
+      - ./output:/output
+    environment:
+      - PHYLODATER_LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+
+# ============================================================================
+# 共享卷
+# ============================================================================
+volumes:
+  data:
+    driver: local
+  output:
+    driver: local

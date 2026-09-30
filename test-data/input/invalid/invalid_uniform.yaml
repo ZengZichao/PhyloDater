@@ -1,0 +1,7 @@
+calibrations:
+  - name: InvalidUniform
+    mrca_pair: [A, B]
+    constraint:
+      type: uniform
+      min: 100
+      max: 50

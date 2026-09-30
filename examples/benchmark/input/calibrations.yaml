@@ -1,0 +1,19 @@
+calibrations:
+  - name: "HumanChimp"
+    mrca_pair: ["human", "chimp"]
+    constraint:
+      type: "fixed"
+      age: 6.0
+
+  - name: "GreatApes"
+    mrca_pair: ["human", "gorilla"]
+    constraint:
+      type: "uniform"
+      min: 8.0
+      max: 10.0
+
+  - name: "Root"
+    is_root: true
+    constraint:
+      type: "maximum"
+      max: 15.0

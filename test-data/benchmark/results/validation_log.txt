@@ -1,0 +1,543 @@
+PhyloDater -- archived output of the release-gate command set
+========================================================================
+Generated          : 2026-09-30T18:22:06+08:00
+Repository         : <repo>
+git HEAD validated : d5093449263a0fad2d4011043c535307137cd95a docs(accuracy): 把自检项数与测试计数的过期数字对齐到实测值
+git status (tracked, before the run) :
+     M test-data/README.md
+     M test-data/README_CN.md
+Conda environment  : phylodater
+Python             : Python 3.12.14
+mypy               : mypy 2.3.1 (compiled: yes)
+black              : black, 26.5.1 (compiled: no)
+isort              : isort 5.13.2
+ruff               : ruff 0.16.9
+pytest             : pytest 9.1.1
+Host               : Linux 6.8.0-111-generic x86_64 (96 cores)
+
+Commands are run in the order below; each section is the unedited
+stdout+stderr of that command. Non-zero exit codes are shown explicitly.
+
+Provenance notes:
+  * This file is committed by the commit immediately following the HEAD recorded
+    above. Only markdown differed at capture time (the 'git status' block, plus the
+    CHANGELOG entries describing this round), so every command below ran against the
+    same Python/test/benchmark code that is being released.
+  * Everything between the command banners is raw terminal output; it was not
+    filtered. Two header lines were completed by hand after the run: the isort
+    version (the tool prints it on a line the capture dropped) and the labels of
+    the two per-variant verdict sections.
+  * mcmctree is a Bayesian sampler: its MAE drifts in the third decimal between
+    runs (0.70-0.76 Ma here). The other six methods reproduce byte-identically.
+  * r8s variant B MAE is high (7.862 Ma) because pyr8s treats range calibrations as
+    advisory; the adapter discloses the unsatisfied ranges, which is why its six
+    scorecard checks still pass. See docs/TESTING.md section 4 and 10.
+
+================================================================
+$ python -m pytest tests -q
+================================================================
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0
+Matplotlib: 3.11.2
+Freetype: 2.14.3
+rootdir: <repo>
+configfile: pyproject.toml
+plugins: mpl-0.19.0, cov-7.1.0
+collected 1489 items
+
+tests/functional/test_adapters.py ...........                            [  0%]
+tests/functional/test_batch_checkpoint.py .............................. [  2%]
+...........                                                              [  3%]
+tests/functional/test_calibration.py .................                   [  4%]
+tests/functional/test_cli.py .................................s.         [  6%]
+tests/functional/test_input_validation.py ...........................    [  8%]
+tests/functional/test_pipeline.py ........                               [  9%]
+tests/functional/test_report.py .................                        [ 10%]
+tests/functional/test_security.py .........                              [ 11%]
+tests/functional/test_self_check.py ...                                  [ 11%]
+tests/functional/test_signals.py ....                                    [ 11%]
+tests/functional/test_taxonomy.py .........                              [ 12%]
+tests/functional/test_visualization.py ..................                [ 13%]
+tests/integration/full_pipeline/test_all_dating_tools.py ......          [ 13%]
+tests/integration/full_pipeline/test_visualization.py .....              [ 14%]
+tests/integration/test_pipeline_integration.py .............             [ 14%]
+tests/unit/adapters/test_lsd2_method.py ................................ [ 17%]
+...                                                                      [ 17%]
+tests/unit/adapters/test_mcmctree_convergence.py ....................... [ 18%]
+......                                                                   [ 19%]
+tests/unit/adapters/test_mcmctree_method.py ............................ [ 21%]
+................                                                         [ 22%]
+tests/unit/adapters/test_mcmctree_rate_estimation.py ................... [ 23%]
+........                                                                 [ 24%]
+tests/unit/adapters/test_mdcat_method.py ...................             [ 25%]
+tests/unit/adapters/test_pathd8_method.py .............................. [ 27%]
+....                                                                     [ 27%]
+tests/unit/adapters/test_r8s_pyr8s_method.py ........................... [ 29%]
+....                                                                     [ 29%]
+tests/unit/adapters/test_treepl_method.py .............................. [ 31%]
+...                                                                      [ 31%]
+tests/unit/adapters/test_wlogdate_method.py ............................ [ 33%]
+...................                                                      [ 35%]
+tests/unit/cli/test_input_validation.py ................................ [ 37%]
+..............................                                           [ 39%]
+tests/unit/core/test_exceptions.py .................                     [ 40%]
+tests/unit/core/test_method_interface.py ...........                     [ 41%]
+tests/unit/core/test_pipeline.py .....                                   [ 41%]
+tests/unit/infrastructure/test_configuration.py ..................       [ 42%]
+tests/unit/infrastructure/test_memory_handling.py ...                    [ 42%]
+tests/unit/infrastructure/test_process_runner.py ..........              [ 43%]
+tests/unit/infrastructure/test_software_dependencies.py ..s..........    [ 44%]
+tests/unit/models/test_constraints.py .................................. [ 46%]
+................................................................         [ 50%]
+tests/unit/models/test_constraints_render.py ........................... [ 52%]
+........................................................................ [ 57%]
+..........                                                               [ 58%]
+tests/unit/models/test_tree.py ...................................       [ 60%]
+tests/unit/services/test_calibration_loader.py ......................... [ 62%]
+..............                                                           [ 63%]
+tests/unit/services/test_calibration_resolver.py ....................... [ 64%]
+........................                                                 [ 66%]
+tests/unit/services/test_deep_validator.py ............................. [ 68%]
+............................                                             [ 70%]
+tests/unit/services/test_name_mapping.py ............................... [ 72%]
+...................                                                      [ 73%]
+tests/unit/services/test_taxonomy_parser.py ............................ [ 75%]
+..............                                                           [ 76%]
+tests/unit/services/test_tree_rooting.py ............................... [ 78%]
+.................................                                        [ 80%]
+tests/unit/services/test_tree_validator.py ............................. [ 82%]
+.........                                                                [ 83%]
+tests/unit/test_review_fixes.py .................................        [ 85%]
+tests/unit/test_viz_geo.py ............................................. [ 88%]
+.............                                                            [ 89%]
+tests/validation/adapters/test_adapter_interface.py ........             [ 89%]
+tests/validation/adapters/test_mcmctree.py ...                           [ 90%]
+tests/validation/adapters/test_other_adapters.py ......                  [ 90%]
+tests/validation/functional/test_auto_calibrate.py .                     [ 90%]
+tests/validation/functional/test_cli_check.py ..                         [ 90%]
+tests/validation/functional/test_cli_dating.py .........                 [ 91%]
+tests/validation/functional/test_cli_errors.py .....                     [ 91%]
+tests/validation/functional/test_cli_fold.py .                           [ 91%]
+tests/validation/functional/test_pipeline_dry_run.py ..                  [ 91%]
+tests/validation/integration/test_all_dating_tools.py .......            [ 92%]
+tests/validation/integration/test_checkpoint_resume.py .                 [ 92%]
+tests/validation/integration/test_end_to_end_mcmctree.py ..              [ 92%]
+tests/validation/integration/test_multi_method.py .                      [ 92%]
+tests/validation/security/test_input_safety.py .....                     [ 92%]
+tests/validation/security/test_path_traversal.py ....                    [ 93%]
+tests/validation/security/test_yaml_safety.py ..                         [ 93%]
+tests/validation/unit/test_calibration_loader.py .......                 [ 93%]
+tests/validation/unit/test_calibration_models.py .........               [ 94%]
+tests/validation/unit/test_calibration_resolver.py .....                 [ 94%]
+tests/validation/unit/test_checkpoint.py .....                           [ 95%]
+tests/validation/unit/test_configuration.py .......                      [ 95%]
+tests/validation/unit/test_input_validator.py ........                   [ 96%]
+tests/validation/unit/test_logging.py ....                               [ 96%]
+tests/validation/unit/test_method_registry.py ...                        [ 96%]
+tests/validation/unit/test_pipeline_config.py ......                     [ 96%]
+tests/validation/unit/test_taxonomy_parser.py .....                      [ 97%]
+tests/validation/unit/test_tree_model.py ...................             [ 98%]
+tests/validation/unit/test_tree_rooting.py ........                      [ 99%]
+tests/validation/unit/test_tree_topology.py .............                [100%]
+
+=============================== warnings summary ===============================
+../../../..<site-packages>/ete3/webplugin/webapp.py:44
+  <site-packages>/ete3/webplugin/webapp.py:44: DeprecationWarning: 'cgi' is deprecated and slated for removal in Python 3.13
+    import cgi
+
+tests/unit/adapters/test_lsd2_method.py: 11 warnings
+  <repo>/phylodater/adapters/lsd2_method.py:515: SemanticDegradationWarning: LSD2: 4/4 tip(s) carry no sampling date and were written as 0 Ma (contemporaneous sampling): A, B, C, D. Heterochronous (tip-dating) analyses need the real sampling dates in the tree (name suffix after '|' or a [&&DATE=...] annotation); otherwise rate and age estimates assume a single sampling time.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_lsd2_method.py::TestLSD2InputGeneration::test_soft_lower_bound_uses_single_sided_na_syntax
+tests/unit/adapters/test_lsd2_method.py::TestLSD2InputGeneration::test_mixed_inequality_constraints_keep_their_semantics
+tests/unit/adapters/test_lsd2_method.py::TestLSD2InputGeneration::test_warnings_reach_the_dating_result
+tests/unit/adapters/test_lsd2_method.py::TestLSD2InputGeneration::test_repeated_prepare_inputs_does_not_accumulate_warnings
+  <repo>/phylodater/adapters/lsd2_method.py:444: SemanticDegradationWarning: LSD2 cannot represent a soft lower bound: calibration 'L' (≥60.0 Ma (soft lower bound, truncated Cauchy: P=0.1, c=1.0, tailL=0.025)) was written as the HARD one-sided bound 'NA:-60.0'. Ages older than 60.0 Ma are now impossible instead of merely unlikely.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_lsd2_method.py::TestLSD2InputGeneration::test_maximum_age_uses_single_sided_na_syntax
+tests/unit/adapters/test_lsd2_method.py::TestLSD2InputGeneration::test_mixed_inequality_constraints_keep_their_semantics
+  <repo>/phylodater/adapters/lsd2_method.py:444: SemanticDegradationWarning: LSD2 cannot represent a soft upper bound: calibration 'M' (≤50.0 Ma) was written as the HARD one-sided bound '-50.0:NA'. Ages younger than 50.0 Ma are now impossible instead of merely unlikely.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_lsd2_method.py::TestLSD2InputGeneration::test_gamma_prior_degrades_to_interval_with_warning
+  <repo>/phylodater/models/constraints.py:290: SemanticDegradationWarning: lsd2 does not support Gamma priors. Degrading to uniform constraint [12.4, 65.7] (derived from Gamma(2.0, 0.1, 10.0, scale=1.0))
+    template = self._render_software_format(target_software)
+
+tests/unit/adapters/test_lsd2_method.py::TestLSD2InputGeneration::test_gamma_prior_degrades_to_interval_with_warning
+  <repo>/phylodater/adapters/lsd2_method.py:444: SemanticDegradationWarning: LSD2 cannot represent probabilistic priors: calibration 'G' (Gamma(α=2.0, β=0.1, offset=10.0 Ma, NOT applied by MCMCTree, scale=1.0)) was written as the hard 95%-interval '-65.7:-12.4' derived from the prior quantiles.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_lsd2_method.py::TestLSD2InputGeneration::test_heterochronous_tip_dates_are_preserved
+  <repo>/phylodater/adapters/lsd2_method.py:515: SemanticDegradationWarning: LSD2: 2/4 tip(s) carry no sampling date and were written as 0 Ma (contemporaneous sampling): B, D. Heterochronous (tip-dating) analyses need the real sampling dates in the tree (name suffix after '|' or a [&&DATE=...] annotation); otherwise rate and age estimates assume a single sampling time.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_lsd2_method.py::TestLSD2InputGeneration::test_missing_age_constraint_raises_instead_of_silent_drop
+  <string>:9: UserWarning: CalibrationPoint 'Empty' has resolved taxa but no age_constraint. Callers must set age_constraint before using this calibration point in analysis.
+
+tests/unit/adapters/test_pathd8_method.py: 19 warnings
+  <repo>/phylodater/adapters/pathd8_method.py:470: SemanticDegradationWarning: No alignment available: the PATHd8 'Sequence length' directive is omitted, so branch lengths are used exactly as given in the tree (they are NOT rescaled by a fabricated default of 1000). Pass an alignment if your tree is in substitutions/site and you want PATHd8 to convert it to substitution counts.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_pathd8_method.py: 9 warnings
+tests/validation/adapters/test_other_adapters.py: 1 warning
+  <repo>/phylodater/adapters/pathd8_method.py:530: SemanticDegradationWarning: PATHd8 input file 'PATHd8.infile' carries only 1 fixage directive(s) and no minage/maxage at all. The dating will be anchored by fixed ages alone.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_pathd8_method.py::TestPathd8B12Guards::test_second_root_calibration_is_dropped_with_a_warning
+  <repo>/phylodater/adapters/pathd8_method.py:311: SemanticDegradationWarning: Root calibration 'RootBound2' was NOT written to the PATHd8 input file (the root node has already been anchored by another calibration); it has no effect on the result.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_pathd8_method.py::TestPathd8B12Guards::test_second_root_calibration_is_dropped_with_a_warning
+  <repo>/phylodater/adapters/pathd8_method.py:547: SemanticDegradationWarning: PATHd8 reconciliation at input time: 3 calibration(s) supplied, but only 2 node(s) received a directive in the input file (fixage=1, minage=1, maxage=1). Dropped: RootBound2
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_pathd8_method.py::TestPathd8ConstraintReconciliation::test_silently_dropped_constraint_is_named
+  <repo>/phylodater/models/constraints.py:290: SemanticDegradationWarning: pathd8 does not support soft lower bounds. Degrading to hard minimum age 10.0
+    template = self._render_software_format(target_software)
+
+tests/unit/adapters/test_pathd8_method.py::TestPathd8ConstraintReconciliation::test_silently_dropped_constraint_is_named
+  <repo>/phylodater/adapters/pathd8_method.py:405: SemanticDegradationWarning: Soft lower bound degraded to hard minage for PATHd8: RootMin
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_pathd8_method.py::TestPathd8ConstraintReconciliation::test_silently_dropped_constraint_is_named
+  <repo>/phylodater/adapters/pathd8_method.py:405: SemanticDegradationWarning: Soft lower bound degraded to hard minage for PATHd8: GorMin
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_pathd8_method.py::TestPathd8ConstraintReconciliation::test_silently_dropped_constraint_is_named
+  <repo>/phylodater/adapters/pathd8_method.py:902: SemanticDegradationWarning: PATHd8 did not carry all constraints through unchanged (1 node(s) with an altered or dropped bound, 0 node(s) not locatable in the output table). This means your min/max set was mutually unsound or two calibrations share one MRCA node. Diff (written -> used):
+    RootMin: written bound(s) [min=10.0, max=None] but PATHd8 used [min=None, max=None]
+  Use this result with caution; the full diff is recorded in metadata['constraint_reconciliation'].
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_pathd8_method.py::TestPathd8ConstraintReconciliation::test_two_calibrations_sharing_one_mrca_are_counted_at_input_time
+  <repo>/phylodater/adapters/pathd8_method.py:547: SemanticDegradationWarning: PATHd8 reconciliation at input time: 3 calibration(s) supplied, but only 2 node(s) received a directive in the input file (fixage=1, minage=2, maxage=2).
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_pathd8_method.py::TestPathd8ConstraintReconciliation::test_unlocatable_node_name_is_reported_not_fatal
+  <repo>/phylodater/adapters/pathd8_method.py:902: SemanticDegradationWarning: PATHd8 did not carry all constraints through unchanged (0 node(s) with an altered or dropped bound, 1 node(s) not locatable in the output table). This means your min/max set was mutually unsound or two calibrations share one MRCA node. Diff (written -> used):
+    GreatApes: written bound(s) [min=8.0, max=10.0] but no row of that node name was found in PATHd8's table (PATHd8 keeps only one name per node, so two calibrations sharing one MRCA collide)
+  Use this result with caution; the full diff is recorded in metadata['constraint_reconciliation'].
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_pathd8_method.py::TestPathd8ConstraintReconciliation::test_missing_table_is_disclosed_as_unverified
+  <repo>/phylodater/adapters/pathd8_method.py:872: SemanticDegradationWarning: PATHd8 constraint reconciliation could NOT be performed for this run (PATHd8's per-node Age/minage/maxage table was not found in the output; only the informative-node counts could be reconciled). The adapter therefore cannot promise that the returned ages honour your calibrations: PATHd8 drops unsound min/max constraints silently (meta.c:36-43 has that printf commented out), so treat the result as unverified.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_r8s_pyr8s_method.py::TestR8sOriginalSubprocessGrammar::test_prepare_inputs_writes_upstream_grammar
+tests/unit/adapters/test_r8s_pyr8s_method.py::TestR8sOriginalSubprocessGrammar::test_root_calibration_does_not_crash_missing_leaf_pair
+tests/unit/adapters/test_r8s_pyr8s_method.py::TestC41DroppedInternalNodes::test_warnings_are_reset_per_run
+  <repo>/phylodater/adapters/r8s_pyr8s_method.py:176: SemanticDegradationWarning: r8s: no alignment provided; assuming sequence length = 1000. This value is written into blformat nsites= and scales rate/variance estimates. Provide an alignment for reproducible results.
+    self.logger.warning(
+
+tests/unit/adapters/test_r8s_pyr8s_method.py::TestC41DroppedInternalNodes::test_zero_age_node_is_named_in_a_warning
+tests/unit/adapters/test_r8s_pyr8s_method.py::TestC41DroppedInternalNodes::test_warning_reaches_parsed_result
+  <repo>/phylodater/adapters/r8s_pyr8s_method.py:631: SemanticDegradationWarning: r8s: 1 unnamed internal node(s) were excluded from the results because their computed age was <= 0 (a non-positive age is not a usable estimate, but silently dropping nodes would make comparison_table.tsv look complete while it is not): label='Rodent', leaves=[mouse, rat] (2 leaves) -> age=0. Check the input tree's zero/negative branch lengths or the r8s smoothing solution.
+    self.logger.warning(msg, category=category)
+
+tests/unit/adapters/test_r8s_pyr8s_method.py::TestC41DroppedInternalNodes::test_unlabelled_zero_age_node_is_named_by_its_leaf_set
+  <repo>/phylodater/adapters/r8s_pyr8s_method.py:631: SemanticDegradationWarning: r8s: 1 unnamed internal node(s) were excluded from the results because their computed age was <= 0 (a non-positive age is not a usable estimate, but silently dropping nodes would make comparison_table.tsv look complete while it is not): leaves=[mouse, rat] (2 leaves) -> age=0. Check the input tree's zero/negative branch lengths or the r8s smoothing solution.
+    self.logger.warning(msg, category=category)
+
+tests/unit/adapters/test_r8s_pyr8s_method.py::TestC41DroppedInternalNodes::test_whole_extraction_failure_is_no_longer_debug_only
+  <repo>/phylodater/adapters/r8s_pyr8s_method.py:631: SemanticDegradationWarning: r8s: could not extract unnamed internal node ages ('object' object has no attribute 'preorder_node_iter'); comparison_table.tsv will contain calibrated nodes only.
+    self.logger.warning(msg, category=category)
+
+tests/unit/adapters/test_r8s_pyr8s_method.py::TestPyr8sAdvisoryRanges::test_range_calibrations_are_disclosed_before_the_run
+  <repo>/phylodater/adapters/r8s_pyr8s_method.py:433: SemanticDegradationWarning: pyr8s backend: CONSTRAIN ranges are ADVISORY, not enforced by NPRS (measured: pyr8s 0.3.1 returns ages outside the requested bounds for Primates). Only FIXAGE (point) calibrations are honoured. Use mcmctree/treepl if the requested range must be respected, or convert these calibrations to fixed ages. The post-run check below reports whether each range was actually satisfied.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_r8s_pyr8s_method.py::TestPyr8sAdvisoryRanges::test_violated_range_is_reported_after_the_run
+  <repo>/phylodater/adapters/r8s_pyr8s_method.py:477: SemanticDegradationWarning: r8s: calibration 'Primates' was NOT satisfied by the backend: node age 54.64 Ma (younger than the requested minimum 68.0 Ma). Treat this estimate as inconsistent with the requested calibration.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_r8s_pyr8s_method.py::TestPyr8sAdvisoryRanges::test_violated_range_is_reported_after_the_run
+  <repo>/phylodater/adapters/r8s_pyr8s_method.py:631: SemanticDegradationWarning: r8s: calibration 'Primates' was NOT satisfied by the backend: node age 54.64 Ma (younger than the requested minimum 68.0 Ma). Treat this estimate as inconsistent with the requested calibration.
+    self.logger.warning(msg, category=category)
+
+tests/unit/adapters/test_treepl_method.py::TestTreePLMethod::test_write_treepl_constraint_soft_bounds
+  <repo>/phylodater/models/constraints.py:290: SemanticDegradationWarning: treepl does not support soft bounds. Degrading to uniform constraint [5.0, 10.0] (tail probabilities tailL=0.025, tailR=0.025 are lost)
+    template = self._render_software_format(target_software)
+
+tests/unit/adapters/test_treepl_method.py::TestTreePLMethod::test_write_treepl_constraint_soft_bounds
+  <repo>/phylodater/adapters/treepl_method.py:581: SemanticDegradationWarning: SoftBoundsConstraint degraded to uniform range for treePL: TestCal
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_treepl_method.py::TestTreePLWrittenConfigGuard::test_config_with_no_constraint_is_refused
+tests/unit/adapters/test_treepl_method.py::TestTreePLWrittenConfigGuard::test_unresolvable_calibration_is_named
+tests/unit/adapters/test_treepl_method.py::TestTreePLWrittenConfigGuard::test_warning_is_not_duplicated_across_the_three_stages
+  <repo>/phylodater/adapters/treepl_method.py:581: SemanticDegradationWarning: Calibration 'Homeless' was NOT written to the treePL configuration file: it has neither mrca_leaf_pair nor resolved_taxa, so no mrca can be defined for it. It has no effect on the dating result.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_treepl_method.py::TestTreePLWrittenConfigGuard::test_unresolvable_calibration_is_named
+tests/unit/adapters/test_treepl_method.py::TestTreePLWrittenConfigGuard::test_warning_is_not_duplicated_across_the_three_stages
+  <repo>/phylodater/adapters/treepl_method.py:581: SemanticDegradationWarning: treePL input reconciliation: 2 calibration(s) supplied, 1 of them reached the configuration file.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_treepl_method.py::TestTreePLWrittenConfigGuard::test_root_calibration_still_gets_a_full_tip_mrca
+  <repo>/phylodater/adapters/treepl_method.py:581: SemanticDegradationWarning: Maximum age degraded to hard max for treePL: Root
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateMethod::test_root_time_unit_consistency
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateMethod::test_execute_cli_flags
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateMethod::test_execute_algorithm_params
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateMethod::test_execute_backward_time_passes_positive_root_leaf
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateMethod::test_execute_reads_output_file_not_stdout
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateMethod::test_execute_missing_output_file_raises_error
+  <repo>/phylodater/models/constraints.py:290: SemanticDegradationWarning: wLogDate does not support range constraints. Using midpoint 7.0 from range [6.0, 8.0]
+    template = self._render_software_format(target_software)
+
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateMethod::test_extract_age_uniform_degrades_to_midpoint
+  <repo>/phylodater/models/constraints.py:290: SemanticDegradationWarning: wLogDate does not support range constraints. Using midpoint 15.0 from range [10.0, 20.0]
+    template = self._render_software_format(target_software)
+
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateMethod::test_extract_age_soft_lower_bound
+  <repo>/phylodater/models/constraints.py:290: SemanticDegradationWarning: wlogdate does not support soft lower bounds. Degrading to hard minimum age 50.0
+    template = self._render_software_format(target_software)
+
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateMethod::test_extract_age_maximum
+  <repo>/phylodater/models/constraints.py:290: SemanticDegradationWarning: wlogdate only supports point calibrations and does not support maximum-only constraints. Degrading the ≤100.0 Ma upper bound to the point estimate 50.0 Ma (midpoint of the implied range [0.0, 100.0] Ma). The upper bound itself is NOT enforced: wlogdate may return an age older than 100.0 Ma.
+    template = self._render_software_format(target_software)
+
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateMethod::test_extract_age_soft_bounds
+  <repo>/phylodater/models/constraints.py:290: SemanticDegradationWarning: wlogdate only supports point calibrations. Degrading the soft bounds [10.0, 20.0] Ma to the midpoint 15.0; both bounds and the tail probabilities (tailL=0.025, tailR=0.025) are lost.
+    template = self._render_software_format(target_software)
+
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateMethod::test_extract_age_gamma
+  <repo>/phylodater/models/constraints.py:290: SemanticDegradationWarning: wlogdate does not support Gamma priors. Degrading to uniform constraint [12.4, 65.7] (derived from Gamma(2.0, 0.1, 10.0, scale=1.0))
+    template = self._render_software_format(target_software)
+
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateConfigSafety::test_derived_root_time_is_not_written_back_to_config
+  <repo>/phylodater/models/constraints.py:290: SemanticDegradationWarning: wLogDate does not support range constraints. Using midpoint 70.0 from range [60.0, 80.0]
+    template = self._render_software_format(target_software)
+
+tests/unit/adapters/test_wlogdate_method.py::TestWLogDateConfigSafety::test_user_root_time_wins_and_conflict_is_warned
+  <repo>/phylodater/adapters/wlogdate_method.py:421: SemanticDegradationWarning: wLogDate: user-set root_time=200.0 conflicts with the root calibration age 90.0. Keeping the user value as the -r anchor; the root calibration is NOT applied. Fix the configuration if the calibration was meant to drive the root date.
+    self.logger.warning(msg, category=SemanticDegradationWarning)
+
+tests/unit/test_review_fixes.py::TestSkewTConstraintVariance::test_variance_formula_includes_one_plus_delta_squared
+  <repo>/phylodater/models/constraints.py:290: SemanticDegradationWarning: r8s does not support Skew T priors. Degrading to uniform constraint [82.7, 134.3] (derived from ST(100.0, 10.0, 5.0, 10.0)) NOTE: the interval is a symmetric NORMAL approximation mean ± 1.96·sd built from the exact skew-t mean/variance, because scipy provides no skew-t distribution (scipy.stats.skewt does not exist) so the true equal-tailed quantiles cannot be computed; the real skew-t is asymmetric and heavier-tailed (excess kurtosis 6/(df-4) for df>4), so this interval is too narrow on the heavy-tail side — the error grows as df approaches 2 (now df=10.0)
+    template = self._render_software_format(target_software)
+
+tests/unit/test_review_fixes.py::TestIsAncestorNone::test_is_ancestor_false_when_mrca_none
+  <string>:9: UserWarning: CalibrationPoint 'g1' has resolved taxa but no age_constraint. Callers must set age_constraint before using this calibration point in analysis.
+
+tests/unit/test_review_fixes.py::TestIsAncestorNone::test_is_ancestor_false_when_mrca_none
+  <string>:9: UserWarning: CalibrationPoint 'g2' has resolved taxa but no age_constraint. Callers must set age_constraint before using this calibration point in analysis.
+
+tests/unit/test_review_fixes.py::TestIsAncestorNone::test_is_ancestor_true_for_real_ancestry
+  <string>:9: UserWarning: CalibrationPoint 'rootish' has resolved taxa but no age_constraint. Callers must set age_constraint before using this calibration point in analysis.
+
+tests/unit/test_review_fixes.py::TestIsAncestorNone::test_is_ancestor_true_for_real_ancestry
+tests/unit/test_review_fixes.py::TestIsAncestorNone::test_is_ancestor_false_when_not_ancestor
+  <string>:9: UserWarning: CalibrationPoint 'bc' has resolved taxa but no age_constraint. Callers must set age_constraint before using this calibration point in analysis.
+
+tests/unit/test_review_fixes.py::TestIsAncestorNone::test_is_ancestor_false_when_not_ancestor
+  <string>:9: UserWarning: CalibrationPoint 'ab' has resolved taxa but no age_constraint. Callers must set age_constraint before using this calibration point in analysis.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========== 1487 passed, 2 skipped, 98 warnings in 335.14s (0:05:35) ===========
+[exit code] 0
+
+================================================================
+$ python -m phylodater check
+================================================================
+
+Bad key legend.bbox_to_anchor in file <home>/.config/matplotlib/stylelib/pyrolite.mplstyle, line 27 ('legend.bbox_to_anchor : (1, 1)')
+You probably need to get an updated matplotlibrc file from
+https://github.com/matplotlib/matplotlib/blob/v3.11.2/lib/matplotlib/mpl-data/matplotlibrc
+or from the matplotlib source distribution
+
+==========================================================================================
+
+   ██████╗ ██╗  ██╗██╗   ██╗██╗       ██████╗  ██████╗  █████╗ ████████╗███████╗██████╗
+   ██╔══██╗██║  ██║╚██╗ ██╔╝██║      ██╔═══██╗ ██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██╔══██╗
+   ██████╔╝███████║ ╚████╔╝ ██║      ██║   ██║ ██║  ██║███████║   ██║   █████╗  ██████╔╝
+   ██╔═══╝ ██╔══██║  ╚██╔╝  ██║      ██║   ██║ ██║  ██║██╔══██║   ██║   ██╔══╝  ██╔══██╗
+   ██║     ██║  ██║   ██║   ███████╗ ╚██████╔╝ ██████╔╝██║  ██║   ██║   ███████╗██║  ██║
+   ╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚══════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
+
+                                  PhyloDater  v0.1.0
+                                  MIT License
+                                  Last updated: 2026-09-17
+
+==========================================================================================
+
+  Dependencies & Licenses:
+    BioPython  BSD-3-Clause    DendroPy   BSD-3-Clause    NumPy      BSD-3-Clause
+    ETE3       GPL-3.0         PyYAML     MIT License     Pandas     BSD-3-Clause
+    Matplotlib PSF-based       SciPy      BSD-3-Clause    psutil     BSD-3-Clause
+
+==========================================================================================
+
+2026-09-30T18:28:07.778 | INFO      | logging 日志系统已启动
+
+======================================================================
+  PhyloDater 自检模式
+======================================================================
+2026-09-30T18:28:07.787 | INFO      | infrastructure.self_test/_test_monophyly_check Resolving calibration target: LUCA
+2026-09-30T18:28:07.787 | PASS      | Special identifier 'LUCA' resolved: 4 tips
+2026-09-30T18:28:07.967 | INFO      | infrastructure.self_test/_test_special_identifiers Resolving calibration target: LUCA
+2026-09-30T18:28:07.967 | PASS      | Special identifier 'LUCA' resolved: 4 tips
+2026-09-30T18:28:07.967 | INFO      | infrastructure.self_test/_test_special_identifiers Resolving calibration target: ROOT
+2026-09-30T18:28:07.967 | PASS      | Special identifier 'ROOT' resolved: 4 tips
+2026-09-30T18:28:07.968 | INFO      | infrastructure.self_test/_test_external_taxonomy_table Detected two-column format with taxonomy strings
+2026-09-30T18:28:07.968 | INFO      | infrastructure.self_test/_test_external_taxonomy_table Loaded 2 taxonomy entries from 2 data row(s) in /tmp/tmp_4jspr_s.tsv [layout=two_column | entries=2 | data_rows=2]
+
+======================================================================
+检查项                                      状态       信息
+----------------------------------------------------------------------
+依赖: biopython                            [PASS]   v1.88
+依赖: dendropy                             [PASS]   v5.1.0
+依赖: numpy                                [PASS]   v2.5.3
+依赖: pandas                               [PASS]   v3.0.6
+依赖: pyyaml                               [PASS]   v6.0.3
+依赖: matplotlib                           [PASS]   v3.11.2
+可选依赖: logdate (wLogDate)                 [PASS]   vunknown
+可选依赖: emd (MD-Cat)                       [PASS]   vunknown
+可选依赖: pyr8s                              [PASS]   vunknown
+可选依赖: ete3                               [PASS]   v3.1.3
+树解析: 基本 Newick                           [PASS]   4 个叶节点
+树解析: 带分类信息                               [PASS]   4 个叶节点
+分类学: 格式A（嵌入式）                            [PASS]   domain=Bacteria, phylum=Proteobacteria
+分类学: 格式B（表格分号式）                          [PASS]   domain=Bacteria, species=None (缺失值处理正确)
+单系群: 非单系群检测                              [PASS]   正确识别 Bacteria 非单系群
+单系群: 单系群检测                               [PASS]   正确识别 Bacteria 单系群
+单系群: LUCA 解析                             [PASS]   解析到 4 个分类单元
+深度验证: 括号不平衡检测                            [PASS]   正确检测括号不平衡
+深度验证: 重复ID检测                             [PASS]   检测到 1 个重复ID
+特殊标识符: LUCA (大写)                         [PASS]   解析到 4 个分类单元
+特殊标识符: ROOT                              [PASS]   解析到 4 个分类单元
+安全: 输入大小限制                               [PASS]   限制: 500 MB
+库模式API: cross_validate                   [PASS]   函数存在
+外部分类学表格                                  [PASS]   PASS
+多棵树处理                                    [PASS]   多树 NEXUS 已加载（取第一棵树），叶节点数: 1
+恶意字符拒绝                                   [PASS]   PASS
+----------------------------------------------------------------------
+总计: 26 项检查, 26 通过, 0 失败
+======================================================================
+
+✓ 所有检查通过！
+[exit code] 0
+
+================================================================
+$ black --check phylodater tests scripts test-data
+================================================================
+All done! ✨ 🍰 ✨
+160 files would be left unchanged.
+[exit code] 0
+
+================================================================
+$ isort --check phylodater tests scripts test-data
+================================================================
+[exit code] 0
+
+================================================================
+$ python -m ruff check phylodater tests scripts test-data
+================================================================
+All checks passed!
+[exit code] 0
+
+================================================================
+$ python scripts/check_docs.py
+================================================================
+broken internal links: 0
+bilingual pairing problems: 0
+language switches not English-first: 0
+
+documentation policy satisfied (44 markdown files checked)
+[exit code] 0
+
+================================================================
+$ mypy phylodater
+================================================================
+Success: no issues found in 53 source files
+[exit code] 0
+
+================================================================
+$ python scripts/run_reference_benchmark.py --output /tmp/vA
+================================================================
+[benchmark] running mcmctree ...
+[benchmark] running lsd2 ...
+[benchmark] running r8s ...
+[benchmark] running treepl ...
+[benchmark] running pathd8 ...
+[benchmark] running wlogdate ...
+[benchmark] running mdcat ...
+method     status         wall   MAE(Ma)   maxRel  nodes  checks
+----------------------------------------------------------------
+mcmctree   PASS          14.58     0.707   0.2905     12  all passed
+lsd2       PASS           4.05     1.881   0.3028     12  all passed
+r8s        PASS           4.67     0.183   0.0129     12  all passed
+treepl     PASS          52.61     1.099   0.0294     12  all passed
+pathd8     PASS           4.10     0.509   0.0189     12  all passed
+wlogdate   PASS           5.46       0.0      0.0     12  all passed
+mdcat      PASS           9.54     0.081   0.0686     12  all passed
+
+[benchmark] reports written to /tmp/vA
+[exit code] 0
+
+================================================================
+$ python scripts/run_reference_benchmark.py --tree-file tree_ml.nwk --output /tmp/vB
+================================================================
+[benchmark] running mcmctree ...
+[benchmark] running lsd2 ...
+[benchmark] running r8s ...
+[benchmark] running treepl ...
+[benchmark] running pathd8 ...
+[benchmark] running wlogdate ...
+[benchmark] running mdcat ...
+method     status         wall   MAE(Ma)   maxRel  nodes  checks
+----------------------------------------------------------------
+mcmctree   PASS          13.94     0.715    0.287     12  all passed
+lsd2       PASS           4.18     1.881   0.3028     12  all passed
+r8s        PASS           4.28     7.862   0.4258     12  all passed
+           ~ disclosed engine limitation: Primates (54.64 Ma outside [68.0, 82.0])
+           ~ disclosed engine limitation: Glires (53.75 Ma outside [60.0, 80.0])
+treepl     PASS          68.40     4.041   0.2238     12  all passed
+pathd8     PASS           3.71     4.492   0.2397     12  all passed
+wlogdate   PASS           5.73      1.85   0.1801     12  all passed
+mdcat      PASS          18.21     0.298   0.4132     12  all passed
+
+[benchmark] reports written to /tmp/vB
+[exit code] 0
+
+================================================================
+$ grep -n "disallow_untyped_defs\|warn_return_any\|python_version\|requires-python" pyproject.toml
+================================================================
+61:requires-python = ">=3.9"
+86:ete3 = ["ete3>=3.1.2,<4.0; python_version <= '3.12'"]
+89:    "ete3>=3.1.2,<4.0; python_version <= '3.12'",
+142:# 下限与 requires-python 一致（决定 black 可以输出哪些语法）；上限只到 py312，
+171:# 目标版本取下限（与 requires-python 一致）：这决定 ruff 允许哪些语法。
+185:# PEP 695 `type` statements, which an older python_version makes mypy reject
+189:python_version = "3.12"
+200:disallow_untyped_defs = true
+201:warn_return_any = true
+
+================================================================
+$ /tmp/vA/scorecard.tsv -- variant A (reference tree, test-data/benchmark/tree.nwk)$ /tmp/vB/scorecard.tsv -- variant B (ML branch-length tree, test-data/benchmark/tree_ml.nwk)$ variant -- per-method verdict (recomputed from the scorecard written by the run above)
+================================================================
+  mcmctree  status=completed  6/6 checks PASS  mae=0.707 Ma  wall=14.58 s
+  lsd2      status=completed  6/6 checks PASS  mae=1.881 Ma  wall=4.05 s
+  r8s       status=completed  6/6 checks PASS  mae=0.183 Ma  wall=4.67 s
+  treepl    status=completed  6/6 checks PASS  mae=1.099 Ma  wall=52.61 s
+  pathd8    status=completed  6/6 checks PASS  mae=0.509 Ma  wall=4.1 s
+  wlogdate  status=completed  6/6 checks PASS  mae=0.0 Ma  wall=5.46 s
+  mdcat     status=completed  6/6 checks PASS  mae=0.081 Ma  wall=9.54 s
+
+================================================================
+$ variant -- per-method verdict (recomputed from the scorecard written by the run above)
+================================================================
+  mcmctree  status=completed  6/6 checks PASS  mae=0.715 Ma  wall=13.94 s
+  lsd2      status=completed  6/6 checks PASS  mae=1.881 Ma  wall=4.18 s
+  r8s       status=completed  6/6 checks PASS  mae=7.862 Ma  wall=4.28 s
+  treepl    status=completed  6/6 checks PASS  mae=4.041 Ma  wall=68.4 s
+  pathd8    status=completed  6/6 checks PASS  mae=4.492 Ma  wall=3.71 s
+  wlogdate  status=completed  6/6 checks PASS  mae=1.85 Ma  wall=5.73 s
+  mdcat     status=completed  6/6 checks PASS  mae=0.298 Ma  wall=18.21 s
+
+================================================================
+SUMMARY (exit codes)
+================================================================

@@ -1,0 +1,128 @@
+# ============================================================
+# PhyloDater .gitignore
+# ============================================================
+
+# ---------------- macOS / macOS Finder ----------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ---------------- Python ----------------
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+.eggs/
+dist/
+build/
+sdist/
+wheels/
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ---------------- 虚拟环境 ----------------
+venv/
+.venv/
+.venv-*/
+env/
+.env
+.envrc
+
+# ---------------- 测试 / 覆盖率 / 类型检查 ----------------
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+*.cover
+.hypothesis/
+# pytest 的 tmp_path 基座（-p no:cacheprovider 也挡不住它）：实测会落一个
+# pytest-of-<user>/ 到仓库根。
+pytest-of-*/
+# 一次性临时目录：本轮实测在仓库根出现过 tmpjpsxp8b3/ 这样的 mkdtemp 产物。
+# 只屏蔽仓库根，不屏蔽子目录里同名但被跟踪的内容。
+/tmp*/
+
+# ---------------- IDE / 编辑器 ----------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# ---------------- 项目运行时输出（仓库不应跟踪）----------------
+output/
+*.log
+tests/output/
+tests/validation/_tmp/
+benchmarks/results/
+example-results/
+test-data/output/
+test-data/benchmark/results/runs/
+# 变体 B（ML 树）的每次运行产物落在 results/ml_tree/runs/ 下，与变体 A 同性质：
+# 可重跑、体量大（PAML 的 .dat/rst/tmp*.trees 等），旧规则只盖住了
+# results/runs/，导致 ml_tree/runs/ 整树变成未跟踪噪声（本轮实测）。
+test-data/benchmark/results/*/runs/
+figures/out/
+*.pem
+*.key
+
+# ---------------- Benchmark 输出结果（仅保留输入文件）----------------
+examples/benchmark/lsd2/
+examples/benchmark/mcmctree/
+examples/benchmark/pathd8/
+examples/benchmark/treepl/
+examples/benchmark/wlogdate/
+examples/benchmark/wrapper_rerun/
+examples/benchmark/failed_mcmctree/
+examples/benchmark/failed_mdcat/
+examples/benchmark/degradation/gamma_seed*/
+examples/benchmark/degradation/uniform_seed*/
+examples/benchmark/comparison_table.tsv
+examples/benchmark/runtime_metadata.json
+examples/benchmark/summary.txt
+examples/benchmark/degradation_results.json
+examples/benchmark/tier1_manual_results.json
+
+# ---------------- Sphinx 文档构建产物 ----------------
+docs/api/_build/
+
+# ---------------- Jupyter ----------------
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ---------------- macOS 文件打开缓存 ----------------
+*.fseventsd
+*.TemporaryItems
+*.Rev
+
+# ---------------- IDE / 工具内部缓存 ----------------
+.mimosa/
+.hermes/
+
+# ---------------- 覆盖率 / 基准检查点 ----------------
+*.cover
+.coverage*
+.phylodater_pipeline_checkpoint.json
+
+# ---------------- 杂项 ----------------
+*.bak
+*.tmp
+*.swp
+
+# ---------------- Jupyter quick-start scratch output ----------------
+tutorials/quickstart_output_*/
+tutorials/quickstart_benchmark/

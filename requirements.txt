@@ -1,0 +1,37 @@
+# Core dependencies
+biopython>=1.79,<2.0
+dendropy>=4.5.0
+pyyaml>=6.0,<7.0
+scipy>=1.9.0,<2.0
+numpy>=1.21.0
+psutil>=5.9.0
+matplotlib>=3.5.0
+pandas>=1.3.0
+
+# ---------------------------------------------------------------------------
+# ete3 is NOT installed by this file, and it must not be required.
+#
+# Why (review items A-5 / B-10): ete3 3.1.x unconditionally imports the stdlib
+# module ``cgi``, which was removed in Python 3.13 (PEP 594).  On Python 3.13+
+# ``import ete3`` fails with ``ModuleNotFoundError: No module named 'cgi'``, so
+# ete3 is only usable on Python <= 3.12.
+#
+# PhyloDater's core functionality no longer depends on it: MRCA, monophyly
+# checks, re-rooting (midpoint / outgroup / minimum-variance) and the MCMCTree
+# calibration-annotation tree writers are implemented in
+# ``phylodater/models/tree.py`` with a zero-dependency Newick walker.  DendroPy
+# (above) provides the numeric backends (phylogenetic distance matrix).
+#
+# What still needs an ete-shaped tree object: the visualization layer
+# (``phylodater.viz.tree_plot`` / ``dating_figure``).  Without a working ete
+# backend those entry points raise ImportError with an actionable message
+# instead of breaking import of the package.
+#
+# Install one of them explicitly only if you want the ete-backed plotting
+# conveniences:
+#     pip install 'phylodater[ete4]'                  # works on 3.13/3.14 too
+#     pip install 'phylodater[ete3]'                  # Python <= 3.12 only
+# See QUICKSTART(_EN).md for the same note.
+# ---------------------------------------------------------------------------
+# ete3>=3.1.2,<4.0 ; python_version <= "3.12"
+# ete4>=3.0.0

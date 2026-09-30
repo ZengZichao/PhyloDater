@@ -1,0 +1,12 @@
+software_paths:
+  paml_path: ""
+  iqtree_bin: "iqtree"
+  mcmctree_bin: "mcmctree"
+common:
+  nthreads: 2
+  seed: 42
+  timeout: 7200
+mcmctree:
+  burnin: 1000
+  nsample: 2000
+  sampfreq: 2

@@ -1,0 +1,40 @@
+# Development dependencies
+-r requirements.txt
+
+# Testing
+pytest>=7.0
+pytest-cov>=3.0
+pytest-xdist>=2.5
+
+# Code quality
+black>=22.0
+flake8>=4.0
+mypy>=1.0
+isort>=5.10
+
+# Documentation
+sphinx>=6.0
+sphinx-rtd-theme>=1.0
+numpydoc>=1.5
+
+# Jupyter for tutorials
+jupyter
+notebook
+pandas
+matplotlib
+seaborn
+
+# ---------------------------------------------------------------------------
+# ete3 is deliberately NOT a development dependency either (review items
+# A-5 / B-10): it cannot be imported on Python >= 3.13 because it imports the
+# stdlib module ``cgi``, removed by PEP 594.  The unit test suite must therefore
+# pass on a bare ``pip install -r requirements-dev.txt`` on Python 3.14 -- the
+# tree-layer tests assert this explicitly
+# (tests/unit/models/test_tree.py::TestNoEte3Requirement,
+#  tests/unit/services/test_tree_rooting.py::TestNoEte3InRootingService).
+#
+# If you are working on the ete-backed visualization paths, install a backend
+# that matches your interpreter:
+#     pip install ete4            # any modern Python
+#     pip install 'ete3<4'       # Python <= 3.12 only
+# ---------------------------------------------------------------------------

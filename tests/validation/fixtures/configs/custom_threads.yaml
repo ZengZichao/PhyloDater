@@ -1,0 +1,4 @@
+common:
+  nthreads: 8
+  seed: 12345
+  timeout: 3600

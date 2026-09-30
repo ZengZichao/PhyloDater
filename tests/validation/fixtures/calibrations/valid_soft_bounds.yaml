@@ -1,0 +1,8 @@
+calibrations:
+  - name: "Mammals"
+    mrca_pair: ["human", "dog"]
+    constraint:
+      type: "soft_bounds"
+      min: 80.0
+      max: 120.0
+      p: 0.025
