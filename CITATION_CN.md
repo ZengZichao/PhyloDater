@@ -4,7 +4,7 @@
 
 ## 软件引用（中文格式）
 
-> 曾子超（Zeng, Zichao）. PhyloDater：多软件并行系统发育定年平台. GitHub 仓库. https://github.com/ZengZichao/phylodater 。ORCID: 0000-0001-6553-970X
+> 曾子超（Zeng, Zichao）. PhyloDater：多软件并行系统发育定年平台. GitHub 仓库. https://github.com/ZengZichao/phylodater 。DOI: 10.5281/zenodo.23067037 (https://doi.org/10.5281/zenodo.23067037)。ORCID: 0000-0001-6553-970X
 
 ## 软件引用（BibTeX 格式）
 
@@ -14,6 +14,7 @@
   title = {PhyloDater: A multi-software parallel platform for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
+  doi = {10.5281/zenodo.23067037},
   version = {0.1.0},
   note = {ORCID: 0000-0001-6553-970X}
 }
@@ -21,9 +22,10 @@
 
 ## 关联论文（预印本 / 稿件）
 
-**目前没有已发表论文，因此这里不给任何条目。** PhyloDater 没有已注册的论文 DOI，
-本文件也刻意不再放 `10.XXXX/XXXX` 这类占位：GitHub、Zenodo、Zotero 这些引用消费者
-分不清占位符与真标识符，一个假 DOI 比"没有 DOI"更糟。
+**目前没有已发表论文，因此这里不给任何条目。** PhyloDater 目前唯一注册的 DOI
+是上方引用中的 Zenodo 软件 DOI（`10.5281/zenodo.23067037`）——它标识的是软件
+记录，不是论文。论文位置也刻意不放 `10.XXXX/XXXX` 这类占位：GitHub、Zenodo、
+Zotero 这些引用消费者分不清占位符与真标识符，一个假 DOI 比"没有 DOI"更糟。
 
 论文正式出现后，请在此处（并且只在此处）补上真实的期刊、年份、卷期页码与 DOI，
 同时在 [CITATION.cff](CITATION.cff) 里加上对应的 `preferred-citation` 块。

@@ -818,7 +818,7 @@ python scripts/run_reference_benchmark.py   # 七个引擎对真值评分
 
 如果你在研究中使用了 PhyloDater，请引用：
 
-> 曾子超（Zeng, Zichao）. (2026). PhyloDater: A multi-software parallel platform for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater （ORCID: 0000-0001-6553-970X）
+> 曾子超（Zeng, Zichao）. (2026). PhyloDater: A multi-software parallel platform for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater （ORCID: 0000-0001-6553-970X）· DOI: [10.5281/zenodo.23067037](https://doi.org/10.5281/zenodo.23067037)
 
 BibTeX 格式：
 ```bibtex
@@ -827,10 +827,12 @@ BibTeX 格式：
   title = {PhyloDater: A multi-software parallel platform for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
+  doi = {10.5281/zenodo.23067037},
   version = {0.1.0},
   note = {ORCID: 0000-0001-6553-970X}
 }
 ```
 
-完整的引用指引（机器可读 CFF、引擎引用，以及"目前没有论文 DOI"这一事实）
+完整的引用指引（机器可读 CFF、引擎引用、本软件的 Zenodo DOI
+10.5281/zenodo.23067037，以及"目前没有论文 DOI"这一事实）
 见 [CITATION_CN.md](CITATION_CN.md)。

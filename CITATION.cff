@@ -11,8 +11,13 @@ authors:
     orcid: "https://orcid.org/0000-0001-6553-970X"
 repository-code: "https://github.com/ZengZichao/phylodater"
 license: MIT
+doi: 10.5281/zenodo.23067037
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23067037
+    description: Zenodo record for PhyloDater v0.1.0
 version: 0.1.0
-date-released: 2026-09-17
+date-released: 2026-09-30
 keywords:
   - phylogenetics
   - molecular-dating
@@ -21,9 +26,8 @@ keywords:
   - phylogeny
   - divergence-time
   - molecular-clock
-# No `preferred-citation` is emitted on purpose: there is no published article
-# and no registered DOI for this project yet, and a placeholder DOI
-# (`10.XXXX/XXXX`) in a machine-readable citation file is read by GitHub,
-# Zenodo and Zotero as if it were real. Once the companion article exists,
-# register the Zenodo DOI, write it into README.md and this file, then add
-# `preferred-citation` with the real journal/volume/pages/DOI.
+# The Zenodo software DOI above is real and registered (record for v0.1.0,
+# matching the GitHub release published 2026-09-30). `preferred-citation` is
+# still not emitted on purpose: there is no published *article* yet. When the
+# companion article exists, add `preferred-citation` here with the real
+# journal/volume/pages/DOI (the Zenodo DOI stays as the software identifier).

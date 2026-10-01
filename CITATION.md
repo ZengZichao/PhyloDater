@@ -10,6 +10,7 @@ companion manuscript is published, please cite that too.
 > Zeng, Zichao. PhyloDater: A multi-software parallel platform for
 > phylogenetic molecular dating. GitHub repository.
 > https://github.com/ZengZichao/phylodater
+> DOI: 10.5281/zenodo.23067037 (https://doi.org/10.5281/zenodo.23067037)
 > ORCID: 0000-0001-6553-970X
 
 ## Software citation (BibTeX)
@@ -20,6 +21,7 @@ companion manuscript is published, please cite that too.
   title = {PhyloDater: A multi-software parallel platform for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
+  doi = {10.5281/zenodo.23067037},
   version = {0.1.0},
   note = {ORCID: 0000-0001-6553-970X}
 }
@@ -27,11 +29,13 @@ companion manuscript is published, please cite that too.
 
 ## Companion paper (preprint / manuscript)
 
-**There is none yet, so none is quoted here.** No article DOI exists for
-PhyloDater, and this file deliberately does not carry a `10.XXXX/XXXX`
-placeholder: machine-readable and human-readable citation consumers (GitHub,
-Zenodo, Zotero) cannot tell a placeholder from a real identifier, and a fake DOI
-in a citable record is worse than no DOI.
+**There is none yet, so none is quoted here.** The only DOI registered for
+PhyloDater is the Zenodo software DOI (`10.5281/zenodo.23067037`) in the
+citation above — it identifies the software record, not a paper. The article
+slot deliberately carries no `10.XXXX/XXXX` placeholder: machine-readable and
+human-readable citation consumers (GitHub, Zenodo, Zotero) cannot tell a
+placeholder from a real identifier, and a fake DOI in a citable record is worse
+than no DOI.
 
 Once the manuscript appears, add here — and only here — the real journal, year,
 volume, issue, pages and DOI, and add the matching `preferred-citation` block to
