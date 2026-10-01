@@ -8,7 +8,7 @@ pytest-xdist>=2.5
 
 # Code quality
 black>=22.0
-flake8>=4.0
+flake8>=7.4.1
 mypy>=1.0
 isort>=5.10
 
