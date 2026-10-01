@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         # Must match [tool.mypy] python_version in pyproject.toml: mypy type-checks
         # against the stubs of this interpreter, and numpy >= 2.5 requires 3.12+.
@@ -60,7 +60,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
 
