@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2025 Zichao Zeng (曾子超)
+Copyright (c) 2025-2026 Zichao Zeng (曾子超)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,27 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-==============================================================================
-THIRD-PARTY DEPENDENCY LICENSE NOTES
-==============================================================================
-
-PhyloDater depends on third-party libraries, each distributed under their own
-open-source licenses. The full list of third-party licenses is documented in
-THIRD_PARTY_LICENSES.md (located in the same directory as this file).
-
-Key license compatibility notes:
-
-1. ETE3 (optional dependency for tree visualization) is licensed under GNU
-   GPLv3. When ETE3 is imported at runtime, the visualization modules that
-   directly invoke ETE3 APIs fall under GPLv3 terms. The core PhyloDater
-   package (without ETE3) remains under MIT license and can be used,
-   modified, and redistributed under MIT terms.
-
-2. All core, non-optional dependencies (BioPython, DendroPy, NumPy, SciPy,
-   Pandas, Matplotlib, PyYAML, psutil) are distributed under permissive
-   BSD/MIT/PSF-compatible licenses and are fully compatible with the MIT
-   license of the PhyloDater core.
-
-For a complete list of dependencies with license identifiers (SPDX), see
-THIRD_PARTY_LICENSES.md.

@@ -67,3 +67,18 @@ PhyloDater 集成下列外部命令行工具/引擎。它们**不**随 PhyloDate
 
 如果您发现任何许可方面的问题或冲突，请在
 https://github.com/ZengZichao/phylodater/issues 提交 issue。
+
+## PhyloDater 核心许可说明
+
+以下说明原先附于 `LICENSE` 文件末尾，为保证 `LICENSE` 与标准 MIT 文本完全一致
+（也便于 GitHub 的许可证识别）而迁移至此。说明内容本身未做任何修改。
+
+PhyloDater 依赖的第三方库各自按其开源许可分发。关键的许可兼容性说明：
+
+1. ETE3（树可视化的可选依赖）采用 GNU GPLv3 许可。当运行时导入 ETE3 时，
+   直接调用 ETE3 API 的可视化模块随之适用 GPLv3 条款。不含 ETE3 的
+   PhyloDater 核心包仍为 MIT 许可，可按 MIT 条款使用、修改与再分发。
+
+2. 所有核心、非可选依赖（BioPython、DendroPy、NumPy、SciPy、Pandas、
+   Matplotlib、PyYAML、psutil）均以宽松的 BSD/MIT/PSF 兼容许可分发，
+   与 PhyloDater 核心的 MIT 许可完全兼容。
