@@ -46,6 +46,10 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      # 12 个 job（6 个 Python 版本 × 2 个平台）同时提交会挤爆 macOS runner
+      # 配额，实测有 7~8 个被标记为 cancelled 而非真正跑完。限流后
+      # 全部能跑完。
+      max-parallel: 4
       matrix:
         os: [ubuntu-latest, macos-latest]
         # Verified matrix (see test-data/benchmark/results/PYTHON_SUPPORT_MATRIX.txt):
