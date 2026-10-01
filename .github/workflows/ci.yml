@@ -70,8 +70,13 @@ jobs:
         python -m phylodater check
 
     - name: Run tests with coverage
+      # 排除 slow 与 requires_* 标记：这些测试调用真实外部定年引擎
+      # （MCMCTree / treePL / PATHd8 / LSD2 / r8s / wLogDate / MD-Cat），
+      # 而 CI runner 并未安装这些二进制，直接跑必然失败。它们由
+      # `external-engines.yml` 在具备工具链的环境中单独执行。
       run: |
-        coverage run -m pytest tests/ -v
+        coverage run -m pytest tests/ -v \
+          -m "not slow and not requires_mcmctree and not requires_treepl and not requires_pathd8 and not requires_lsd2 and not requires_r8s and not requires_wlogdate and not requires_mdcat"
         coverage report
 
     - name: Upload coverage report
