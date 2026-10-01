@@ -831,7 +831,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
 If you use PhyloDater in your research, please cite:
 
-> Zeng, Zichao. (2026). PhyloDater: A multi-software parallel platform for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater (ORCID: 0000-0001-6553-970X)
+> Zeng, Zichao. (2026). PhyloDater: A multi-software parallel platform for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater (ORCID: 0000-0001-6553-970X) · DOI: [10.5281/zenodo.23067037](https://doi.org/10.5281/zenodo.23067037)
 
 BibTeX format:
 ```bibtex
@@ -840,10 +840,12 @@ BibTeX format:
   title = {PhyloDater: A multi-software parallel platform for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
+  doi = {10.5281/zenodo.23067037},
   version = {0.1.0},
   note = {ORCID: 0000-0001-6553-970X}
 }
 ```
 
-Full citation guidance (machine-readable CFF, engine citations, and the fact that
-no article DOI exists yet) lives in [CITATION.md](CITATION.md).
+Full citation guidance (machine-readable CFF, engine citations, the software's
+Zenodo DOI 10.5281/zenodo.23067037, and the fact that no article DOI exists
+yet) lives in [CITATION.md](CITATION.md).
