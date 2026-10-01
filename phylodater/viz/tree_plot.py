@@ -659,7 +659,9 @@ def compute_node_coordinates(
             y = float(y_counter[0])
         else:
             child_ys = [assign_y(child) for child in node.children]
-            y = np.mean(child_ys)
+            # np.mean 返回 numpy 标量，与上方分支的 float 类型不一致；
+            # 显式转换以满足 mypy 的 assignment 检查。
+            y = float(np.mean(child_ys))
 
         age, source = _node_age_with_source(node, root_node, root_age)
         x = float(age)

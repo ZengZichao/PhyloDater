@@ -27,13 +27,13 @@ from ..core import DatingMethod, DatingMethodRegistry
 from ..core.exceptions import CalibrationError, ExecutionError
 from ..infrastructure import ProcessRunner, get_logger
 from ..infrastructure.checkpoint import MCMCTreeCheckpointManager
-from ..infrastructure.safe_io import safe_writer
 from ..infrastructure.configuration import (
     CommonConfig,
     MCMCTreeConfig,
     SoftwarePaths,
     ToolConfig,
 )
+from ..infrastructure.safe_io import safe_writer
 from ..models import (
     AgeConstraint,
     CalibrationPoint,

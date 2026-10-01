@@ -1,0 +1,53 @@
+name: External dating engines
+
+# 慢速集成测试：调用真实的外部定年引擎（MCMCTree / treePL / PATHd8 / LSD2 /
+# r8s / wLogDate / MD-Cat）。这些二进制无法在普通 CI runner 上就绪安装，
+# 因此默认的 CI 工作流会跳过它们（见 ci.yml 的 -m 过滤）。
+#
+# 本工作流仅在手动触发时运行，用于在具备工具链的机器/环境上验证这些适配器。
+# 使用方式：Actions → External dating engines → Run workflow
+# 需要预先在 runner 上提供上述工具（可通过 self-hosted runner 的镜像预装）。
+
+on:
+  workflow_dispatch:
+    inputs:
+      python-version:
+        description: 'Python version'
+        default: '3.12'
+        type: string
+
+concurrency:
+  group: external-engines-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  external:
+    name: slow + requires_* integration tests
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install package with dev extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Report which engines are available
+        run: |
+          for exe in mcmctree treepl pathd8 iqtree2 r8s wLogDate MD-Cat; do
+            if command -v "$exe" >/dev/null 2>&1; then
+              echo "  [ok]      $exe"
+            else
+              echo "  [missing] $exe"
+            fi
+          done
+
+      - name: Run external-engine tests
+        # 不加 -m 过滤：凡未正确标记的外部工具测试也会在这里暴露出来。
+        run: pytest tests/ -v -m "slow or requires_mcmctree or requires_treepl or requires_pathd8 or requires_lsd2 or requires_r8s or requires_wlogdate or requires_mdcat"

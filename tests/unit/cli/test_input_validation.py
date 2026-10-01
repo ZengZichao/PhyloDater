@@ -392,8 +392,18 @@ class TestClampThreads:
         assert _clamp_threads(0) == 1
 
     def test_keeps_valid_value(self):
-        """区间内的值保持不变"""
-        assert _clamp_threads(4) == 4
+        """区间内的值保持不变
+
+        区间上界是 os.cpu_count()，因此这里不能硬编码 4 —— GitHub 的
+        macOS runner 只有 2~3 核，硬编码值会被钳制后误判为失败。改为取
+        一个必定落在区间内的值：min(4, cpu_count)，且至少为 1（下限也是
+        合法值，见 test_minimum_is_one）。
+        """
+        import os
+
+        cpu_count = os.cpu_count() or 1
+        in_range = max(1, min(4, cpu_count))
+        assert _clamp_threads(in_range) == in_range
 
     def test_accepts_string_int(self):
         """接受字符串形式的整数（argparse 可能传入字符串）"""
