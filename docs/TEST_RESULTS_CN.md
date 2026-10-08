@@ -181,7 +181,7 @@ python -B -m pytest tests -q --cov=phylodater --cov-report=term
 | 语句数（statements） | 16,892 |
 | 未覆盖（missing） | 5,325 |
 | **总覆盖率** | **68.48%** |
-| 实测环境 | 修复分支工作树；macOS、Python 3.11.15（conda 环境 `python-3.11`）；pytest 9.1.1、pytest-cov 7.1.0、coverage 7.16.2；收集 1,550 / 通过 1,514 / 跳过 36 / 失败 0 |
+| 实测环境 | 修复分支工作树；macOS、Python 3.11.15（conda 环境 `python-3.11`）；pytest 9.1.1、pytest-cov 7.1.0、Coverage.py 7.15.0；收集 1,550 / 通过 1,514 / 跳过 36 / 失败 0（本命令在分支最终树上复跑，数值逐字一致） |
 | 门禁 | `pyproject.toml` 的 `fail_under = 60`——已满足 |
 
 引用这个数字时，下面三条限定一条都不能丢：
@@ -196,6 +196,11 @@ python -B -m pytest tests -q --cov=phylodater --cov-report=term
    `.coverage*` 条目），是一份**不完整**、且早于本分支各项修复的记录；对它跑
    `coverage report` 得到 58%（16,892 statements / 7,054 missing），原因只是里面大量
    模块根本没有行数据。要**重新生成**（用上面的 `--cov`），不要在陈旧数据文件上再报告。
+   同一份文件在**修复前的树**上读数是 66.4%（16,742 statements / 5,631 missing，审阅阶段
+   登记值）：本分支给 `phylodater/` 补入代码后语句基数变成 16,892，而新增行在这份陈旧记录里
+   没有任何命中，于是同一份数据现在只报 58%。**58% 与 66.4% 都不是当前树的覆盖率**，稿件旧口径
+   "约 67%" 亦随之作废；引用覆盖率一律用上面的 68.48% 并附命令与环境。
+   复跑时若不想覆盖仓库里那份历史工件，先 `export COVERAGE_FILE=$PWD/../.coverage.regen`。
 3. **数字会随环境浮动，原因同 §4 的条目数。** `pyproject.toml` 里 `fail_under` 旁边的注释
    写的是 67.87%，那是在 §1 的"七引擎齐备"的 Linux 环境、`v0.1.0` 标签上测的；不在那个环境里
    就无法在当前树上复现它。

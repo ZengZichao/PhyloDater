@@ -204,7 +204,7 @@ python -B -m pytest tests -q --cov=phylodater --cov-report=term
 | statements | 16,892 |
 | missing | 5,325 |
 | **total coverage** | **68.48%** |
-| measured on | review-fix branch working tree; macOS, Python 3.11.15 (conda env `python-3.11`); pytest 9.1.1, pytest-cov 7.1.0, coverage 7.16.2; 1,550 collected / 1,514 passed / 36 skipped / 0 failed |
+| measured on | review-fix branch working tree; macOS, Python 3.11.15 (conda env `python-3.11`); pytest 9.1.1, pytest-cov 7.1.0, Coverage.py 7.15.0; 1,550 collected / 1,514 passed / 36 skipped / 0 failed (the command was re-run on the final branch tree and reproduced the same figures) |
 | gate | `fail_under = 60` in `pyproject.toml` — satisfied |
 
 Three caveats, none of which may be dropped when this number is quoted:
@@ -221,8 +221,14 @@ Three caveats, none of which may be dropped when this number is quoted:
    git-ignored (the `.coverage*` entry in `.gitignore`), it is a *partial* recording
    that predates the fixes in this branch, and `coverage report` against it yields
    58% (16,892 statements / 7,054 missing) simply because most modules in it have no
-   line data. Always regenerate (`--cov` above) instead of re-reporting a stale
-   data file.
+   line data — the lines this branch added have no recorded hits at all. The very same
+   file read **66.4%** (16,742 statements / 5,631 missing) against the *pre-fix* tree,
+   which is the number logged during the review; the statement base grows once the
+   branch's code is in, so a stale recording looks worse, not better. **Neither 58% nor
+   66.4% is the coverage of the current tree**, and the manuscript's older "≈67%" claim
+   is superseded by the 68.48% above. Always regenerate (`--cov` above) instead of
+   re-reporting a stale data file; if you want to keep the historical artifact in place,
+   point the data file elsewhere first (`export COVERAGE_FILE=$PWD/../.coverage.regen`).
 3. **The number moves with the environment, like the collected count in §4.** The
    comment beside `fail_under` in `pyproject.toml` quotes 67.87%; that was measured
    in §1's all-seven-engine Linux environment at the `v0.1.0` tag, and it is not
