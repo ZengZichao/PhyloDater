@@ -85,19 +85,40 @@ class TestTreePLMethod:
         assert method.method_name == "treepl"
 
     def test_init_sets_random_seed(self, temp_dir, treepl_config):
-        """测试初始化设置随机种子"""
+        """E-5：未给种子时只在本实例上派生一个，**绝不**写回共享配置。"""
         common_config = CommonConfig(seed=None)
         method = TreePLMethod(treepl_config, temp_dir, common_config=common_config)
 
-        # 种子应该被自动设置
-        assert method.common_config.seed is not None
-        assert isinstance(method.common_config.seed, int)
+        # 实例的生效种子存在且可用
+        assert method._effective_seed is not None
+        assert isinstance(method._effective_seed, int)
+        # 但共享的 CommonConfig 必须仍然是"用户没有指定种子"的语义
+        assert common_config.seed is None
+        assert method.common_config.seed is None
+
+    def test_init_does_not_leak_seed_to_other_adapters(self, temp_dir, treepl_config):
+        """E-5 回归防护：treePL 之后创建的其它适配器不能继承那个随机种子。"""
+        from phylodater.adapters.mcmctree_method import MCMCTreeMethod
+        from phylodater.infrastructure.configuration import MCMCTreeConfig
+
+        common_config = CommonConfig(seed=None)
+        TreePLMethod(treepl_config, temp_dir, common_config=common_config)
+
+        mcmctree = MCMCTreeMethod(
+            MCMCTreeConfig(), temp_dir, common_config=common_config
+        )
+        assert mcmctree.common_config.seed is None
+
+        second = TreePLMethod(treepl_config, temp_dir, common_config=common_config)
+        # 两次"未指定种子"各自派生，互不继承
+        assert second.common_config.seed is None
 
     def test_init_preserves_user_seed(self, temp_dir, treepl_config, common_config):
         """测试初始化保留用户设置的种子"""
         method = TreePLMethod(treepl_config, temp_dir, common_config=common_config)
 
         assert method.common_config.seed == 42
+        assert method._effective_seed == 42
 
     def test_actual_multiplier_default(self, temp_dir, treepl_config, common_config):
         """测试实际乘数默认值"""
