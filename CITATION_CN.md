@@ -15,14 +15,34 @@
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
   version = {0.1.0},
+  doi = {10.5281/zenodo.23067037},
   note = {ORCID: 0000-0001-6553-970X}
 }
 ```
 
+## 归档软件引用（Zenodo，版本 DOI）
+
+v0.1.0 发布版已在 Zenodo 归档并注册了可解析的 DOI。需要"锁定到具体版本"的引用时，
+请用这一条：
+
+> Zeng, Zichao. (2026). PhyloDater (Version 0.1.0) [Software]. Zenodo.
+> https://doi.org/10.5281/zenodo.23067037
+
+| 标识符 | 值 | 指向 |
+|---|---|---|
+| 版本 DOI（本次发布） | `10.5281/zenodo.23067037` | 已归档的 v0.1.0 |
+| 概念 DOI（任意版本） | `10.5281/zenodo.23066788` | PhyloDater 全部版本 |
+| 源码标签 | https://github.com/ZengZichao/phylodater/releases/tag/v0.1.0 | GitHub release |
+
+两个 DOI 均从 Zenodo 记录本身回读核验（`https://zenodo.org/api/records/23067037`，
+2026-10-08 获取）：许可证 MIT、版本 `v0.1.0`、关键词表与
+[CITATION.cff](CITATION.cff) 一致。
+
 ## 关联论文（预印本 / 稿件）
 
-**目前没有已发表论文，因此这里不给任何条目。** PhyloDater 没有已注册的论文 DOI，
-本文件也刻意不再放 `10.XXXX/XXXX` 这类占位：GitHub、Zenodo、Zotero 这些引用消费者
+**目前没有已发表论文，因此这里不给任何论文条目。** 上面那个是**软件归档** DOI，
+不能替代论文引用——它指向归档代码，不指向同行评议的正文。本文件也刻意不放
+`10.XXXX/XXXX` 这类论文占位符：GitHub、Zenodo、Zotero 这些引用消费者
 分不清占位符与真标识符，一个假 DOI 比"没有 DOI"更糟。
 
 论文正式出现后，请在此处（并且只在此处）补上真实的期刊、年份、卷期页码与 DOI，

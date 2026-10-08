@@ -12,6 +12,24 @@ companion manuscript is published, please cite that too.
 > https://github.com/ZengZichao/phylodater
 > ORCID: 0000-0001-6553-970X
 
+## Archived software citation (Zenodo, version DOI)
+
+The v0.1.0 release is archived on Zenodo and has a registered, resolvable DOI.
+Cite this one when you want a version-pinned reference:
+
+> Zeng, Zichao. (2026). PhyloDater (Version 0.1.0) [Software]. Zenodo.
+> https://doi.org/10.5281/zenodo.23067037
+
+| Identifier | Value | Points at |
+|---|---|---|
+| Version DOI (this release) | `10.5281/zenodo.23067037` | v0.1.0 as archived |
+| Concept DOI (any version) | `10.5281/zenodo.23066788` | all PhyloDater versions |
+| Source tag | https://github.com/ZengZichao/phylodater/releases/tag/v0.1.0 | the GitHub release |
+
+Both DOIs were read back from the Zenodo record itself
+(`https://zenodo.org/api/records/23067037`, retrieved 2026-10-08): licence MIT,
+version `v0.1.0`, and the same keyword list as [CITATION.cff](CITATION.cff).
+
 ## Software citation (BibTeX)
 
 ```bibtex
@@ -21,17 +39,19 @@ companion manuscript is published, please cite that too.
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
   version = {0.1.0},
+  doi = {10.5281/zenodo.23067037},
   note = {ORCID: 0000-0001-6553-970X}
 }
 ```
 
 ## Companion paper (preprint / manuscript)
 
-**There is none yet, so none is quoted here.** No article DOI exists for
-PhyloDater, and this file deliberately does not carry a `10.XXXX/XXXX`
-placeholder: machine-readable and human-readable citation consumers (GitHub,
-Zenodo, Zotero) cannot tell a placeholder from a real identifier, and a fake DOI
-in a citable record is worse than no DOI.
+**There is none yet, so no article is quoted here.** The software DOI above is
+not a substitute: it identifies the archived code, not a peer-reviewed write-up.
+This file deliberately does not carry a `10.XXXX/XXXX` article placeholder —
+machine-readable and human-readable citation consumers (GitHub, Zenodo, Zotero)
+cannot tell a placeholder from a real identifier, and a fake DOI in a citable
+record is worse than no DOI.
 
 Once the manuscript appears, add here — and only here — the real journal, year,
 volume, issue, pages and DOI, and add the matching `preferred-citation` block to

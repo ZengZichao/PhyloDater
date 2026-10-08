@@ -21,9 +21,23 @@ keywords:
   - phylogeny
   - divergence-time
   - molecular-clock
-# No `preferred-citation` is emitted on purpose: there is no published article
-# and no registered DOI for this project yet, and a placeholder DOI
-# (`10.XXXX/XXXX`) in a machine-readable citation file is read by GitHub,
-# Zenodo and Zotero as if it were real. Once the companion article exists,
-# register the Zenodo DOI, write it into README.md and this file, then add
-# `preferred-citation` with the real journal/volume/pages/DOI.
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.23067037"
+related-identifiers:
+  - relation: isSupplementTo
+    resource-type: software
+    identifier: "https://github.com/ZengZichao/phylodater/releases/tag/v0.1.0"
+    scheme: url
+  - relation: isVersionOf
+    resource-type: software
+    identifier: "10.5281/zenodo.23066788"
+    scheme: doi
+# The Zenodo record above is the registered archive of this exact release
+# (version v0.1.0, MIT licence, same keyword list); 10.5281/zenodo.23066788 is
+# its concept DOI, i.e. "any version". Both were read back from
+# https://zenodo.org/api/records/23067037 on 2026-10-08.
+#
+# Still no `preferred-citation`: that block is for the companion *article*, and
+# no article has been published yet. It is added once the manuscript appears,
+# together with the real journal/volume/pages/DOI -- see CITATION.md.
