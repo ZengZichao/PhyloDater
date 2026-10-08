@@ -158,13 +158,17 @@ PhyloDater records: `max PSRF = 0.99988`, `min ESS = 423` over 2 chains ×
 
 ## 4. Automated test suites
 
-Two counts are reported, deliberately, because they answer different questions and
+Three counts are reported, deliberately, because they answer different questions and
 they are not interchangeable:
 
 | accounting | collected | passed | skipped | failed |
 |---|---|---|---|---|
 | **release snapshot** — §1's validated environment (Ubuntu 22.04, Python 3.12.14, conda env `phylodater`, all seven engines present) at the `v0.1.0` tag; the figure quoted by the manuscript and the SI | 1,489 | 1,487 | 2 | 0 |
+| **v0.1.0 clean tree, bare environment** — `git archive v0.1.0` unpacked into an empty directory (no uncommitted working-tree changes, no fix branch), measured on macOS arm64, Python 3.11.15, pytest 9.1.1 with **no external engine installed and no `python` alias on PATH** (only `python3`); 94 s; the quotable coverage figure in §4.2 comes from this run | 1,495 (1) | 1,430 | 36 | **29** |
 | **current tree** — the review-fix branch working tree, measured on macOS / Python 3.11.15 with pytest 9.1.1 | 1,550 | 1,514 | 36 | 0 |
+
+(1) The 1,495 is the total of the three outcome counts of that run
+(29 failed + 1,430 passed + 36 skipped), not an independently collected figure.
 
 ```bash
 python -B -m pytest tests -q              # run everything
@@ -180,6 +184,11 @@ python -B -m pytest tests -q --collect-only   # counts only, no execution
 > integration 24 / validation 158); the current tree gives 1,550 (unit **1,169** /
 > functional 199 / integration 24 / validation 158). Only `tests/unit` moved. When
 > quoting a count, quote the interpreter and the command with it.
+
+> **The 29 failures in the middle row are a test-harness defect, not 29 broken
+> features** — see the reproducibility disclosure in §4.2. They disappear on the
+> review-fix branch (`94b9781`), which has **not** been released, so the public
+> `v0.1.0` archive still behaves this way.
 
 ### 4.1 Breakdown
 
@@ -199,15 +208,24 @@ python -B -m pytest tests -q --collect-only   # counts only, no execution
 python -B -m pytest tests -q --cov=phylodater --cov-report=term
 ```
 
+Four coverage readings exist for this repository. **Only reading 1 is quoted by the
+manuscript and the SI**; readings 2–4 are tabulated so that anyone who lands on a
+different number can see exactly which source tree and which data file produced it.
+
+| # | reading | statements | missing | coverage | measured on | status |
+|---|---|---|---|---|---|---|
+| **1** | **v0.1.0 clean tree** | 16,729 | 5,483 | **67%** | `git archive v0.1.0` unpacked into an empty directory — no uncommitted working-tree changes, no fix branch — on macOS arm64, Python 3.11.15, pytest 9.1.1; **no external engine installed, no `python` alias on PATH (only `python3`)**; the run is the middle row of §4 (29 failed / 1,430 passed / 36 skipped, 94 s) | **the value the manuscript and the SI quote** — it confirms the "approximately 67%" originally written for v0.1.0 |
+| **2** | review-fix branch | 16,892 | 5,325 | 68.48% | working tree of `fix/review-2026-10-08` on the same machine and interpreter; 1,550 collected / 1,514 passed / 36 skipped / 0 failed (re-run on the final branch tree, same figures) | true, but **a branch value**: it describes no released artefact and must be labelled as such |
+| **3** | stale `.coverage` read against the pre-fix tree | 16,742 | 5,631 | 66.4% | the git-ignored `.coverage` data file shipped in the working tree, reported *after* the fact | **invalid** — data file and source tree do not match; recorded only to explain where the number logged during the review came from |
+| **4** | stale `.coverage` read against the branch tree | 16,892 | 7,054 | 58% | the very same stale data file, reported against the branch tree | **invalid** — same mismatch; the lines the branch added have no recorded hits at all |
+
 | item | value |
 |---|---|
-| statements | 16,892 |
-| missing | 5,325 |
-| **total coverage** | **68.48%** |
-| measured on | review-fix branch working tree; macOS, Python 3.11.15 (conda env `python-3.11`); pytest 9.1.1, pytest-cov 7.1.0, Coverage.py 7.15.0; 1,550 collected / 1,514 passed / 36 skipped / 0 failed (the command was re-run on the final branch tree and reproduced the same figures) |
-| gate | `fail_under = 60` in `pyproject.toml` — satisfied |
+| quotable measurement | reading 1: **67%** on the public `v0.1.0` clean tree |
+| gate | `fail_under = 60` in `pyproject.toml` — satisfied by both quotable readings (1 and 2). The invalid reading 4 would fall below it, which is another reason it is not a coverage result |
+| command | `python -B -m pytest tests -q --cov=phylodater --cov-report=term` (`python3 -B -m pytest …` where no `python` alias exists) |
 
-Three caveats, none of which may be dropped when this number is quoted:
+Four caveats, none of which may be dropped when this number is quoted:
 
 1. **It is a lower bound, not the true figure.** `tests/functional` and
    `tests/validation` drive the CLI through `subprocess`, and no coverage
@@ -217,22 +235,41 @@ Three caveats, none of which may be dropped when this number is quoted:
    `phylodater/cli/main.py` **36%**, even though `phylodater check` passes 26/26 —
    that code only ever runs in a subprocess. Enabling subprocess coverage and
    `coverage combine` would raise the total.
-2. **Do not read a coverage number off the checked-out `.coverage` file.** It is
-   git-ignored (the `.coverage*` entry in `.gitignore`), it is a *partial* recording
-   that predates the fixes in this branch, and `coverage report` against it yields
-   58% (16,892 statements / 7,054 missing) simply because most modules in it have no
-   line data — the lines this branch added have no recorded hits at all. The very same
-   file read **66.4%** (16,742 statements / 5,631 missing) against the *pre-fix* tree,
-   which is the number logged during the review; the statement base grows once the
-   branch's code is in, so a stale recording looks worse, not better. **Neither 58% nor
-   66.4% is the coverage of the current tree**, and the manuscript's older "≈67%" claim
-   is superseded by the 68.48% above. Always regenerate (`--cov` above) instead of
-   re-reporting a stale data file; if you want to keep the historical artifact in place,
-   point the data file elsewhere first (`export COVERAGE_FILE=$PWD/../.coverage.regen`).
+2. **Readings 3 and 4 are not coverage results and may not be quoted.** They come
+   from the checked-out `.coverage` file, which is git-ignored (the `.coverage*`
+   entry in `.gitignore`), is a *partial* recording that predates the fixes in this
+   branch, and is being reported against source trees it was never produced by.
+   The statement base also moves (16,742 vs 16,892) purely because different code is
+   in the tree, so the same stale file yields 66.4% on one tree and 58% on another.
+   The cluster's earlier "correct to 66%" edit to the manuscript was made on reading 3
+   and was therefore an **incorrect correction**: reading 1 supersedes it, and the
+   manuscript's "approximately 67%" is right for v0.1.0. Always regenerate
+   (`--cov` above) instead of re-reporting a stale data file; if you want to keep the
+   historical artifact in place, point the data file elsewhere first
+   (`export COVERAGE_FILE=$PWD/../.coverage.regen`).
 3. **The number moves with the environment, like the collected count in §4.** The
    comment beside `fail_under` in `pyproject.toml` quotes 67.87%; that was measured
    in §1's all-seven-engine Linux environment at the `v0.1.0` tag, and it is not
-   reproducible on the current tree without that environment.
+   reproducible on the current tree without that environment. Quote a coverage number
+   together with its tree *and* its interpreter, as reading 1 does.
+4. **A disclosed reproducibility defect sits under reading 1.** The published
+   `v0.1.0` — Zenodo archive and GitHub tag — cannot reproduce a clean test run on any
+   machine that has only `python3` and no `python` alias: **28 of the 29 failures**
+   come from the validation harness itself, `tests/validation/helpers.py::run_cli()`,
+   which hard-codes the interpreter as the literal string `'python'` (line 75 of
+   `v0.1.0`, the `FileNotFoundError: No such file or directory: 'python'` being raised
+   at line 76 where `subprocess.run()` is called). They are distributed as 18 in
+   `tests/validation/functional`, 9 in `tests/validation/security`, 1 in
+   `tests/validation/integration`, and they fail *before* any assertion, so they
+   measure nothing about the package. The remaining failure is an `ete4`
+   incompatibility: `tests/unit/test_viz_geo.py::TestRootAgeInference::test_documented_example_with_a_real_ete_backend`
+   builds `Tree(newick, format=1)`, which ete4's `Tree()` does not accept.
+   Branch commit `94b9781` replaces the literal with `sys.executable` (matching what
+   `tests/functional/conftest.py` already did) and adds the missing
+   `requires_mcmctree` marker, which takes the branch to 0 failed — but that commit
+   **has not been released**, so the archived public version remains affected. Until a
+   release carries it, a reviewer running §8 on such a machine should expect those 29
+   failures and should invoke `python3 -B -m pytest tests -q --cov=phylodater`.
 
 ## 5. Self-test of the installed package
 
@@ -269,6 +306,7 @@ cross-validation API.
 | 8 | pyr8s range calibrations were neither enforced nor reported | ages outside the requested range reached the report without a word | pre-run disclosure + post-run per-calibration verification in the result warnings | `tests/unit/adapters/test_r8s_pyr8s_method.py` |
 | 9 | three unit tests asserted on the process-wide `sys.modules` | they failed purely because of test order (a visualisation test imports ete3) | `module_imports_cleanly` fixture probes a fresh interpreter | the three converted tests |
 | 10 | raw MCMCTree smoke test wrote `BDparas = 1 1 0.1` | PAML ≥ 4.10 aborts: "BDparas: expect flag for birth-death process prior" | control file now includes the construction flag, mirroring the adapter | `tests/integration/full_pipeline/test_all_dating_tools.py` |
+| 11 | the validation harness hard-coded its own interpreter as the literal `'python'` (`tests/validation/helpers.py::run_cli()`), and `TestMultiMethod` carried only `slow` instead of `requires_mcmctree` | on a machine with only `python3` — no `python` alias — 28 `tests/validation` cases raised `FileNotFoundError: No such file or directory: 'python'` before reaching any assertion; without PAML the MCMCTree integration case reported a failure instead of a skip | `run_cli()` now uses `sys.executable` (as `tests/functional/conftest.py` already did) and the missing availability marker is added. **Not released**: the fix lives in branch commit `94b9781`, so the public `v0.1.0` archive is still affected (§4.2 caveat 4) | branch commit `94b9781` (unreleased) |
 
 ## 7. Engine- and environment-independent limitations
 
@@ -302,6 +340,13 @@ python scripts/probe_pyr8s_constraints.py
 python -m pytest tests -q
 phylodater check
 ```
+
+> If you are reproducing **§4.2 reading 1** (the 67% the manuscript quotes), do it on
+> a clean unpacking of the tag (`git archive v0.1.0 | tar -x`) in an environment with
+> no external engine and no `python` alias, and use `python3 -B -m pytest tests -q
+> --cov=phylodater --cov-report=term`. Expect `29 failed, 1,430 passed, 36 skipped`
+> and `TOTAL 16,729 statements / 5,483 missing = 67%`; the 29 failures are the harness
+> defect disclosed in §4.2 caveat 4, not regressions.
 
 Artefacts committed with the package:
 `test-data/benchmark/results/{scorecard.tsv,node_ages.tsv,benchmark_results.json}`

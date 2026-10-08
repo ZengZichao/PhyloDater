@@ -138,12 +138,15 @@ TESTING_CN.md §3 的方式重新定根。树总长从 1.0365 降到 0.8793 替�
 
 ## 4. 自动化测试套件
 
-这里**有意**给出两个口径的数字，它们回答的是不同问题，不能互相替换：
+这里**有意**给出三个口径的数字，它们回答的是不同问题，不能互相替换：
 
 | 口径 | 收集 | 通过 | 跳过 | 失败 |
 |------|------|------|------|------|
 | **发版快照**——§1 的验证环境（Ubuntu 22.04、Python 3.12.14、conda 环境 `phylodater`、七个引擎齐备）在 `v0.1.0` 标签上的实测；稿件与 SI 引用的就是这个数 | 1,489 | 1,487 | 2 | 0 |
+| **v0.1.0 干净树·裸环境**——`git archive v0.1.0` 解包到空目录（不含用户未提交改动、不含修复分支），macOS arm64、Python 3.11.15、pytest 9.1.1，**未安装任何外部引擎、PATH 上没有 `python` 别名（只有 `python3`）**；耗时 94 s；§4.2 那个可引用的覆盖率读数就来自这一跑 | 1,495（1） | 1,430 | 36 | **29** |
 | **当前树**——修复分支工作树的实测；macOS、Python 3.11.15、pytest 9.1.1 | 1,550 | 1,514 | 36 | 0 |
+
+（1）1,495 是该跑三种结局计数的合计（29 失败 + 1,430 通过 + 36 跳过），不是独立采集的收集数。
 
 ```bash
 python -B -m pytest tests -q                  # 全部运行
@@ -157,6 +160,10 @@ python -B -m pytest tests -q --collect-only   # 只统计，不执行
 > validation 158）；当前树实测 1,550 项（unit **1,169** / functional 199 / integration
 > 24 / validation 158）。只有 `tests/unit` 变了。引用条目数时，请把解释器版本和命令一起
 > 给出。
+
+> **中间那一行的 29 项失败是测试工装缺陷，不是 29 个坏掉的功能**——见 §4.2 的可复现性
+> 缺陷披露。它们在修复分支上消失（`94b9781`），但该提交**尚未发布**，因此公开的
+> `v0.1.0` 归档仍然是这个样子。
 
 跳过的项都是**有意**的条件跳过（依赖特定可选后端或外部引擎二进制的环境判定），并非缺失覆盖。
 
@@ -176,15 +183,23 @@ python -B -m pytest tests -q --collect-only   # 只统计，不执行
 python -B -m pytest tests -q --cov=phylodater --cov-report=term
 ```
 
+本仓库一共有**四个覆盖率读数**。其中**只有读数 1 被稿件与 SI 对外引用**；读数 2–4 列表
+交代，是为了让落到别的数字上的人能一眼看清是哪棵源码树、哪份数据文件产生了那个数字。
+
+| # | 读数 | 语句数 | 未覆盖 | 覆盖率 | 实测对象 | 地位 |
+|---|---|---|---|---|---|---|
+| **1** | **v0.1.0 干净树** | 16,729 | 5,483 | **67%** | `git archive v0.1.0` 解包到空目录——不含用户未提交改动、不含修复分支——macOS arm64、Python 3.11.15、pytest 9.1.1；**未装任何外部引擎、PATH 上没有 `python` 别名（只有 `python3`）**；这一跑即 §4 的中间行（29 失败 / 1,430 通过 / 36 跳过，94 s） | **稿件与 SI 的对外引用值**——它证实稿件原先写的"约 67%"对 v0.1.0 是正确的 |
+| **2** | 修复分支 | 16,892 | 5,325 | 68.48% | `fix/review-2026-10-08` 工作树，同机器同解释器；收集 1,550 / 通过 1,514 / 跳过 36 / 失败 0（在分支最终树上复跑，数值一致） | 真实，但**是分支值**：它不对应任何已发布工件，引用时必须这样标注 |
+| **3** | 陈旧 `.coverage` 在修复前的树上 | 16,742 | 5,631 | 66.4% | 工作树里那份被 gitignore 的 `.coverage` 数据文件的事后报告 | **无效**——数据文件与源码树不匹配；仅用于说明审阅阶段登记的那个数字从何而来 |
+| **4** | 陈旧 `.coverage` 在分支树上 | 16,892 | 7,054 | 58% | 同一份陈旧数据文件，对着分支树报告 | **无效**——同样的不匹配；分支新增的行在其中根本没有命中记录 |
+
 | 项 | 值 |
 |---|---|
-| 语句数（statements） | 16,892 |
-| 未覆盖（missing） | 5,325 |
-| **总覆盖率** | **68.48%** |
-| 实测环境 | 修复分支工作树；macOS、Python 3.11.15（conda 环境 `python-3.11`）；pytest 9.1.1、pytest-cov 7.1.0、Coverage.py 7.15.0；收集 1,550 / 通过 1,514 / 跳过 36 / 失败 0（本命令在分支最终树上复跑，数值逐字一致） |
-| 门禁 | `pyproject.toml` 的 `fail_under = 60`——已满足 |
+| 可引用的实测 | 读数 1：公开 `v0.1.0` 干净树上的 **67%** |
+| 门禁 | `pyproject.toml` 的 `fail_under = 60`——两个可引用读数（1 与 2）都满足。无效的读数 4 会落到门禁之下，这本身就是它不算覆盖率结果的又一个理由 |
+| 命令 | `python -B -m pytest tests -q --cov=phylodater --cov-report=term`（没有 `python` 别名时用 `python3 -B -m pytest …`） |
 
-引用这个数字时，下面三条限定一条都不能丢：
+引用这个数字时，下面四条限定一条都不能丢：
 
 1. **它是下界，不是真实覆盖率。** `tests/functional` 与 `tests/validation` 通过
    `subprocess` 驱动 CLI，而仓库里从未配置覆盖率的子进程钩子（没有任何地方设置
@@ -192,18 +207,32 @@ python -B -m pytest tests -q --cov=phylodater --cov-report=term
    `phylodater/infrastructure/self_test.py` 报 **0%**、`phylodater/cli/main.py` 报
    **36%**，而 `phylodater check` 明明 26/26 全通过——这些代码只在子进程里跑过。
    打开子进程覆盖并用 `coverage combine` 合并后，总数会上升。
-2. **不要拿工作树里那个 `.coverage` 文件直接读数。** 它被 gitignore（`.gitignore` 里的
-   `.coverage*` 条目），是一份**不完整**、且早于本分支各项修复的记录；对它跑
-   `coverage report` 得到 58%（16,892 statements / 7,054 missing），原因只是里面大量
-   模块根本没有行数据。要**重新生成**（用上面的 `--cov`），不要在陈旧数据文件上再报告。
-   同一份文件在**修复前的树**上读数是 66.4%（16,742 statements / 5,631 missing，审阅阶段
-   登记值）：本分支给 `phylodater/` 补入代码后语句基数变成 16,892，而新增行在这份陈旧记录里
-   没有任何命中，于是同一份数据现在只报 58%。**58% 与 66.4% 都不是当前树的覆盖率**，稿件旧口径
-   "约 67%" 亦随之作废；引用覆盖率一律用上面的 68.48% 并附命令与环境。
-   复跑时若不想覆盖仓库里那份历史工件，先 `export COVERAGE_FILE=$PWD/../.coverage.regen`。
+2. **读数 3 与读数 4 不是覆盖率结果，不得引用。** 它们来自工作树里那份 `.coverage`
+   文件：它被 gitignore（`.gitignore` 里的 `.coverage*` 条目），是一份**不完整**、且早于
+   本分支各项修复的记录，如今又对着**并非产生它的那棵树**报告。语句基数也会随树上的代码
+   变化（16,742 对 16,892），于是同一份陈旧记录在一棵树上读作 66.4%、在另一棵树上读作
+   58%。本集群此前把稿件"更正为 66%"正是依据读数 3，因而是一次**错误更正**：读数 1 取
+   代它，稿件原来写的"approximately 67%"对 v0.1.0 成立。要重新得到数字就**重新生成**
+   （用上面的 `--cov`），不要在陈旧数据文件上再报告；若想保留那份历史工件，先把数据文件
+   指到别处（`export COVERAGE_FILE=$PWD/../.coverage.regen`）。
 3. **数字会随环境浮动，原因同 §4 的条目数。** `pyproject.toml` 里 `fail_under` 旁边的注释
    写的是 67.87%，那是在 §1 的"七引擎齐备"的 Linux 环境、`v0.1.0` 标签上测的；不在那个环境里
-   就无法在当前树上复现它。
+   就无法在当前树上复现它。引用覆盖率时，请像读数 1 那样把**源码树**和**解释器**一起给出。
+4. **读数 1 底下有一条必须披露的可复现性缺陷。** 已发布的 `v0.1.0`（Zenodo 归档与 GitHub
+   标签）在任何"只有 `python3`、没有 `python` 别名"的机器上都复现不了一次干净的测试运行：
+   29 项失败里的 **28 项**源于验证套件工装自身——`tests/validation/helpers.py::run_cli()`
+   把解释器硬编码成字符串字面量 `'python'`（`v0.1.0` 第 75 行；`FileNotFoundError:
+   No such file or directory: 'python'` 在第 76 行调用 `subprocess.run()` 处抛出），
+   分布为 `tests/validation/functional` 18 项、`tests/validation/security` 9 项、
+   `tests/validation/integration` 1 项；它们在**任何断言之前**就失败，因此对被测包什么
+   也说明不了。剩下 1 项是 ete4 不兼容：
+   `tests/unit/test_viz_geo.py::TestRootAgeInference::test_documented_example_with_a_real_ete_backend`
+   以 `Tree(newick, format=1)` 建树，而 ete4 的 `Tree()` 不接受 `format=1`。
+   分支提交 `94b9781` 把该字面量换成 `sys.executable`（与 `tests/functional/conftest.py`
+   本来的写法一致）并补上缺失的 `requires_mcmctree` 标记，使分支达到 0 失败——但该提交
+   **尚未发布**，归档的公开版本依旧受影响。在有发行的版本带上它之前，评审者按 §8 在这类
+   机器上运行会遇到这 29 项失败，并应使用
+   `python3 -B -m pytest tests -q --cov=phylodater`。
 
 ## 5. 已安装包的自检
 
@@ -236,6 +265,7 @@ matplotlib）；四个可选的引擎依赖——`logdate`（wLogDate）、`emd`
 | 8 | pyr8s 的区间校准既不被强制也不被报告 | 区间外的年龄照常进入报告，一字未提 | 运行前披露 + 运行后逐条对账，写入结果级警告 | `tests/unit/adapters/test_r8s_pyr8s_method.py` |
 | 9 | 三个单元测试断言进程级 `sys.modules` | 只因测试顺序（可视化测试导入了 ete3）而失败 | `module_imports_cleanly` fixture 在全新解释器中探测 | 改造后的三项测试 |
 | 10 | MCMCTree 原始调用冒烟测试写 `BDparas = 1 1 0.1` | PAML ≥ 4.10 中止："BDparas: expect flag for birth-death process prior" | 控制文件补上构造标志，与适配器一致 | `tests/integration/full_pipeline/test_all_dating_tools.py` |
+| 11 | 验证套件工装把自己的解释器硬编码成字面量 `'python'`（`tests/validation/helpers.py::run_cli()`），且 `TestMultiMethod` 只带 `slow` 而不带 `requires_mcmctree` | 在只有 `python3`、没有 `python` 别名的机器上，28 项 `tests/validation` 用例在触及任何断言之前就抛 `FileNotFoundError: No such file or directory: 'python'`；没有 PAML 时 MCMCTree 集成用例被记成失败而不是跳过 | `run_cli()` 改用 `sys.executable`（`tests/functional/conftest.py` 本来就这么写），并补上缺失的可用性标记。**尚未发布**：修复在分支提交 `94b9781`，公开的 `v0.1.0` 归档依旧受影响（见 §4.2 限定 4） | 分支提交 `94b9781`（未发布） |
 
 ## 7. 与引擎/环境相关的局限
 
@@ -268,6 +298,12 @@ python scripts/probe_pyr8s_constraints.py
 python -m pytest tests -q
 phylodater check
 ```
+
+> 若你要复现的是 **§4.2 的读数 1**（稿件引用的那个 67%），请在**标签的干净解包树**上做
+> （`git archive v0.1.0 | tar -x`），环境里不装任何外部引擎、PATH 上没有 `python` 别名，
+> 并使用 `python3 -B -m pytest tests -q --cov=phylodater --cov-report=term`。预期结果是
+> `29 failed, 1,430 passed, 36 skipped`，以及 `TOTAL 16,729 statements / 5,483 missing =
+> 67%`；那 29 项失败是 §4.2 限定 4 披露的工装缺陷，不是功能回退。
 
 随包发布的结果文件：
 `test-data/benchmark/results/{scorecard.tsv,node_ages.tsv,benchmark_results.json}`
