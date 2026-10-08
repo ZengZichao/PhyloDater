@@ -268,7 +268,10 @@ def _create_dating_subparser(
   treepl:    initial_smooth, cvstart, cvstop, cviter, cvmultstep
   pathd8:    (无额外参数；任何取值都会被拒绝)
   r8s:       method(LF/NPRS/PL), smoothing, algorithm, r8s_bin
-  lsd2:      model, iqtree_bin, date_ci, clock_sd, date_options, date_outlier
+  lsd2:      model, iqtree_bin, clock_sd, date_options, date_outlier
+             注：本通路的 LSD2 结果不含日期置信区间（恒为 CIType.NONE）。
+             原先文档中的 date_ci 从未被任何适配器传给 IQ-TREE，已移除（E-4）；
+             需要 IQ-TREE 自有的日期相关开关，请用 date_options 原样透传。
   wlogdate:  backward_time, num_replicates, root_time, leaf_time,
              sequence_length, max_iter, pseudocount, zero_branch_len
   mdcat:     ncat, nrep, max_iter, backward_time, as_date,

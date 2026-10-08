@@ -37,7 +37,7 @@ PhyloDater is a unified platform for phylogenetic molecular dating that integrat
 | Method | Description | `--method-args` Parameters |
 |--------|-------------|---------------------------|
 | **MCMCTree** | Bayesian dating from PAML package | `clock`, `num_runs`, `burnin`, `nsample`, `sampfreq`, `skip_rate_estimation`, `paml_version`, `paml_path`, `mcmctree_bin` |
-| **LSD2** | Fast dating in IQ-TREE2 | `model`, `date_ci`, `clock_sd`, `date_options`, `date_outlier` |
+| **LSD2** | Fast dating in IQ-TREE2 | `model`, `iqtree_bin`, `clock_sd`, `date_options`, `date_outlier` |
 | **r8s** | Classic molecular clock tool | `method`, `smoothing`, `algorithm` |
 | **treePL** | Penalized likelihood dating | `initial_smooth`, `cvstart`, `cvstop`, `cviter`, `cvmultstep` |
 | **PATHd8** | Molecular clock calibration | (no extra parameters) |
@@ -85,8 +85,8 @@ Calibration (.yaml)┘                                                 Deep Vali
 | | `cviter` | `10` | CV iteration count |
 | | `cvmultstep` | `0.1` | CV multiplier step |
 | LSD2 | `model` | _auto_ | Substitution model; resolved from the alignment type when unset (`GTR+G` for nucleotides, `LG+G` for proteins). Set explicitly to override, e.g. `HKY+G` |
-| | `date_ci` | `100` | Date confidence interval |
 | | `clock_sd` | `0.2` | Clock rate standard deviation |
+| | `date_options` | `None` | Extra IQ-TREE arguments, passed through verbatim — the only channel that actually reaches the command line |
 | MD-Cat | `ncat` | `50` | Number of rate categories |
 | | `nrep` | `100` | Random initialization count |
 | | `max_iter` | `100` | Maximum EM iterations |

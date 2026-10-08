@@ -17,7 +17,11 @@ import pytest
 
 from phylodater.adapters.lsd2_method import LSD2Method
 from phylodater.core.exceptions import CalibrationError, SemanticDegradationWarning
-from phylodater.infrastructure.configuration import CommonConfig, LSD2Config
+from phylodater.infrastructure.configuration import (
+    CommonConfig,
+    Configuration,
+    LSD2Config,
+)
 from phylodater.models import (
     CalibrationPoint,
     FixedAgeConstraint,
@@ -199,10 +203,23 @@ class TestLSD2Config:
         assert dna_config.model == "GTR+G"
         assert protein_config.model == "LG+G"
 
-    def test_date_ci_validation(self):
-        """测试 date_ci 验证"""
-        with pytest.raises(ValueError):
-            LSD2Config(date_ci=-1)
+    def test_date_ci_knob_has_been_removed(self):
+        """E-4：``date_ci`` 是死旋钮（无任何适配器消费），已从 LSD2Config 移除。
+
+        这里锁定"已移除"这一契约：字段不存在、构造时传入会被 dataclass 拒绝、
+        且 ``--method-args`` 白名单同样拒绝它——不再出现"帮助里写了、传了却不生效"。
+        """
+        import dataclasses
+
+        field_names = {f.name for f in dataclasses.fields(LSD2Config)}
+        assert "date_ci" not in field_names
+
+        with pytest.raises(TypeError):
+            LSD2Config(date_ci=100)
+
+        config = Configuration()
+        with pytest.raises(ValueError, match="Unknown parameter"):
+            config.set_cli_override("lsd2", "date_ci", 100)
 
     def test_clock_sd_validation(self):
         """测试 clock_sd 验证"""

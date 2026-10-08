@@ -38,7 +38,7 @@ PhyloDater 是一个统一的系统发育定年平台，整合多种主流定年
 | 方法 | 描述 | `--method-args` 参数 |
 |------|------|---------------------|
 | **MCMCTree** | PAML 包中的贝叶斯定年工具 | `clock`、`num_runs`、`burnin`、`nsample`、`sampfreq`、`skip_rate_estimation`、`paml_version`、`paml_path`、`mcmctree_bin` |
-| **LSD2** | IQ-TREE2 中的快速定年方法 | `model`、`date_ci`、`clock_sd`、`date_options`、`date_outlier` |
+| **LSD2** | IQ-TREE2 中的快速定年方法 | `model`、`iqtree_bin`、`clock_sd`、`date_options`、`date_outlier` |
 | **r8s** | 经典分子钟定年工具 | `method`、`smoothing`、`algorithm` |
 | **treePL** | 基于惩罚似然的定年方法 | `initial_smooth`、`cvstart`、`cvstop`、`cviter`、`cvmultstep` |
 | **PATHd8** | 分子钟校准方法 | （无额外参数） |
@@ -86,8 +86,8 @@ PhyloDater 是一个统一的系统发育定年平台，整合多种主流定年
 | | `cviter` | `10` | CV 迭代次数 |
 | | `cvmultstep` | `0.1` | CV 乘子步长 |
 | LSD2 | `model` | _自动_ | 替换模型；未指定时按比对类型选择（核酸 `GTR+G`，蛋白 `LG+G`）；可显式覆盖，如 `HKY+G` |
-| | `date_ci` | `100` | 置信区间自助重复次数 |
 | | `clock_sd` | `0.2` | 分子钟标准差 |
+| | `date_options` | `None` | 附加 IQ-TREE 参数，原样透传——唯一真正进入命令行的通道 |
 | MD-Cat | `ncat` | `50` | 速率类别数 |
 | | `nrep` | `100` | 随机初始化次数 |
 | | `max_iter` | `100` | 最大 EM 迭代次数 |

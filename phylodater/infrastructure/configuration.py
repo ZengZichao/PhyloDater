@@ -365,7 +365,22 @@ class PATHd8Config:
 
 @dataclass
 class LSD2Config:
-    """LSD2 配置"""
+    """LSD2 配置
+
+    修复项 E-4：此前声明并校验、也写进 ``--help`` 与 ``config.example.yaml`` 的
+    ``date_ci``（"置信区间重采样次数"）没有任何适配器消费——它到不了 IQ-TREE 的
+    命令行，却让用户以为 LSD2 给出了区间。本项目的 LSD2 结果
+    （``adapters/lsd2_method.py``）恒为 ``CIType.NONE``：**不发任何区间**。
+    因此 ``date_ci`` 已从字段、CLI 帮助与示例配置中移除；需要向 IQ-TREE 传任何
+    自有选项（包括其自身的日期 CI 相关开关）请走 :attr:`date_options`，它是唯一
+    真正拼进命令行的透传通道。
+
+    .. note::
+       ``clock_sd`` 与 ``date_outlier`` 同样没有被 ``lsd2_method`` 读取（属于同一
+       类残留字段）。它们不在本次修复的分派范围内，因此暂留原状，但**不要**在
+       文档或稿件里把它们描述为生效参数；实际生效的字段只有 ``model``、
+       ``iqtree_bin``、``date_options``。
+    """
 
     # 替换模型。None = 按比对序列类型自动选择（核酸 -> GTR+G，蛋白 -> LG+G）。
     # IQ-TREE2 的 --date 流程必须显式给出 -m（否则跑 modelFinder），但模型与
@@ -373,15 +388,12 @@ class LSD2Config:
     # "ERROR: File not found LG"，因此默认不写死氨基酸模型。
     model: Optional[str] = None
     iqtree_bin: str = "iqtree2"
-    date_ci: int = 100  # 置信区间重采样次数
     clock_sd: float = 0.2
     date_options: Optional[str] = None
     date_outlier: Optional[str] = None
 
     def __post_init__(self) -> None:
         """验证参数范围"""
-        if self.date_ci < 0:
-            raise ValueError(f"date_ci must be >= 0, got {self.date_ci}")
         if self.clock_sd <= 0:
             raise ValueError(f"clock_sd must be > 0, got {self.clock_sd}")
 
