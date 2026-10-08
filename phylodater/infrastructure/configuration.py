@@ -5,6 +5,7 @@ Configuration - 三层配置合并机制
 """
 
 import copy
+import hashlib
 import math
 import typing
 from dataclasses import asdict, dataclass, field
@@ -40,6 +41,44 @@ def _as_float(value: Any, name: str) -> float:
             "silently break every threshold comparison in the convergence checks"
         )
     return numeric
+
+
+#: 子种子派生的域分隔前缀。写进哈希输入，一是让"方法名 → 子种子"这张表在
+#: 将来改变派生规则时能被整体换掉（改版本号即可），二是避免与任何其他
+#: "整数 → 整数"派生（例如上游软件的 seed 递增）撞车。
+METHOD_SEED_DOMAIN = "phylodater-v1"
+
+
+def derive_method_seed(base_seed: int, method_name: str) -> int:
+    """由全局种子派生**单个方法**专属的 32-bit 子种子（修复项 E-3）。
+
+    修复的问题：``core/pipeline.py`` 虽然早已为每个并行方法算出互异的子种子，
+    但那批子种子只被喂给进程级 ``random.seed()`` / ``np.random.seed()``，而七个
+    适配器一律读共享的 ``ToolConfig.common.seed``——于是 mcmctree 的
+    ``seed =``、treePL 的 ``seed =``、wLogDate 的 ``-s``、MD-Cat 的
+    ``--randSeed`` 拿到的都是同一个全局种子，"每方法独立子种子"停留在注释里。
+
+    性质（单元测试逐条锁定）：
+
+    * **可复现**：同一 ``(base_seed, method_name)`` 永远得到同一子种子。
+    * **逐方法互异**：不同 ``method_name`` 得到不同子种子。
+    * **与本批运行了几个方法无关**：只依赖方法名本身，因此 ``-j 1`` 串行、
+      三方法并行、七方法并行三种情形下，同一个方法拿到的是同一个子种子
+      （``SeedSequence.spawn(n)`` 做不到这一点：它按 ``n`` 与顺序分流）。
+    * **不依赖 NumPy 版本**：只用 ``hashlib``，因此不同 NumPy/平台给出同值。
+
+    Args:
+        base_seed: 用户给定的全局种子（``--seed`` / ``PHYLODATER_SEED``）。
+        method_name: 方法标识符（大小写不敏感，会转小写）。
+
+    Returns:
+        ``[0, 2**32)`` 区间内的整数子种子。
+    """
+    if base_seed < 0:
+        raise ValueError(f"base_seed must be non-negative, got {base_seed}")
+    key = f"{METHOD_SEED_DOMAIN}|{int(base_seed)}|{method_name.strip().lower()}"
+    digest = hashlib.sha256(key.encode("utf-8")).digest()
+    return int.from_bytes(digest[:4], "big")
 
 
 @dataclass
@@ -449,6 +488,39 @@ class ToolConfig:
     lsd2: LSD2Config = field(default_factory=LSD2Config)
     wlogdate: WLogDateConfig = field(default_factory=WLogDateConfig)
     mdcat: MDCatConfig = field(default_factory=MDCatConfig)
+
+    def clone_for_method(
+        self, method_name: str, base_seed: Optional[int] = None
+    ) -> "ToolConfig":
+        """返回**只属于这一个方法**的配置深拷贝（修复项 E-3）。
+
+        适配器读的是 ``self.common_config.seed``（``DatingMethod.__init__`` 里
+        归一的 ``CommonConfig``），而注册表把 ``ToolConfig.common`` 原样递给每个
+        适配器，所以"逐方法子种子"必须由**配置对象**携带，而不是由调用方的
+        进程级 RNG 携带。本方法就是这个载体：
+
+        * 深拷贝整个容器，因此任何适配器在运行期对子配置做的实例级归一
+          （例如把 ``None`` 补成探测值）都不会写回共享对象；
+        * ``base_seed`` 非 ``None`` 时，副本的 ``common.seed`` 被替换成
+          :func:`derive_method_seed` 按 ``(base_seed, method_name)`` 派生的子种子；
+        * ``base_seed`` 为 ``None`` 时，副本保持 ``common.seed`` 不变（调用方
+          没有可用基准种子，此时不假装能派生）。
+
+        公开 API 兼容：不改变任何字段名/类型，``asdict()`` 与
+        ``save_runtime_config()`` 的输出结构不受影响；``base_seed=None`` 时
+        行为与 ``copy.deepcopy(self)`` 完全一致。
+
+        Args:
+            method_name: 方法标识符（大小写不敏感）。
+            base_seed: 全局基准种子；``None`` 表示不派生。
+
+        Returns:
+            一个新的 :class:`ToolConfig` 实例。
+        """
+        clone = copy.deepcopy(self)
+        if base_seed is not None:
+            clone.common.seed = derive_method_seed(base_seed, method_name)
+        return clone
 
 
 @dataclass

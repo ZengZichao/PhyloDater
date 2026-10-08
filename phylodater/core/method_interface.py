@@ -79,8 +79,46 @@ class DatingMethod(ABC, Generic[ConfigT]):
         self._software_paths = software_paths or SoftwarePaths()
         # 后端软件版本横幅/版本号，由 ``validate_environment()`` 在探测成功时写入，
         # 并被 pipeline 记录到 runtime_metadata.json 的 ``software_versions``。
-        # 定年结果只有在知道是哪个版本的引擎产出时才可复现，因此这里不留空。
+        # 定年结果只有在知道是哪个引擎产出的、用的是什么种子时才可复现，因此这里不留空。
         self.software_version: Optional[str] = None
+        #: 本适配器**本次运行**实际使用的子种子（修复项 E-3）。
+        #: 由流水线在 ``create()`` 之后经 :meth:`bind_randomness` 写入；直接实例化
+        #: 适配器的调用方保留 ``None``，此时适配器退回读 ``common_config.seed``。
+        self.method_seed: Optional[int] = None
+        #: 本适配器专属的显式随机流（修复项 E-3）。
+        #: 流水线不再在并行 worker 里给进程级 ``random`` / ``np.random`` 播种，
+        #: 而是把 :func:`numpy.random.default_rng` 生成的 Generator 交到这里：
+        #: Python 侧若有随机性（目前七个适配器都没有），它只能取自本方法自己的
+        #: 流，因此并行方法之间不可能再互相污染。类型写成 ``Any``：NumPy 是延迟
+        #: 导入的可选重依赖，不应因为一个类型标注就把适配器 import 链路压上 numpy。
+        self.rng: Any = None
+
+    def bind_randomness(self, seed: int) -> Any:
+        """把本方法专属的子种子与显式随机流绑定到适配器实例（修复项 E-3）。
+
+        替代此前"在并行 worker 里调用进程级 ``random.seed()`` /
+        ``np.random.seed()``"的做法：那两个调用改写的是**整个进程**共享的全局
+        RNG，七个线程同时改写同一份状态，既谈不上"每方法独立"，也不是线程安全的；
+        而适配器真正读取的种子来自 ``common_config.seed``，全局播种对它们没有任何
+        影响（旧注释里"已改用现代 Generator"的说法与代码不符——Generator 从未被
+        创建）。这里改为：记录子种子 + 建一个只属于本实例的 Generator。
+
+        Args:
+            seed: 由 :func:`~phylodater.infrastructure.configuration.derive_method_seed`
+                按 ``(全局种子, 方法名)`` 派生的 32-bit 子种子。
+
+        Returns:
+            新建的 :class:`numpy.random.Generator`；NumPy 不可用时返回 ``None``
+            （此时只有 ``method_seed`` 生效，引擎侧种子仍由配置文件/命令行承载）。
+        """
+        self.method_seed = int(seed)
+        try:
+            import numpy as np
+        except ImportError:  # pragma: no cover - numpy 是硬依赖，缺失属于异常安装
+            self.rng = None
+            return None
+        self.rng = np.random.default_rng(self.method_seed)
+        return self.rng
 
     @staticmethod
     def _package_version(package: str) -> Optional[str]:

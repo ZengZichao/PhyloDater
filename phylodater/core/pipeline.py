@@ -7,7 +7,6 @@ DatingPipeline - 工作流引擎
 import atexit
 import hashlib
 import os
-import random
 import sys
 import threading
 import time
@@ -39,30 +38,34 @@ _temp_dirs_lock = threading.Lock()
 def _derive_method_seeds(
     base_seed: Optional[int], method_names: Sequence[str]
 ) -> Dict[str, int]:
-    """为每个并行方法分配互异且可复现的 32-bit 子种子。
+    """为每个方法分配互异且可复现的 32-bit 子种子（修复项 E-3）。
 
-    回归修复（审阅报告 P0-1）：``SeedSequence(base).spawn(n)`` 返回的子对象其
-    ``.entropy`` 属性**全部等于父种子**，旧代码读取 ``.entropy`` 导致七个方法
-    拿到同一个随机种子（"seed degenerates to the same value across methods"）。
-    正确做法是取每个子序列**自身**流的第一个 32-bit 字 ``generate_state(1)[0]``，
-    对固定父种子稳定可复现，且各子流互不相同。
+    历史沿革：审阅报告 P0-1 记录过一次真实缺陷——``SeedSequence(base).spawn(n)``
+    返回的子对象其 ``.entropy`` 属性**全部等于父种子**，旧代码读 ``.entropy`` 于是
+    七个方法拿到同一个种子。后续修复改用 ``generate_state(1)[0]``，但派生结果
+    只被喂给进程级全局 RNG（见 :meth:`ParallelPipeline._execute_methods`），
+    适配器读的仍是共享的 ``common.seed``——缺陷换了形态，没有消失。
 
-    仅当 NumPy 的 SeedSequence 不可用时（ImportError/AttributeError）才回退到
-    ``secrets``（此时互异但不可复现）。
+    现在派生规则收拢到 :func:`phylodater.infrastructure.configuration.derive_method_seed`：
+    ``sha256("phylodater-v1|<base>|<method>")`` 的前 32 bit。与旧实现相比多出两条
+    保证：子种子**不依赖本批运行了几个方法、也不依赖它们的顺序**（串行 ``-j 1``
+    与七方法并行给出同一个 mcmctree 种子），且不随 NumPy 版本变化。
+
+    ``base_seed is None`` 时先取一次系统熵作为基准，保证同一次运行内互异、
+    且整个运行可凭日志里打印出来的基准种子复盘。
     """
-    names = list(method_names)
-    try:
-        import numpy as np
+    from ..infrastructure.configuration import derive_method_seed
 
-        children = np.random.SeedSequence(base_seed).spawn(len(names))
-        return {
-            name: int(child.generate_state(1)[0])
-            for name, child in zip(names, children)
-        }
-    except (ImportError, AttributeError):
+    names = list(method_names)
+    if not names:
+        return {}
+
+    if base_seed is None:
         import secrets
 
-        return {name: secrets.randbelow(2**31) for name in names}
+        base_seed = secrets.randbelow(2**32)
+
+    return {name: derive_method_seed(base_seed, name) for name in names}
 
 
 def _register_temp_directory(temp_dir: Path) -> None:
@@ -502,7 +505,10 @@ class DatingPipeline:
     def _init_random_state(self) -> None:
         """初始化随机状态并记录系统资源
 
-        统一在此处设置随机种子，避免重复初始化。
+        统一在此处给**进程级**随机源播种（基准种子），避免重复初始化。
+        定年引擎各自拿到的**方法级子种子**不走这条路：它由
+        :meth:`_create_adapter` 经 ``ToolConfig.clone_for_method()`` 写进该方法的
+        ``common.seed``，再由适配器写进控制文件 / 命令行参数（修复项 E-3）。
         """
         # 先设置随机种子（确保后续资源探测不影响种子状态）
         import random
@@ -514,8 +520,11 @@ class DatingPipeline:
         try:
             np.random.seed(self.config.seed)
         except AttributeError as e:
-            # NumPy 2 移除了全局 np.random.seed：可复现性依赖下面 ParallelPipeline
-            # 里的 Generator/SeedSequence 派生路径，此处降级必须留痕（C-8）。
+            # NumPy 2 移除了全局 np.random.seed：这里的降级不致命，但也**不再**是
+            # 可复现性的支点——逐方法子种子经 ToolConfig.clone_for_method() 进入
+            # 各适配器自己的 ``common_config.seed``，Python 侧随机流由
+            # :meth:`DatingMethod.bind_randomness` 按方法绑定（修复项 E-3）。
+            # 保留本条 debug 记录只是为了让"全局 RNG 未被播种"这件事可查（C-8）。
             self.logger.debug(f"全局 np.random.seed 不可用（{e}），跳过播种")
 
         # 记录系统资源信息
@@ -1371,6 +1380,34 @@ class DatingPipeline:
         self.logger.success(f"Resolved {len(resolved)} calibration points")
         return resolved
 
+    def _method_config_for(self, method_name: str) -> ToolConfig:
+        """返回**只属于这个方法**的配置副本（修复项 E-3）。
+
+        :meth:`ToolConfig.clone_for_method` 把 ``common.seed`` 换成按
+        ``(全局种子, 方法名)`` 派生的子种子，并把整份容器深拷贝一份，因此适配器
+        在运行期对配置做的任何归一都只作用于自己的副本。
+        """
+        return self._tool_config.clone_for_method(method_name, self.config.seed)
+
+    def _create_adapter(self, method_name: str) -> Any:
+        """适配器创建的唯一出口：方法级子种子 + 方法级显式随机流（修复项 E-3）。
+
+        串行 :meth:`_execute_methods` 与并行 ``ParallelPipeline`` 共用它，保证
+        "逐方法子种子"不是一条只在工作线程里才生效的路径。
+        """
+        adapter = DatingMethodRegistry.create(
+            method_name,
+            self._method_config_for(method_name),
+            self.config.output_dir,
+            self._software_paths,
+        )
+        # 把同一份子种子绑到适配器上，替代"给进程级 random/np.random 播种"的旧做法：
+        # 前者是实例状态（并行方法之间互不干扰），后者是全局状态（七个线程互相覆盖）。
+        method_seed = getattr(adapter.common_config, "seed", None)
+        if method_seed is not None:
+            adapter.bind_randomness(method_seed)
+        return adapter
+
     def _execute_methods(
         self,
         tree: PhylogeneticTree,
@@ -1397,12 +1434,7 @@ class DatingPipeline:
                 if self._checkpoint_manager:
                     self._checkpoint_manager.start_method(method_name)
 
-                adapter = DatingMethodRegistry.create(
-                    method_name,
-                    self._tool_config,
-                    self.config.output_dir,
-                    self._software_paths,
-                )
+                adapter = self._create_adapter(method_name)
 
                 if not adapter.validate_environment():
                     self.logger.warning(
@@ -1566,8 +1598,11 @@ class ParallelPipeline(DatingPipeline):
     """
     并行流水线
 
-    使用多线程并行执行多种定年方法
-    每个线程使用独立的随机数种子，确保结果可重现
+    使用多线程并行执行多种定年方法。
+    每个方法拿到由基准种子派生的**独立子种子**，子种子随该方法的配置副本
+    （``ToolConfig.clone_for_method()``）交给适配器，因此引擎侧的 ``seed =`` /
+    ``-s`` / ``--randSeed`` 逐方法互异且可复现（修复项 E-3）。工作线程不再改写
+    进程级全局 RNG。
     """
 
     MAX_WORKERS = 8
@@ -1588,8 +1623,6 @@ class ParallelPipeline(DatingPipeline):
         """
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        import numpy as np
-
         # 断点续跑：过滤需要执行的方法（先核验输入指纹，B-23）
         methods_to_run = self._plan_method_execution(tree, alignment_path, calibrations)
 
@@ -1605,44 +1638,35 @@ class ParallelPipeline(DatingPipeline):
             )
 
         # 使用 SeedSequence 为每个方法生成独立、可复现的子种子（P0-1 修复见
-        # :func:`_derive_method_seeds`）。适配器内部通常直接调用 random /
-        # numpy.random 的全局接口，因此下方按「方法名 → 子种子」为每个线程播种
-        # 全局随机状态，使并行方法各自拥有独立、可复现的随机流。
+        # :func:`_derive_method_seeds`）。子种子**必须**随配置对象交到适配器手上
+        # （修复项 E-3）：适配器读的是 ``common_config.seed``，而不是进程级全局
+        # RNG，所以仅播种全局状态等于没有转发。
         method_seeds = _derive_method_seeds(self.config.seed, methods_to_run)
 
         metadata_manager = self._metadata_manager
         checkpoint_manager = self._checkpoint_manager
 
-        # 每个并行方法使用 SeedSequence 派生的独立子种子（见上方）。适配器内部
-        # 通常直接调用 random / numpy.random 的全局接口，因此在此处按
-        # 「方法名 → 子种子」为每个线程播种全局随机状态，使并行方法各自拥有
-        # 独立、可复现的随机流，避免此前创建的线程本地 RNG 成为「死 RNG」
-        # （计算出来却从未被消费）。
-
         def run_method(method_name: str) -> tuple:
-            """运行单个方法（线程安全，按方法种子初始化全局随机状态）"""
+            """运行单个方法（线程安全：随机性只经由方法自己的配置与 Generator）"""
             thread_seed = method_seeds[method_name]
 
-            # 以线程本地的子种子初始化全局随机状态，确保可复现且互不相关。
-            # 采用现代 numpy Generator（default_rng）替代 NumPy>=2.0 中已弃用的
-            # 全局 np.random.seed() 接口；子种子由主 SeedSequence(self.config.seed)
-            # 派生（见上方 seed_seq.spawn），保证各并行 worker 独立且可复现。
-            random.seed(thread_seed)
-            np.random.seed(thread_seed)
-
-            self.logger.debug(f"{method_name}: using thread-local seed {thread_seed}")
+            # 修复项 E-3：这里**不再**调用进程级 ``random.seed()`` /
+            # ``np.random.seed()``。那两行改写的是整个进程共享的全局 RNG：七个
+            # 工作线程同时覆盖同一份状态，既谈不上"每方法一条独立随机流"，也不是
+            # 线程安全的；而七个适配器实际读的是共享的 ``common.seed``，全局播种
+            # 对它们毫无影响（旧注释声称"已改用现代 Generator"，但 Generator 从未
+            # 被创建）。现在子种子通过 :meth:`_create_adapter` 进入该方法的配置
+            # 副本（``common.seed`` → 引擎控制文件 / 命令行参数），并绑定到适配器
+            # 实例专属的 ``numpy.random.default_rng(thread_seed)``（见
+            # :meth:`DatingMethod.bind_randomness`）。
+            self.logger.debug(f"{method_name}: using method sub-seed {thread_seed}")
 
             if checkpoint_manager:
                 checkpoint_manager.start_method(method_name)
 
             adapter = None
             try:
-                adapter = DatingMethodRegistry.create(
-                    method_name,
-                    self._tool_config,
-                    self.config.output_dir,
-                    self._software_paths,
-                )
+                adapter = self._create_adapter(method_name)
 
                 if not adapter.validate_environment():
                     self.logger.warning(

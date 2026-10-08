@@ -2,6 +2,7 @@
 配置管理模块的单元测试
 """
 
+import pytest
 import yaml
 
 from phylodater.infrastructure.configuration import (
@@ -11,6 +12,7 @@ from phylodater.infrastructure.configuration import (
     MCMCTreeConfig,
     SoftwarePaths,
     ToolConfig,
+    derive_method_seed,
 )
 from phylodater.infrastructure.safe_io import safe_writer
 
@@ -94,6 +96,86 @@ class TestToolConfig:
         assert config.common.nthreads == 4
         assert config.common.seed is None
         assert config.common.verbose is False
+
+
+class TestMethodSeedDerivation:
+    """修复项 E-3：方法级子种子派生 + ``ToolConfig.clone_for_method``"""
+
+    METHODS = [
+        "mcmctree",
+        "lsd2",
+        "treepl",
+        "pathd8",
+        "r8s",
+        "wlogdate",
+        "mdcat",
+    ]
+
+    def test_derive_is_deterministic(self):
+        assert derive_method_seed(42, "mcmctree") == derive_method_seed(42, "mcmctree")
+
+    def test_derive_is_a_32bit_int(self):
+        value = derive_method_seed(42, "mcmctree")
+        assert isinstance(value, int)
+        assert 0 <= value < 2**32
+
+    def test_derive_gives_pairwise_distinct_seeds(self):
+        values = [derive_method_seed(42, name) for name in self.METHODS]
+        assert len(set(values)) == len(values)
+
+    def test_derive_changes_with_base_seed(self):
+        assert (
+            derive_method_seed(42, "treepl") != derive_method_seed(43, "treepl")
+        )
+
+    def test_derive_ignores_method_name_case(self):
+        assert derive_method_seed(7, "MCMCTree") == derive_method_seed(7, "mcmctree")
+
+    def test_derive_rejects_negative_base(self):
+        with pytest.raises(ValueError, match="non-negative"):
+            derive_method_seed(-1, "mcmctree")
+
+    def test_clone_for_method_replaces_common_seed(self):
+        base = ToolConfig()
+        base.common.seed = 42
+        base.common.nthreads = 3
+
+        clone = base.clone_for_method("mcmctree", 42)
+
+        assert clone.common.seed == derive_method_seed(42, "mcmctree")
+        # 其余字段照搬，且原对象一个字节都没被改
+        assert clone.common.nthreads == 3
+        assert base.common.seed == 42
+        assert clone is not base
+        assert clone.common is not base.common
+
+    def test_clone_for_method_is_deep_copy(self):
+        base = ToolConfig()
+        base.common.seed = 42
+        clone = base.clone_for_method("treepl", 42)
+
+        clone.treepl.initial_smooth = 0.5
+        clone.common.nthreads = 99
+
+        assert base.treepl.initial_smooth == 100.0
+        assert base.common.nthreads == 4
+
+    def test_clone_for_method_without_base_seed_keeps_seed(self):
+        """base_seed=None 时不假装能派生：副本种子保持原样（公开 API 兼容）"""
+        base = ToolConfig()
+        base.common.seed = 42
+
+        clone = base.clone_for_method("lsd2", None)
+
+        assert clone.common.seed == 42
+        assert clone.common is not base.common
+
+    def test_clone_for_method_is_stable_across_batch_sizes(self):
+        """同一方法在"3 方法并行"与"7 方法并行"下拿到同一个子种子。"""
+        base = ToolConfig()
+        small = base.clone_for_method("mdcat", 42).common.seed
+        large = ToolConfig().clone_for_method("mdcat", 42).common.seed
+        assert small == large
 
 
 class TestConfiguration:
