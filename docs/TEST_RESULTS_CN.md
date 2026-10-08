@@ -138,15 +138,27 @@ TESTING_CN.md §3 的方式重新定根。树总长从 1.0365 降到 0.8793 替�
 
 ## 4. 自动化测试套件
 
+这里**有意**给出两个口径的数字，它们回答的是不同问题，不能互相替换：
+
+| 口径 | 收集 | 通过 | 跳过 | 失败 |
+|------|------|------|------|------|
+| **发版快照**——§1 的验证环境（Ubuntu 22.04、Python 3.12.14、conda 环境 `phylodater`、七个引擎齐备）在 `v0.1.0` 标签上的实测；稿件与 SI 引用的就是这个数 | 1,489 | 1,487 | 2 | 0 |
+| **当前树**——修复分支工作树的实测；macOS、Python 3.11.15、pytest 9.1.1 | 1,550 | 1,514 | 36 | 0 |
+
 ```bash
-python -m pytest tests -q        # 收集 1489 项
+python -B -m pytest tests -q                  # 全部运行
+python -B -m pytest tests -q --collect-only   # 只统计，不执行
 ```
 
-| 范围 | 收集 | 通过 | 跳过 | 失败 |
-|------|------|------|------|------|
-| `tests/`（unit + functional + integration + validation） | 1489 | 1487 | 2 | 0 |
+> **收集条目数对环境敏感，是"实测值"而不是"常量"。** 参数化用例与受标记门控的用例会随
+> 解释器小版本、以及哪些可选后端能被 import 而增减——`ete3`（Python ≥ 3.13 装不上）、
+> `ete4`、`plotly`、`psutil` 每一项都会改变可收集的内容。同一棵树在修复分支补入 unit
+> 测试之前的一个中间实测是 1,495 项（unit 1,114 / functional 199 / integration 24 /
+> validation 158）；当前树实测 1,550 项（unit **1,169** / functional 199 / integration
+> 24 / validation 158）。只有 `tests/unit` 变了。引用条目数时，请把解释器版本和命令一起
+> 给出。
 
-跳过的 2 项是**有意**的条件跳过（依赖特定可选后端的环境判定），并非缺失覆盖。
+跳过的项都是**有意**的条件跳过（依赖特定可选后端或外部引擎二进制的环境判定），并非缺失覆盖。
 
 ### 4.1 分层说明
 
@@ -157,6 +169,36 @@ python -m pytest tests -q        # 收集 1489 项
   fixture 上对每个已安装引擎的端到端运行。
 * 依赖外部引擎的测试在二进制缺失时带明确原因跳过，因此同一条命令在没有这些工具的机器上
   也能通过。
+
+## 4.2 覆盖率
+
+```bash
+python -B -m pytest tests -q --cov=phylodater --cov-report=term
+```
+
+| 项 | 值 |
+|---|---|
+| 语句数（statements） | 16,892 |
+| 未覆盖（missing） | 5,325 |
+| **总覆盖率** | **68.48%** |
+| 实测环境 | 修复分支工作树；macOS、Python 3.11.15（conda 环境 `python-3.11`）；pytest 9.1.1、pytest-cov 7.1.0、coverage 7.16.2；收集 1,550 / 通过 1,514 / 跳过 36 / 失败 0 |
+| 门禁 | `pyproject.toml` 的 `fail_under = 60`——已满足 |
+
+引用这个数字时，下面三条限定一条都不能丢：
+
+1. **它是下界，不是真实覆盖率。** `tests/functional` 与 `tests/validation` 通过
+   `subprocess` 驱动 CLI，而仓库里从未配置覆盖率的子进程钩子（没有任何地方设置
+   `COVERAGE_PROCESS_START`），于是子进程里的执行一律被判成"未执行"。具体后果：
+   `phylodater/infrastructure/self_test.py` 报 **0%**、`phylodater/cli/main.py` 报
+   **36%**，而 `phylodater check` 明明 26/26 全通过——这些代码只在子进程里跑过。
+   打开子进程覆盖并用 `coverage combine` 合并后，总数会上升。
+2. **不要拿工作树里那个 `.coverage` 文件直接读数。** 它被 gitignore（`.gitignore` 里的
+   `.coverage*` 条目），是一份**不完整**、且早于本分支各项修复的记录；对它跑
+   `coverage report` 得到 58%（16,892 statements / 7,054 missing），原因只是里面大量
+   模块根本没有行数据。要**重新生成**（用上面的 `--cov`），不要在陈旧数据文件上再报告。
+3. **数字会随环境浮动，原因同 §4 的条目数。** `pyproject.toml` 里 `fail_under` 旁边的注释
+   写的是 67.87%，那是在 §1 的"七引擎齐备"的 Linux 环境、`v0.1.0` 标签上测的；不在那个环境里
+   就无法在当前树上复现它。
 
 ## 5. 已安装包的自检
 

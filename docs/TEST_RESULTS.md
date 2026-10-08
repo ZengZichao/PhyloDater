@@ -158,13 +158,28 @@ PhyloDater records: `max PSRF = 0.99988`, `min ESS = 423` over 2 chains ×
 
 ## 4. Automated test suites
 
+Two counts are reported, deliberately, because they answer different questions and
+they are not interchangeable:
+
+| accounting | collected | passed | skipped | failed |
+|---|---|---|---|---|
+| **release snapshot** — §1's validated environment (Ubuntu 22.04, Python 3.12.14, conda env `phylodater`, all seven engines present) at the `v0.1.0` tag; the figure quoted by the manuscript and the SI | 1,489 | 1,487 | 2 | 0 |
+| **current tree** — the review-fix branch working tree, measured on macOS / Python 3.11.15 with pytest 9.1.1 | 1,550 | 1,514 | 36 | 0 |
+
 ```bash
-python -m pytest tests -q        # 1489 items collected
+python -B -m pytest tests -q              # run everything
+python -B -m pytest tests -q --collect-only   # counts only, no execution
 ```
 
-| scope | collected | passed | skipped | failed |
-|-------|-----------|--------|---------|--------|
-| `tests/` (unit + functional + integration + validation) | 1489 | 1487 | 2 | 0 |
+> **The collected count is environment-sensitive; treat it as a measured value, not
+> a constant.** Parametrised and marker-gated cases come and go with the
+> interpreter minor version and which optional backends are importable — `ete3`
+> (not installable for Python ≥ 3.13), `ete4`, `plotly` and `psutil` each change
+> what can be collected. An intermediate measurement of this same tree, before the
+> review fixes added unit tests, gave 1,495 items (unit 1,114 / functional 199 /
+> integration 24 / validation 158); the current tree gives 1,550 (unit **1,169** /
+> functional 199 / integration 24 / validation 158). Only `tests/unit` moved. When
+> quoting a count, quote the interpreter and the command with it.
 
 ### 4.1 Breakdown
 
@@ -177,6 +192,41 @@ python -m pytest tests -q        # 1489 items collected
   installed engine on the benchmark fixtures.
 * Engine-dependent tests skip with an explicit reason when a binary is absent, so
   the same command works on a machine without the tools installed.
+
+## 4.2 Coverage
+
+```bash
+python -B -m pytest tests -q --cov=phylodater --cov-report=term
+```
+
+| item | value |
+|---|---|
+| statements | 16,892 |
+| missing | 5,325 |
+| **total coverage** | **68.48%** |
+| measured on | review-fix branch working tree; macOS, Python 3.11.15 (conda env `python-3.11`); pytest 9.1.1, pytest-cov 7.1.0, coverage 7.16.2; 1,550 collected / 1,514 passed / 36 skipped / 0 failed |
+| gate | `fail_under = 60` in `pyproject.toml` — satisfied |
+
+Three caveats, none of which may be dropped when this number is quoted:
+
+1. **It is a lower bound, not the true figure.** `tests/functional` and
+   `tests/validation` drive the CLI through `subprocess`, and no coverage
+   subprocess hook is configured anywhere in the repo (`COVERAGE_PROCESS_START` is
+   never set), so child-process execution is scored as unexecuted. Concretely,
+   `phylodater/infrastructure/self_test.py` reports **0%** and
+   `phylodater/cli/main.py` **36%**, even though `phylodater check` passes 26/26 —
+   that code only ever runs in a subprocess. Enabling subprocess coverage and
+   `coverage combine` would raise the total.
+2. **Do not read a coverage number off the checked-out `.coverage` file.** It is
+   git-ignored (the `.coverage*` entry in `.gitignore`), it is a *partial* recording
+   that predates the fixes in this branch, and `coverage report` against it yields
+   58% (16,892 statements / 7,054 missing) simply because most modules in it have no
+   line data. Always regenerate (`--cov` above) instead of re-reporting a stale
+   data file.
+3. **The number moves with the environment, like the collected count in §4.** The
+   comment beside `fail_under` in `pyproject.toml` quotes 67.87%; that was measured
+   in §1's all-seven-engine Linux environment at the `v0.1.0` tag, and it is not
+   reproducible on the current tree without that environment.
 
 ## 5. Self-test of the installed package
 
