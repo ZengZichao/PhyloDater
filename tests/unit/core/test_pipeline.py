@@ -16,11 +16,13 @@ state.
 """
 
 import random
+import warnings as _warnings
 from pathlib import Path
 
 import numpy as np
 import pytest
 
+from phylodater.core.exceptions import SemanticDegradationWarning
 from phylodater.core.method_interface import DatingMethod, DatingMethodRegistry
 from phylodater.core.pipeline import (
     DatingPipeline,
@@ -296,3 +298,211 @@ class TestRealEnginesGetOwnSeed:
         )
         # 修复项 E-5：共享配置没有被就地改写
         assert pipeline._tool_config.common.seed == 42
+
+
+class DegradationProbingAdapter(DatingMethod):
+    """在 ``prepare_inputs`` 里触发三类**真实**语义降级，再交回带节点的结果。
+
+    三类降级分别来自三个约束类、三个引擎，覆盖 E-8 要求（至少两类）：
+
+    * ``UniformAgeConstraint`` → wLogDate：区间被压成中值点估计；
+    * ``SoftLowerBoundConstraint`` → treePL：软下界被压成硬下界；
+    * ``MaximumAgeConstraint`` → MD-Cat：仅上界被压成 ``max/2`` 点估计。
+    """
+
+    @property
+    def method_name(self) -> str:
+        return "degradation_probe"
+
+    def validate_environment(self) -> bool:
+        return True
+
+    def prepare_inputs(self, tree, calibrations, alignment_path=None):
+        from phylodater.models.constraints import (
+            MaximumAgeConstraint,
+            SoftLowerBoundConstraint,
+            UniformAgeConstraint,
+        )
+
+        UniformAgeConstraint(min_age=2.0, max_age=4.0).to_software_format(
+            "wlogdate", name="nodeA", taxa_str="A+B"
+        )
+        SoftLowerBoundConstraint(min_age=3.0).to_software_format(
+            "treepl", name="nodeB"
+        )
+        MaximumAgeConstraint(max_age=5.0).to_software_format(
+            "mdcat", name="nodeC", taxa_str="C+D"
+        )
+        return {"prepared": True}
+
+    def execute(self) -> bool:
+        return True
+
+    def parse_results(self) -> DatingResult:
+        from phylodater.models.results import NodeAgeEstimate
+
+        return DatingResult(
+            method_name=self.method_name,
+            run_id=f"{self.method_name}_{self.work_dir.name}",
+            dated_tree_newick=";",
+            node_ages={
+                "nodeA": NodeAgeEstimate(mean_age=3.0),
+                "nodeB": NodeAgeEstimate(mean_age=3.0),
+                "nodeC": NodeAgeEstimate(mean_age=2.5),
+            },
+        )
+
+
+@pytest.fixture
+def degradation_registry():
+    saved = dict(DatingMethodRegistry._registry)
+    DatingMethodRegistry.register("degradation_probe", DegradationProbingAdapter)
+    try:
+        yield
+    finally:
+        DatingMethodRegistry._registry.clear()
+        DatingMethodRegistry._registry.update(saved)
+
+
+class TestDegradationWarningsArchived:
+    """E-8：语义降级必须落进 ``DatingResult.warnings``；E-9：降级前形态可查。"""
+
+    def _run(self, tmp_path):
+        from phylodater.core.pipeline import run_adapter_and_capture_degradations
+
+        adapter = DegradationProbingAdapter(ToolConfig(), tmp_path)
+        return run_adapter_and_capture_degradations(adapter, None, [], None)
+
+    def test_all_three_degradations_reach_result_warnings(self, tmp_path):
+        result = self._run(tmp_path)
+        texts = "\n".join(str(w) for w in result.warnings)
+        assert len(result.warnings) == 3, result.warnings
+        assert "wLogDate does not support range constraints" in texts
+        assert "treepl does not support soft lower bounds" in texts
+        assert "only supports point calibrations and does not " in texts
+
+    def test_structured_records_carry_pre_degradation_shape(self, tmp_path):
+        """E-9：结构化记录给出"降级前长什么样 / 实际交出去的是什么"。"""
+        result = self._run(tmp_path)
+        records = result.metadata["constraint_degradations"]
+        assert len(records) == 3
+        by_target = {r["target"]: r for r in records}
+        assert set(by_target) == {"wlogdate", "treepl", "mdcat"}
+        wlogdate = by_target["wlogdate"]
+        assert wlogdate["constraint"] == "UniformAgeConstraint"
+        # 规范化形态：逐字段（含带默认值的字段）打印，可机器比对
+        assert wlogdate["original"] == (
+            "UniformAgeConstraint(min_age=2.0, max_age=4.0, "
+            "tail_lower=0.0001, tail_upper=0.0001)"
+        )
+        # 人类可读形态：与约束自己的 describe() 一致
+        assert wlogdate["original_description"]
+        assert "2.0-4.0 Ma" in wlogdate["original_description"]
+        assert "3.0" in wlogdate["degraded_to"]
+        assert wlogdate["node"] == "nodeA"
+        assert wlogdate["message"]
+
+    def test_affected_node_estimates_expose_degraded_from(self, tmp_path):
+        result = self._run(tmp_path)
+        degraded = result.node_ages["nodeA"]
+        assert degraded.degraded_from is not None
+        assert degraded.degraded_from["target"] == "wlogdate"
+        assert (
+            degraded.degraded_from["original"]
+            == "UniformAgeConstraint(min_age=2.0, max_age=4.0, "
+            "tail_lower=0.0001, tail_upper=0.0001)"
+        )
+        # 降级不可逆：年龄本身仍然是"降级后"的那个值
+        assert degraded.mean_age == 3.0
+        # 序列化里带得出去（审计时能从磁盘查回事前形态）
+        assert degraded.to_dict()["degraded_from"]["target"] == "wlogdate"
+
+    def test_warnings_deduplicated_and_adapter_entries_kept_first(self, tmp_path):
+        """适配器自己写入的条目（r8s 的 C-41 形态）排在前面且不重复。"""
+        from phylodater.core.pipeline import run_adapter_and_capture_degradations
+
+        class PreSeededAdapter(DegradationProbingAdapter):
+            def parse_results(self) -> DatingResult:
+                result = super().parse_results()
+                result.warnings.append("wLogDate does not support range constraints. "
+                                       "Using midpoint 3.0 from range [2.0, 4.0]")
+                return result
+
+        adapter = PreSeededAdapter(ToolConfig(), tmp_path)
+        result = run_adapter_and_capture_degradations(adapter, None, [], None)
+        texts = [str(w) for w in result.warnings]
+        assert len(texts) == len(set(texts)), "同一条降级被记了两遍"
+        assert texts[0].startswith("wLogDate does not support range constraints")
+
+    def test_non_degradation_warnings_are_not_swallowed(self, tmp_path):
+        """窗口里收到的其它类别警告必须重发，不能因为落档而降级成"看不见"。"""
+        import warnings as _warnings
+
+        from phylodater.core.pipeline import run_adapter_and_capture_degradations
+
+        class NoisyAdapter(DegradationProbingAdapter):
+            def prepare_inputs(self, tree, calibrations, alignment_path=None):
+                _warnings.warn("noise from elsewhere", UserWarning, stacklevel=2)
+                return super().prepare_inputs(tree, calibrations, alignment_path)
+
+        adapter = NoisyAdapter(ToolConfig(), tmp_path)
+        with _warnings.catch_warnings(record=True) as caught:
+            _warnings.simplefilter("always")
+            result = run_adapter_and_capture_degradations(adapter, None, [], None)
+        assert not any("noise from elsewhere" in str(w) for w in result.warnings)
+        assert any("noise from elsewhere" == str(w.message) for w in caught)
+
+    def test_without_unified_exit_constraint_degradations_are_lost(
+        self, tmp_path
+    ):
+        """E-8 的"修复前"锚点：绕过统一出口，约束级降级就只活在警告流里。
+
+        这条测试钉住缺陷本身而不是巧合：三段调用照旧直跑，
+        ``result.warnings`` 应当**为空**，而警告确实发出来了（3 条）。
+        若哪天有人把 ``models/constraints.py`` 的降级改成直接写结果，
+        这条会失败并提醒复核 E-8 的口径。
+        """
+        with _warnings.catch_warnings(record=True) as caught:
+            _warnings.simplefilter("always")
+            adapter = DegradationProbingAdapter(ToolConfig(), tmp_path)
+            adapter.prepare_inputs(None, [], None)
+            adapter.execute()
+            result = adapter.parse_results()
+
+        assert len(caught) == 3
+        assert all(
+            issubclass(w.category, SemanticDegradationWarning) for w in caught
+        )
+        assert result.warnings == [], "约束级降级竟已自己进了结果，E-8 口径需重审"
+
+    def test_serial_pipeline_path_archives_degradations(
+        self, tmp_path, degradation_registry, monkeypatch
+    ):
+        """串行路径（``_execute_methods``）也走同一个统一出口。"""
+        pipeline = _pipeline(tmp_path, methods=("degradation_probe",), seed=42)
+        monkeypatch.setattr(
+            pipeline, "_plan_method_execution", lambda *a, **k: ["degradation_probe"]
+        )
+
+        pipeline._execute_methods(None, None, [])
+
+        result = pipeline.results["degradation_probe"]
+        assert len(result.warnings) == 3
+        assert len(result.metadata["constraint_degradations"]) == 3
+
+    def test_parallel_pipeline_path_archives_degradations(
+        self, tmp_path, degradation_registry, monkeypatch
+    ):
+        """并行路径同样落档 —— 口径不只在串行才成立。"""
+        pipeline = _pipeline(
+            tmp_path, cls=ParallelPipeline, methods=("degradation_probe",), seed=42
+        )
+        monkeypatch.setattr(
+            pipeline, "_plan_method_execution", lambda *a, **k: ["degradation_probe"]
+        )
+
+        pipeline._execute_methods(None, None, [])
+
+        result = pipeline.results["degradation_probe"]
+        assert len(result.warnings) == 3
+        assert len(result.metadata["constraint_degradations"]) == 3

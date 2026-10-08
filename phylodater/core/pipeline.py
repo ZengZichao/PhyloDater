@@ -10,6 +10,7 @@ import os
 import sys
 import threading
 import time
+import warnings as _warnings
 from dataclasses import dataclass, field, is_dataclass
 from json import dumps as _json_dumps
 from pathlib import Path
@@ -27,12 +28,119 @@ from ..infrastructure.checkpoint import PipelineCheckpointManager
 from ..infrastructure.plugins import QCPlugin, QCPluginChain, get_plugin_registry
 from ..models import CalibrationPoint, DatingResult, PhylogeneticTree
 from ..services import CalibrationResolver, TaxonomyParser, TreeValidator
-from .exceptions import CalibrationError, PhyloDaterError
-from .method_interface import DatingMethodRegistry
+from .exceptions import CalibrationError, PhyloDaterError, SemanticDegradationWarning
+from .method_interface import DatingMethod, DatingMethodRegistry
 
 # 全局临时目录注册表，用于在异常退出时清理（线程安全）
 _temp_directories: Set[Path] = set()
 _temp_dirs_lock = threading.Lock()
+
+
+def _degradation_record(warning: Any) -> Optional[Dict[str, Any]]:
+    """把一条已捕获的警告转成降级记录；非 ``SemanticDegradationWarning`` 返回 ``None``。
+
+    记录形态见 :func:`~phylodater.models.constraints._degradation_details`；老式
+    纯文本警告（没有挂 ``degradation`` 属性的）只填 ``message``，其余键留空，
+    这样"落档"这件事不依赖具体是谁发的警告。
+    """
+    category = getattr(warning, "category", None)
+    if not (isinstance(category, type) and issubclass(category, SemanticDegradationWarning)):
+        return None
+    message = str(getattr(warning, "message", ""))
+    attached = getattr(warning.message, "degradation", None)
+    record: Dict[str, Any] = {
+        "constraint": "",
+        "target": "",
+        "original": "",
+        "degraded_to": "",
+        "node": "",
+    }
+    if isinstance(attached, dict):
+        record.update({str(k): v for k, v in attached.items()})
+    record.setdefault("message", message)
+    if not record.get("message"):
+        record["message"] = message
+    return record
+
+
+def run_adapter_and_capture_degradations(
+    adapter: DatingMethod,
+    tree: PhylogeneticTree,
+    calibrations: List[CalibrationPoint],
+    alignment_path: Optional[Path],
+) -> DatingResult:
+    """``prepare_inputs`` → ``execute`` → ``parse_results`` 的**统一出口**（E-8/E-9）。
+
+    修复项 E-8：约束模块（:mod:`phylodater.models.constraints`）发出的语义降级
+    警告（``SemanticDegradationWarning``）过去只走 Python 的警告流，**从来不进**
+    ``DatingResult.warnings``。适配器自己那批降级（引擎侧的比对、越界检查）确实有
+    列表可落 —— 例如 ``adapters/r8s_pyr8s_method.py:595,859``、``lsd2_method.py:881``、
+    ``pathd8_method.py:1205``、``treepl_method.py:1515``、``wlogdate_method.py:647``；
+    但 ``UniformAgeConstraint → wLogDate 压成中值`` 这类**约束级**降级在结果里查不到，
+    日志滚过就没了。现在串行与并行两条路径都经过这里：在整个"跑一个方法"的窗口内用
+    ``warnings.catch_warnings(record=True)`` + ``simplefilter("always")`` 收集，
+    然后把每条降级警告的文本追加进 ``result.warnings``（按文本去重，适配器自己
+    已经写进去的条目排在前面），把结构化记录放进
+    ``result.metadata["constraint_degradations"]``，并尽力回填到对应节点的
+    :attr:`~phylodater.models.results.NodeAgeEstimate.degraded_from`。
+
+    修复项 E-9 的口径写在这里：``NodeAgeEstimate.degraded_from`` 只是**降级前的
+    约束形态**的规范化描述 —— 引擎已经按降级后的约束算完年龄，这一步不可逆，
+    但"当初到底给了什么约束、被改写成了什么"从此可查。
+
+    已知取舍（如实记录，不改口径）：``catch_warnings`` 改写的是**进程级**过滤器，
+    并非线程安全。并行跑多个方法时，若另一线程正好在本窗口内发降级警告，理论上
+    可能被记到本方法的结果里。缓解措施有二：本窗口只覆盖"一个方法"的三段调用
+    （不是全局）；非降级类别的警告在窗口结束后**原样重发**一次，因此它们不会因为
+    被别的线程吞掉而丢失，用户配置的 ``-W error`` 语义也得以恢复。
+    """
+    start = time.time()
+    with _warnings.catch_warnings(record=True) as caught:
+        _warnings.simplefilter("always")
+        adapter.prepare_inputs(tree, calibrations, alignment_path)
+        adapter.execute()
+        result = adapter.parse_results()
+    result.execution_seconds = time.time() - start
+
+    degradations: List[Dict[str, Any]] = []
+    foreign: List[Any] = []
+    for warning in caught:
+        record = _degradation_record(warning)
+        if record is None:
+            foreign.append(warning)
+        else:
+            degradations.append(record)
+
+    # 重发非降级警告，恢复被本窗口临时改写的过滤器语义。
+    for warning in foreign:
+        try:
+            _warnings.warn(warning.message, warning.category, stacklevel=1)
+        except Exception:  # pragma: no cover - 重发本身不得影响已产出的结果
+            pass
+
+    if degradations:
+        existing = {str(w) for w in result.warnings}
+        for record in degradations:
+            text = str(record.get("message") or record)
+            if text not in existing:
+                result.warnings.append(text)
+                existing.add(text)
+        metadata = getattr(result, "metadata", None)
+        if isinstance(metadata, dict):
+            previous = metadata.get("constraint_degradations")
+            merged = list(previous) if isinstance(previous, list) else []
+            merged.extend(degradations)
+            metadata["constraint_degradations"] = merged
+
+        # 尽力回填到节点估计：只有降级记录带得出节点名、且结果里真有这个节点时才写。
+        for record in degradations:
+            node = str(record.get("node") or "")
+            estimate = result.node_ages.get(node) if node else None
+            if estimate is not None and estimate.degraded_from is None:
+                estimate.degraded_from = dict(record)
+
+    return result
+
 
 
 def _derive_method_seeds(
@@ -1468,11 +1576,11 @@ class DatingPipeline:
                             method_name, method_name, adapter_version
                         )
 
-                method_start = time.time()
-                adapter.prepare_inputs(tree, calibrations, alignment_path)
-                adapter.execute()
-                result = adapter.parse_results()
-                result.execution_seconds = time.time() - method_start
+                # E-8/E-9：统一出口 —— 语义降级警告在这一段被收集并落档到结果里，
+                # 串行与并行两条路径共用同一个函数，口径不会分叉。
+                result = run_adapter_and_capture_degradations(
+                    adapter, tree, calibrations, alignment_path
+                )
 
                 self.results[method_name] = result
 
@@ -1700,11 +1808,11 @@ class ParallelPipeline(DatingPipeline):
                             method_name, method_name, adapter_version
                         )
 
-                method_start = time.time()
-                adapter.prepare_inputs(tree, calibrations, alignment_path)
-                adapter.execute()
-                result = adapter.parse_results()
-                result.execution_seconds = time.time() - method_start
+                # E-8/E-9：统一出口 —— 语义降级警告在这一段被收集并落档到结果里，
+                # 串行与并行两条路径共用同一个函数，口径不会分叉。
+                result = run_adapter_and_capture_degradations(
+                    adapter, tree, calibrations, alignment_path
+                )
 
                 if checkpoint_manager:
                     checkpoint_manager.complete_method(method_name, result)

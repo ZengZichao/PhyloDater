@@ -32,6 +32,17 @@ class NodeAgeEstimate:
     ci_lower: Optional[float] = None  # 区间下界（Ma）
     ci_upper: Optional[float] = None  # 区间上界（Ma）
     ci_type: CIType = CIType.NONE  # 区间类型
+    #: 降级前约束的规范化描述（修复项 E-9）。
+    #:
+    #: **降级是不可逆的**：引擎输出的就是这个节点在"降级后约束"下的年龄，本字段
+    #: 不会把年龄改回降级前的样子，也无法据此重算区间。它记录的只是"如果没降级，
+    #: 这条约束本来长什么样"，让事后审计能查回来。键约定：
+    #: ``constraint``（约束类名）、``target``（目标软件）、``original``（降级前约束
+    #: 的规范化逐字段描述）、``original_description``（同一条约束的人类可读摘要）、
+    #: ``degraded_to``（实际交给引擎的形态）、``node``（校准点/节点
+    #: 标识，取不到时为空串）、``message``（引擎侧原始告警文本）。
+    #: 未发生降级的节点保持 ``None``，序列化时也不写这个键。
+    degraded_from: Optional[Dict[str, Any]] = None
 
     def __post_init__(self) -> None:
         # 确保 ci_type 是 CIType 枚举
@@ -40,13 +51,18 @@ class NodeAgeEstimate:
 
     def to_dict(self) -> Dict[str, Any]:
         """转换为字典"""
-        return {
+        out = {
             "mean_age": self.mean_age,
             "median_age": self.median_age,
             "ci_lower": self.ci_lower,
             "ci_upper": self.ci_upper,
             "ci_type": self.ci_type.value if self.ci_type else None,
         }
+        # 只在真的降级过时才写这个键：绝大多数节点不受影响，
+        # comparison_table / JSON 快照的既有结构逐字不变。
+        if self.degraded_from is not None:
+            out["degraded_from"] = dict(self.degraded_from)
+        return out
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "NodeAgeEstimate":
@@ -57,6 +73,7 @@ class NodeAgeEstimate:
             ci_lower=data.get("ci_lower"),
             ci_upper=data.get("ci_upper"),
             ci_type=CIType(data.get("ci_type")) if data.get("ci_type") else CIType.NONE,
+            degraded_from=data.get("degraded_from"),
         )
 
 
