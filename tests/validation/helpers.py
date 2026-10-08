@@ -3,6 +3,7 @@
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import List, Optional
 
@@ -72,7 +73,12 @@ def run_cli(argv: List[str], cwd: Optional[Path] = None) -> subprocess.Completed
     """Run the phylodater CLI in a subprocess and return the CompletedProcess."""
     env = os.environ.copy()
     env["PYTHONPATH"] = str(PROJECT_ROOT)
-    cmd = ["python", "-m", "phylodater"] + argv
+    # ``sys.executable``, not the bare string ``"python"``: virtualenv/mamba
+    # environments routinely have no ``python`` on PATH (only ``python3``), and
+    # the literal then raised ``FileNotFoundError`` from ``Popen`` — 28
+    # validation tests failed for want of a path, not for want of a feature.
+    # ``tests/functional/conftest.py`` already does this correctly.
+    cmd = [sys.executable, "-m", "phylodater"] + argv
     return subprocess.run(
         cmd,
         cwd=str(cwd or PROJECT_ROOT),
