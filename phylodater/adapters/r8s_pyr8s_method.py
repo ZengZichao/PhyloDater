@@ -50,6 +50,7 @@ from ..models import (
 )
 
 
+@DatingMethodRegistry.register("r8s")
 class R8sPyr8sMethod(DatingMethod[R8sConfig]):
     """
     r8s/pyr8s 定年适配器
@@ -1025,7 +1026,3 @@ class R8sPyr8sMethod(DatingMethod[R8sConfig]):
         except Exception as e:
             self.logger.warning(f"Failed to restore r8s leaf names: {e}")
             return newick
-
-
-# 注册适配器
-DatingMethodRegistry.register("r8s", R8sPyr8sMethod)

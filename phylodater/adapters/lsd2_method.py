@@ -69,6 +69,7 @@ _DATE_COMMENT_PATTERN = re.compile(
 )
 
 
+@DatingMethodRegistry.register("lsd2")
 class LSD2Method(DatingMethod[LSD2Config]):
     """
     LSD2 (IQ-TREE2) 定年适配器
@@ -882,7 +883,3 @@ class LSD2Method(DatingMethod[LSD2Config]):
 
         self.logger.success(f"Parsed LSD2 results: {len(node_ages)} node ages")
         return result
-
-
-# 注册适配器
-DatingMethodRegistry.register("lsd2", LSD2Method)

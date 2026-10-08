@@ -172,6 +172,7 @@ def _wlogdate_lca(
     return None
 
 
+@DatingMethodRegistry.register("wlogdate")
 class WLogDateMethod(DatingMethod[Union[ToolConfig, WLogDateConfig]]):
     """
     wLogDate 定年适配器
@@ -789,7 +790,3 @@ class WLogDateMethod(DatingMethod[Union[ToolConfig, WLogDateConfig]]):
                 mean_age=age, ci_type=CIType.NONE
             )
             idx += 1
-
-
-# 注册适配器
-DatingMethodRegistry.register("wlogdate", WLogDateMethod)

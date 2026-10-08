@@ -248,7 +248,18 @@ super().__init__(method_config, output_dir, software_paths, common_config=common
 1. 在 `phylodater/adapters/` 创建新的适配器类
 2. 继承 `DatingMethod` 抽象基类
 3. 实现所有抽象方法
-4. 在文件末尾注册：`DatingMethodRegistry.register("method_name", YourClass)`
+4. 注册这个类 —— 推荐写法是装饰器（审阅项 E-7）：
+
+   ```python
+   @DatingMethodRegistry.register("method_name")
+   class YourMethod(DatingMethod[YourConfig]):
+       ...
+   ```
+
+   显式的两参数调用 `DatingMethodRegistry.register("method_name", YourClass)`
+   仍然可用，行为与历史逐字一致；两种形态都会把键统一转成小写，并原样返回被注册
+   的类，因此模块里的类名仍然是一个可用的类对象。仓库内置的七个适配器现已全部
+   改用装饰器形态。
 5. 添加单元测试
 
 ### 添加新的约束类型

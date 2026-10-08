@@ -141,6 +141,107 @@ class TestDatingMethodRegistry:
         assert len(methods) == 2
 
 
+class TestRegisterDecoratorForm:
+    """修复项 E-7：``DatingMethodRegistry.register`` 必须既能当装饰器用、又保持
+    七处两参数调用的历史语义。
+
+    稿件 §2.1.1 原本把注册描述成 ``@DatingMethodRegistry.register()`` 装饰器，
+    而当时的实现是必须给两个参数的 ``@classmethod``（照装饰器写会 ``TypeError``）。
+    现在两种形态都合法，这组测试把契约钉住。
+    """
+
+    def test_one_argument_call_returns_a_decorator(self):
+        """只给方法名 ⇒ 返回可调用装饰器，而不是 ``None``。"""
+        decorator = DatingMethodRegistry.register("decorated_mock")
+        assert callable(decorator)
+
+        decorated = decorator(MockDatingMethod)
+        # 装饰器原样返回被装饰的类：模块里的名字仍然是一个可用的类
+        assert decorated is MockDatingMethod
+        assert DatingMethodRegistry.is_registered("decorated_mock")
+
+    def test_decorator_syntax_registers_and_class_stays_constructible(self, tmp_path):
+        """``@register("name")`` 的完整语法：入库 + 类名未被替换成 None/代理。"""
+
+        @DatingMethodRegistry.register("SyntaxMock")
+        class SyntaxMockMethod(MockDatingMethod):
+            """用装饰器形态注册的模拟方法"""
+
+        assert isinstance(SyntaxMockMethod, type)
+        assert DatingMethodRegistry.is_registered("syntaxmock")  # 键仍统一小写
+        instance = DatingMethodRegistry.create("syntaxmock", ToolConfig(), tmp_path)
+        assert isinstance(instance, SyntaxMockMethod)
+
+    def test_two_argument_form_is_unchanged(self):
+        """历史两参数形态继续可用，且不产生任何"装饰器包装"。"""
+        returned = DatingMethodRegistry.register("legacy_mock", MockDatingMethod)
+        assert returned is MockDatingMethod
+        assert DatingMethodRegistry.is_registered("legacy_mock")
+
+    def test_decorator_returns_the_exact_class_object(self):
+        """装饰器不改写类对象：``is`` 同一性成立，抽象方法约束照旧由基类负责。"""
+
+        class PlainMock(MockDatingMethod):
+            pass
+
+        assert DatingMethodRegistry.register("exact_form")(PlainMock) is PlainMock
+        assert PlainMock.__name__ == "PlainMock"
+        with pytest.raises(TypeError):
+            # DatingMethod 的抽象成员没补齐时，实例化仍应失败——装饰器不能绕过它
+            DatingMethod()
+
+    def test_all_seven_adapters_use_the_decorator_form(self):
+        """七个适配器改用装饰器注册；源码里不应再残留模块级两参数调用。"""
+        from pathlib import Path
+
+        adapters_dir = Path(__file__).resolve().parents[3] / "phylodater" / "adapters"
+        expected = {
+            "mcmctree_method.py": "mcmctree",
+            "r8s_pyr8s_method.py": "r8s",
+            "lsd2_method.py": "lsd2",
+            "pathd8_method.py": "pathd8",
+            "treepl_method.py": "treepl",
+            "mdcat_method.py": "mdcat",
+            "wlogdate_method.py": "wlogdate",
+        }
+        assert len(expected) == 7
+        for filename, key in expected.items():
+            source = (adapters_dir / filename).read_text(encoding="utf-8")
+            assert f'@DatingMethodRegistry.register("{key}")' in source, filename
+            assert f'DatingMethodRegistry.register("{key}", ' not in source, filename
+
+    def test_seven_methods_resolve_after_importing_adapters(self):
+        """导入适配器包后，七个名字都能在注册表里解析（装饰器确实生效）。"""
+        import importlib
+        import sys
+
+        import phylodater.adapters  # noqa: F401  —— 包 __init__ 会导入七个适配器
+
+        missing = [
+            name
+            for name in ("mcmctree", "r8s", "lsd2", "pathd8", "treepl", "mdcat", "wlogdate")
+            if not DatingMethodRegistry.is_registered(name)
+        ]
+        if missing:
+            # 前面的测试类会清空注册表；此时重新执行模块以触发装饰器注册。
+            # conftest 的 autouse ``reset_registry`` 会在本用例后恢复原状。
+            for filename, key in (
+                ("mcmctree_method", "mcmctree"),
+                ("r8s_pyr8s_method", "r8s"),
+                ("lsd2_method", "lsd2"),
+                ("pathd8_method", "pathd8"),
+                ("treepl_method", "treepl"),
+                ("mdcat_method", "mdcat"),
+                ("wlogdate_method", "wlogdate"),
+            ):
+                if key in missing:
+                    module = sys.modules.get(f"phylodater.adapters.{filename}")
+                    if module is not None:
+                        importlib.reload(module)
+        for key in ("mcmctree", "r8s", "lsd2", "pathd8", "treepl", "mdcat", "wlogdate"):
+            assert DatingMethodRegistry.is_registered(key), key
+
+
 class TestDatingMethod:
     """测试 DatingMethod 基类"""
 

@@ -41,6 +41,7 @@ from ..models import (
 )
 
 
+@DatingMethodRegistry.register("mdcat")
 class MDCatMethod(DatingMethod[MDCatConfig]):
     """
     MD-Cat 定年适配器
@@ -891,7 +892,3 @@ class MDCatMethod(DatingMethod[MDCatConfig]):
                 node_ages[key] = NodeAgeEstimate(mean_age=age, ci_type=CIType.NONE)
 
         return node_ages
-
-
-# 注册适配器
-DatingMethodRegistry.register("mdcat", MDCatMethod)

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Dict,
     Generic,
     List,
@@ -21,6 +22,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    overload,
 )
 
 if TYPE_CHECKING:
@@ -37,6 +39,11 @@ from .exceptions import ExecutionError
 #: 设计取舍见 ``docs/ARCHITECTURE.md`` §Key Design Decisions 第 5 节
 #: （中文版：``docs/ARCHITECTURE_CN.md`` §关键设计决策 5「适配器配置类型」）。
 ConfigT = TypeVar("ConfigT")
+
+#: 被注册进 :class:`DatingMethodRegistry` 的适配器类类型（修复项 E-7）。
+#: 装饰器形态 ``@DatingMethodRegistry.register("name")`` 靠它把"被装饰的类"原样
+#: 返回，从而不会把模块里的类名变成 ``None`` 或某个代理对象。
+MethodT = TypeVar("MethodT", bound="DatingMethod")
 
 #: ``prepare_inputs()`` 返回的“输入文件信息字典”里允许出现的值。它既装文件
 #: 路径，也装适配器随调用带出的**执行统计量**（位点数、耗时、对数似然）——
@@ -505,16 +512,68 @@ class DatingMethodRegistry:
 
     _registry: Dict[str, Type[DatingMethod]] = {}
 
+    @overload
     @classmethod
-    def register(cls, name: str, method_class: Type[DatingMethod]) -> None:
-        """
-        注册定年方法
+    def register(
+        cls, name: str, method_class: Type[MethodT]
+    ) -> Type[MethodT]:  # pragma: no cover - typing overload
+        ...
+
+    @overload
+    @classmethod
+    def register(
+        cls, name: str, method_class: None = None
+    ) -> Callable[[Type[MethodT]], Type[MethodT]]:  # pragma: no cover
+        ...
+
+    @classmethod
+    def register(
+        cls,
+        name: str,
+        method_class: Optional[Type[DatingMethod]] = None,
+    ) -> Any:
+        """注册定年方法——两种调用形态都支持（修复项 E-7）。
+
+        修复的问题：稿件 §2.1.1 一度把注册描述成
+        ``@DatingMethodRegistry.register("method_name")`` **装饰器**用法，而当时的
+        实现是一个必须给两个参数的 ``@classmethod``（返回 ``None``）——照装饰器写法
+        使用会当场 ``TypeError: register() missing 1 required positional argument``。
+        现在 ``register`` 在只给方法名时返回真正的类装饰器，给了第二个参数时保持
+        逐字不变的历史行为，因此既有调用点（七个适配器、测试与外部插件）不受影响。
+
+        形态一 —— 装饰器（推荐，七个适配器已改用它）::
+
+            @DatingMethodRegistry.register("treepl")
+            class TreePLMethod(DatingMethod[TreePLConfig]):
+                ...
+
+        形态二 —— 两参数显式调用（历史形态，继续有效）::
+
+            DatingMethodRegistry.register("treepl", TreePLMethod)
+
+        两种形态等价：键统一小写入库，装饰器**原样返回被装饰的类**，所以
+        ``TreePLMethod`` 在模块里仍然是一个可用的类对象（不是 ``None``、也不是
+        包装过的代理）。大小写不敏感由 :meth:`create` / :meth:`get_method_names`
+        的 ``name.lower()`` 查询保证。
 
         Args:
-            name: 方法名称
-            method_class: 方法类
+            name: 方法名称（入库前转小写）。
+            method_class: 方法类；省略时表示"以装饰器方式使用"。
+
+        Returns:
+            传入 ``method_class`` 时原样返回该类（历史返回值为 ``None``，
+            返回值未被任何调用点使用）；省略时返回一个类装饰器。
         """
+        if method_class is None:
+
+            def _decorator(klass: Type[MethodT]) -> Type[MethodT]:
+                cls._registry[name.lower()] = klass
+                return klass
+
+            return _decorator
+
         cls._registry[name.lower()] = method_class
+        return method_class
 
     @classmethod
     def create(

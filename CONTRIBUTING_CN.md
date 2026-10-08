@@ -164,7 +164,7 @@ phylodater/
 1. 在 `phylodater/adapters/` 创建新的适配器类
 2. 继承 `DatingMethod` 基类
 3. 实现所有抽象方法
-4. 在适配器文件末尾注册：`DatingMethodRegistry.register("method_name", YourClass)`
+4. 在类定义上方用装饰器注册：`@DatingMethodRegistry.register("method_name")`（审阅项 E-7）。显式两参数调用 `DatingMethodRegistry.register("method_name", YourClass)` 依然有效，两者等价。
 5. 添加单元测试
 
 ### 适配器模板
@@ -184,6 +184,7 @@ from ..infrastructure.configuration import (
 )
 
 
+@DatingMethodRegistry.register("your_method")
 class YourMethod(DatingMethod[YourMethodConfig]):
     """基类按 ConfigT 参数化：self.config 静态视角下就是 YourMethodConfig。"""
 
@@ -236,7 +237,9 @@ class YourMethod(DatingMethod[YourMethodConfig]):
         pass
 
 
-DatingMethodRegistry.register("your_method", YourMethod)
+# 注册已由类定义上方的 @DatingMethodRegistry.register("your_method") 完成（E-7）。
+# 历史的两参数形态仍然有效，两种写法等价：
+# DatingMethodRegistry.register("your_method", YourMethod)
 ```
 
 ## 文档

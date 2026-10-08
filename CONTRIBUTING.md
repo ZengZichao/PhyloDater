@@ -173,7 +173,7 @@ phylodater/
 1. Create a new adapter class in `phylodater/adapters/`
 2. Inherit the `DatingMethod` base class
 3. Implement all abstract methods
-4. Register at the end of the adapter file: `DatingMethodRegistry.register("method_name", YourClass)`
+4. Register the class with the decorator `@DatingMethodRegistry.register("method_name")` placed directly above the class definition (review item E-7). The explicit two-argument call `DatingMethodRegistry.register("method_name", YourClass)` is still supported and behaves identically.
 5. Add unit tests
 
 ### Adapter Template
@@ -193,6 +193,7 @@ from ..infrastructure.configuration import (
 )
 
 
+@DatingMethodRegistry.register("your_method")
 class YourMethod(DatingMethod[YourMethodConfig]):
     """基类按 ConfigT 参数化：self.config 静态视角下就是 YourMethodConfig。"""
 
@@ -245,7 +246,9 @@ class YourMethod(DatingMethod[YourMethodConfig]):
         pass
 
 
-DatingMethodRegistry.register("your_method", YourMethod)
+# 注册已由类定义上方的 @DatingMethodRegistry.register("your_method") 完成（E-7）。
+# 历史的两参数形态仍然有效，两种写法等价：
+# DatingMethodRegistry.register("your_method", YourMethod)
 ```
 
 ## Documentation

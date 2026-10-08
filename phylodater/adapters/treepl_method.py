@@ -70,6 +70,7 @@ class CVResult:
     message: str = ""
 
 
+@DatingMethodRegistry.register("treepl")
 class TreePLMethod(DatingMethod[TreePLConfig]):
     """
     treePL 定年适配器
@@ -1816,7 +1817,3 @@ class TreePLMethod(DatingMethod[TreePLConfig]):
             self.logger.warning("ETE3 not available, cannot extract ages from tree")
 
         return node_ages
-
-
-# 注册适配器
-DatingMethodRegistry.register("treepl", TreePLMethod)
