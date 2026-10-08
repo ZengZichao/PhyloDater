@@ -140,6 +140,18 @@ Environment variables used for runtime overrides:
 - `PHYLODATER_BURNIN`: Number of MCMC burnin generations
 - `PHYLODATER_TIMEOUT`: Execution timeout
 
+Review item E-6 corrected the thread chain so that the documented priority is
+what actually happens. For `phylodater dating` the worker count is resolved as
+`--threads/-j` (only when the flag is given) > `PHYLODATER_THREADS` (only when
+it holds a positive integer) > YAML `software.common.nthreads` > built-in `4`.
+Before the fix the argparse default of `4` was always passed down explicitly, so
+the environment variable and the YAML key could never win, and the example
+config wrote `threads:` while the dataclass field is `nthreads` (the mismatch
+made YAML thread settings be dropped as "Unknown parameter"). `threads` is now
+accepted as a deprecated alias of `software.common.nthreads` — with a warning,
+and `nthreads` wins when both are present. Every run logs the resolved value
+together with the layer it came from.
+
 **Consequences**:
 - **Positive**: Flexible configuration adapts to different usage scenarios
 - **Positive**: Configuration files can be version-controlled

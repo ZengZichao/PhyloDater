@@ -178,6 +178,61 @@ class TestMethodSeedDerivation:
         assert small == large
 
 
+class TestLegacyYamlKeyAliases:
+    """修复项 E-6：YAML 里 ``software.common.threads`` 与规范键 ``nthreads`` 的统一"""
+
+    def _write(self, tmp_path, common_block: dict):
+        path = tmp_path / "config.yaml"
+        with safe_writer(path) as f:
+            yaml.dump({"software": {"common": common_block}}, f)
+        return path
+
+    def test_canonical_key_silently_accepted(self, tmp_path):
+        cfg = Configuration().load_from_file(self._write(tmp_path, {"nthreads": 9}))
+        assert cfg.get_config().common.nthreads == 9
+
+    def test_legacy_key_still_works(self, tmp_path):
+        """旧模板/旧文档写的 threads 不能"写了白写"：仍生效 + 弃用告警。"""
+        cfg = Configuration().load_from_file(self._write(tmp_path, {"threads": 7}))
+        assert cfg.get_config().common.nthreads == 7
+
+    def test_legacy_key_emits_deprecation_warning(self, tmp_path, capsys):
+        Configuration().load_from_file(self._write(tmp_path, {"threads": 7}))
+        captured = capsys.readouterr()
+        combined = captured.out + captured.err
+        assert "threads" in combined
+        assert "nthreads" in combined
+
+    def test_canonical_key_wins_when_both_present(self, tmp_path):
+        cfg = Configuration().load_from_file(
+            self._write(tmp_path, {"threads": 2, "nthreads": 11})
+        )
+        assert cfg.get_config().common.nthreads == 11
+
+    def test_cli_override_beats_yaml_legacy_key(self, tmp_path):
+        cfg = Configuration().load_from_file(self._write(tmp_path, {"threads": 7}))
+        cfg.set_cli_override("common", "nthreads", 3)
+        assert cfg.get_config().common.nthreads == 3
+
+    def test_method_args_still_reject_legacy_key(self):
+        """CLI 侧不做静默别名：--method-args threads=... 必须报错并给出建议。"""
+        cfg = Configuration()
+        with pytest.raises(ValueError, match="Unknown parameter"):
+            cfg.set_cli_override("common", "threads", 4)
+
+    def test_example_config_uses_canonical_key(self):
+        """仓库里的 config.example.yaml 必须已经写规范键（不再自相矛盾）。"""
+        from pathlib import Path
+
+        example = Path(__file__).resolve().parents[3] / "config.example.yaml"
+        if not example.exists():  # pragma: no cover - 打包安装后可能不存在
+            pytest.skip("config.example.yaml not present")
+        text = example.read_text(encoding="utf-8")
+        assert "nthreads:" in text
+        # 不再有"software.common.threads"这一旧写法
+        assert "\n    threads:" not in text
+
+
 class TestConfiguration:
     """测试 Configuration 管理器"""
 

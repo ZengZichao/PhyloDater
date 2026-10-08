@@ -562,6 +562,21 @@ class Configuration:
     3. 命令行参数（最高优先级）
     """
 
+    #: YAML 里的历史键名别名：**规范键 → 旧键**（修复项 E-6）。
+    #:
+    #: ``config.example.yaml`` 曾经把线程数写成 ``software.common.threads``，而
+    #: :class:`CommonConfig` 的字段叫 ``nthreads``（treePL/r8s 等适配器写的也是
+    #: ``nthreads``）。两边对不上，用户照模板写的线程数会被
+    #: ``_validate_and_merge`` 当成 "Unknown parameter" 丢弃。现在规范键唯一是
+    #: ``nthreads``；``threads`` 仍被**接受**（双向可用），但会发一条弃用告警，
+    #: 若同一块里两个键都写了，以规范键 ``nthreads`` 为准并同样告警。
+    #:
+    #: 只作用于 YAML 文件通路：``--method-args threads=...`` 依旧按未知参数拒绝
+    #: （那里有 difflib 给出的"是否想输入 nthreads"提示，不需要静默别名）。
+    _LEGACY_YAML_KEYS: Dict[str, Dict[str, str]] = {
+        "common": {"threads": "nthreads"},
+    }
+
     def __init__(self) -> None:
         self.logger = get_logger()
         self._defaults = ToolConfig()
@@ -665,15 +680,57 @@ class Configuration:
             self._final_config = self._merge_configs()
         return self._final_config
 
+    def _apply_yaml_key_aliases(
+        self, tool_name: str, config_dict: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """把 YAML 里的旧键名换成规范键名，并留下弃用告警（修复项 E-6）。
+
+        行为约定（写清楚，避免"双向接受"变成"两个键谁赢不说"）：
+
+        * 只写了旧键（如 ``threads``）→ 按旧键的值生效，发一条弃用告警提示改写；
+        * 两个键都写了（``threads`` 与 ``nthreads``）→ **规范键赢**，旧键被忽略，
+          并同样发告警；
+        * 只写了规范键 → 完全静默，与旧版一致。
+        """
+        aliases = self._LEGACY_YAML_KEYS.get(tool_name)
+        merged = dict(config_dict or {})
+        if not aliases:
+            return merged
+
+        for legacy_key, canonical_key in aliases.items():
+            if legacy_key not in merged:
+                continue
+            legacy_value = merged.pop(legacy_key)
+            if canonical_key in merged:
+                self.logger.warning(
+                    f"配置文件 {tool_name} 块同时写了 {legacy_key} 与规范键 "
+                    f"{canonical_key}：采用 {canonical_key}="
+                    f"{merged[canonical_key]!r}，忽略 {legacy_key}="
+                    f"{legacy_value!r}（请删除旧键，见修复项 E-6）。",
+                    category=UnknownParameterWarning,
+                )
+            else:
+                merged[canonical_key] = legacy_value
+                self.logger.warning(
+                    f"配置文件里的旧键名 {tool_name}.{legacy_key}：规范键名是 "
+                    f"{tool_name}.{canonical_key}。本次已按 {legacy_key}="
+                    f"{legacy_value!r} 生效，但请在 YAML 里改写为 "
+                    f"{canonical_key}（见修复项 E-6）。",
+                    category=UnknownParameterWarning,
+                )
+        return merged
+
     def _validate_and_merge(self, tool_name: str, config_dict: Dict[str, Any]) -> None:
         """验证文件配置并存储覆盖值（不修改 _defaults）
 
         验证字段名和类型后，将有效参数存储到 _file_overrides 中，
-        在 _merge_configs 中统一应用。
+        在 _merge_configs 中统一应用。旧键名先经
+        :meth:`_apply_yaml_key_aliases` 归一（修复项 E-6）。
         """
         tool_obj = getattr(self._defaults, tool_name)
         valid_fields = tool_obj.__dataclass_fields__
 
+        config_dict = self._apply_yaml_key_aliases(tool_name, config_dict)
         overrides = {}
         for key, value in config_dict.items():
             if key in valid_fields:

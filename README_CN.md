@@ -358,7 +358,7 @@ phylodater [通用参数] <子命令> [子命令参数]
 | | `--outgroup` | 外群名称 | 无 |
 | | `--multi-tree-mode` | 多棵树模式（`split`/`first`/`last`/`random`/`ask`/`error`） | `error` |
 | 校准 | `--auto-calibrate` | 自动添加校准点 | 无 |
-| 执行控制 | `-j/--threads` | 并行线程数 | `4` |
+| 执行控制 | `-j/--threads` | 并行 worker 线程数；仅在显式给出时生效，否则依次为 环境变量 `PHYLODATER_THREADS` > 配置文件 `software.common.nthreads` > 默认 `4`（审阅项 E-6） | 不指定（走上述优先级链） |
 | | `--seed` | 全局随机种子 | 自动生成 |
 | | `--dry-run` | 干运行模式（仅验证） | 否 |
 | | `--mol-type` | 序列分子类型（`DNA`/`RNA`/`protein`） | 自动检测 |

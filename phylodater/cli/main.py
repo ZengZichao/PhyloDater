@@ -135,14 +135,91 @@ def _validate_positive_int(value: str) -> int:
     return ivalue
 
 
-def _clamp_threads(value: int) -> int:
-    """将线程数钳制到 [1, os.cpu_count()] 区间。
+def _clamp_threads(value: Optional[int]) -> Optional[int]:
+    """将线程数钳制到 [1, os.cpu_count()] 区间（``None`` 原样返回）。
 
     ``--threads``/``-j`` 的负值/非整数已由 :func:`_validate_positive_int` 在解析阶段
     拒绝；此处仅处理超大值，避免传入远超物理核数导致 CPU 过度订阅。
+
+    修复项 E-6：``--threads`` 现在默认是 ``None``（"用户没有说"），而 ``None`` 必须
+    一路保持到 :func:`_resolve_thread_count`，否则又会在环境变量之前被填成 4。
     """
+    if value is None:
+        return None
     max_threads = os.cpu_count() or 1
     return max(1, min(int(value), max_threads))
+
+
+#: 线程数解析结果的来源标识（修复项 E-6），取值见 :func:`_resolve_thread_count`。
+THREAD_SOURCE_CLI = "cli"
+THREAD_SOURCE_ENV = "env"
+THREAD_SOURCE_CONFIG = "config"
+
+_THREAD_SOURCE_LABELS = {
+    THREAD_SOURCE_CLI: "命令行 --threads/-j",
+    THREAD_SOURCE_ENV: "环境变量 PHYLODATER_THREADS",
+    THREAD_SOURCE_CONFIG: "配置文件 software.common.nthreads（未写则为内置默认 4）",
+}
+
+
+def _env_thread_override() -> Optional[int]:
+    """读取 ``PHYLODATER_THREADS``，只在**合法**时返回值（修复项 E-6）。
+
+    未设置、非整数、``<= 0`` 一律返回 ``None``，让"非法的环境变量"彻底退出优先级
+    竞争。旧写法是 ``get_env_threads(4)``：环境变量存在但非法时它会回落成硬编码的
+    4，于是 ``PHYLODATER_THREADS=0`` 会把用户在 YAML 里写的 ``nthreads: 2`` 顶掉——
+    这恰好是 E-6 要消灭的"默认值冒充显式选择"，只不过换了一层。告警仍由
+    :func:`~phylodater.core.pipeline.get_env_threads` 负责，不重复播报。
+    """
+    from ..core.pipeline import get_env_threads
+
+    if os.environ.get("PHYLODATER_THREADS") is None:
+        return None
+    value = get_env_threads(0)  # 0 == "非法"，_env_positive_int 已记录告警
+    return value if value > 0 else None
+
+
+def _resolve_thread_count_with_source(
+    cli_threads: Optional[int], common_nthreads: int
+) -> tuple[int, str]:
+    """按层解析线程数，并返回生效的那一层（修复项 E-6 的实现核心）。
+
+    Returns:
+        ``(线程数, 来源标识)``；来源是 ``THREAD_SOURCE_CLI`` /
+        ``THREAD_SOURCE_ENV`` / ``THREAD_SOURCE_CONFIG`` 之一。
+    """
+    if cli_threads is not None:
+        return max(1, int(cli_threads)), THREAD_SOURCE_CLI
+    env_threads = _env_thread_override()
+    if env_threads is not None:
+        return env_threads, THREAD_SOURCE_ENV
+    return max(1, int(common_nthreads)), THREAD_SOURCE_CONFIG
+
+
+def _resolve_thread_count(cli_threads: Optional[int], common_nthreads: int) -> int:
+    """确定并行 worker 数（修复项 E-6）。
+
+    旧行为：``--threads`` 的 argparse 默认值是 4 且**总是**被显式传进
+    ``PipelineConfig``，于是 ``PHYLODATER_THREADS`` 与配置文件里的
+    ``software.common.nthreads`` 永远不会生效——用户写了也白写（默认值冒充了显式
+    选择）。现在按下面的优先级解析，只有真正被指定过的层才参与：
+
+    1. 命令行 ``--threads`` / ``-j``（已钳制到 ``[1, cpu_count]``）
+    2. 环境变量 ``PHYLODATER_THREADS``（未设置或非法 ⇒ 该层不参与，见
+       :func:`_env_thread_override`）
+    3. 配置文件 ``software.common.nthreads``（规范键名；旧键名 ``threads`` 作为
+       弃用别名在 :class:`Configuration` 里被接受并告警）
+    4. :class:`CommonConfig` 的内置默认（4）
+
+    Args:
+        cli_threads: ``parsed_args.threads``，``None`` 表示用户没给。
+        common_nthreads: 合并后的 ``ToolConfig.common.nthreads``（第 3/4 层的结果）。
+
+    Returns:
+        最终生效的线程数（``>= 1``）。
+    """
+    threads, _ = _resolve_thread_count_with_source(cli_threads, common_nthreads)
+    return threads
 
 
 def _parse_method_args(raw: str) -> Dict[str, str]:
@@ -386,8 +463,12 @@ def _create_dating_subparser(
         "--threads",
         "-j",
         type=_validate_positive_int,
-        default=4,
-        help="并行线程数 (默认: 4)",
+        default=None,
+        help=(
+            "并行线程数。不指定时依次采用环境变量 PHYLODATER_THREADS、配置文件 "
+            "software.common.nthreads，最后才是默认值 4（修复项 E-6：旧版本这里写死 "
+            "默认 4 并总是显式下传，把环境变量与配置文件里的线程数顶掉了）"
+        ),
     )
 
     exec_group.add_argument("--seed", type=int, default=None, help="全局随机种子")
@@ -975,10 +1056,24 @@ def _run_dating(parsed_args: argparse.Namespace, logger: "PhyloDaterLogger") -> 
         ):
             _taxonomy_kwargs["taxonomy_sep"] = parsed_args.taxonomy_table_sep
 
+        # 修复项 E-6：先按 "CLI --threads > PHYLODATER_THREADS > 配置文件
+        # software.common.nthreads > 默认 4" 定下线程数，再把它交给 PipelineConfig。
+        # 旧写法把 argparse 的默认值 4 当作"用户指定的 4"恒传给流水线，
+        # 环境变量与 YAML 里的线程数于是永远读不到。
+        _effective_threads, _threads_source = _resolve_thread_count_with_source(
+            parsed_args.threads, config.get_config().common.nthreads
+        )
+        # 无论哪一层胜出都播报一次：日志里能直接读到"本次到底用了几线程、谁说了算"，
+        # 免得用户又得靠"环境变量没生效"这种反推去猜。
+        logger.info(
+            f"并行线程数：{_effective_threads}"
+            f"（来自{_THREAD_SOURCE_LABELS[_threads_source]}）"
+        )
+
         pipeline_config = PipelineConfig(
             methods=[parsed_args.method],
             output_dir=output_dir,
-            threads=parsed_args.threads,
+            threads=_effective_threads,
             seed=parsed_args.seed,
             dry_run=parsed_args.dry_run,
             software_paths=config.software_paths,
@@ -1007,7 +1102,7 @@ def _run_dating(parsed_args: argparse.Namespace, logger: "PhyloDaterLogger") -> 
 
         logger.step(5, "执行定年分析")
 
-        if parsed_args.threads > 1:
+        if pipeline_config.threads > 1:
             # ParallelPipeline 是 DatingPipeline 的子类；先窄后宽地复用同一个名字，
             # 必须把变量标成公共类型，否则第二个赋值会被判为"子类→父类"的错。
             pipeline: DatingPipeline

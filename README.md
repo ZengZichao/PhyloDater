@@ -362,7 +362,7 @@ Subcommands:
 | | `--outgroup` | Outgroup name | None |
 | | `--multi-tree-mode` | Multi-tree mode (`split`/`first`/`last`/`random`/`ask`/`error`) | `error` |
 | Calibration | `--auto-calibrate` | Auto-add calibration points | None |
-| Execution | `-j/--threads` | Parallel threads | `4` |
+| Execution | `-j/--threads` | Parallel worker threads; only wins when given explicitly, otherwise `PHYLODATER_THREADS` > `software.common.nthreads` > `4` (review item E-6) | None (falls through the chain) |
 | | `--seed` | Global random seed | Auto-generated |
 | | `--dry-run` | Dry-run mode (validation only) | No |
 | | `--mol-type` | Sequence molecule type (`DNA`/`RNA`/`protein`) | Auto-detect |

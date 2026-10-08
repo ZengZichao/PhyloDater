@@ -140,6 +140,16 @@ class PipelineConfig:
 - `PHYLODATER_BURNIN`: MCMC burnin 代数
 - `PHYLODATER_TIMEOUT`：执行超时时间
 
+审阅项 E-6 修正了线程数的解析链路，让文档里写的优先级成为真实行为。
+`phylodater dating` 的 worker 数现在按
+`--threads/-j`（仅在显式给出时）> `PHYLODATER_THREADS`（仅在取值为正整数时）>
+YAML `software.common.nthreads` > 内置默认 `4` 依次裁定。修复前 argparse 的默认值
+`4` 总是被当作"用户指定的值"下传，于是环境变量与 YAML 里的线程数永远赢不过它；
+同时示例配置写的是 `threads:`、数据类字段却叫 `nthreads`，两边对不上，
+YAML 里的线程设置会被当作 "Unknown parameter" 丢弃。现在 `threads` 仍作为
+`software.common.nthreads` 的弃用别名被接受（伴随一条告警；两个键同时出现时以
+`nthreads` 为准）。每次运行都会把最终生效的线程数及其来源层级写进日志。
+
 **后果**：
 - **正面**：灵活的配置方式适应不同使用场景
 - **正面**：配置文件可版本控制

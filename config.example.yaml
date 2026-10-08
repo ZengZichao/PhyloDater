@@ -22,7 +22,9 @@ software:
   # 全局共享参数（可选）
   common:
     seed: 42                   # 全局随机种子
-    threads: 4                 # 默认线程数
+    # 线程数的规范键名是 nthreads（与 CommonConfig 字段、treePL/r8s 控制文件一致）。
+    # 旧键名 threads 仍被接受但会打印弃用告警；两个都写时 nthreads 优先。见 E-6。
+    nthreads: 4                # 默认线程数
     timeout: 3600              # 单方法超时时间（秒）
 
   # ===== MCMCTree 参数 =====
