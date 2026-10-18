@@ -4,7 +4,9 @@
 
 **A Multi-Software Parallel Platform for Phylogenetic Molecular Dating**
 
-[![Python Version](https://img.shields.io/badge/python-3.9%20--%203.14-blue.svg)](https://www.python.org/)
+[![PyPI](https://img.shields.io/pypi/v/phylodater.svg)](https://pypi.org/project/phylodater/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/phylodater.svg)](https://pypi.org/project/phylodater/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/phylodater.svg)](https://pypi.org/project/phylodater/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 > **Version**: 0.1.0 | **License**: MIT License
@@ -97,6 +99,8 @@ wLogDate defaults: `backward_time=True`, `num_replicates=1`, `max_iter=50000`, `
 ## Installation
 
 ### Via pip
+
+The package is published on [PyPI](https://pypi.org/project/phylodater/) and released in sync with the GitHub releases:
 
 ```bash
 pip install phylodater

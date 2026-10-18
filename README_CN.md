@@ -4,7 +4,9 @@
 
 **多软件并行系统发育定年平台 / A Multi-Software Parallel Platform for Phylogenetic Molecular Dating**
 
-[![Python Version](https://img.shields.io/badge/python-3.9%20--%203.14-blue.svg)](https://www.python.org/)
+[![PyPI](https://img.shields.io/pypi/v/phylodater.svg)](https://pypi.org/project/phylodater/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/phylodater.svg)](https://pypi.org/project/phylodater/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/phylodater.svg)](https://pypi.org/project/phylodater/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 > **版本**：0.1.0 | **许可证**：MIT License
@@ -100,6 +102,8 @@ PhyloDater 是一个统一的系统发育定年平台，整合多种主流定年
 ## 安装
 
 ### 通过 pip 安装
+
+本包已发布至 [PyPI](https://pypi.org/project/phylodater/)，与 GitHub Release 同步发版：
 
 ```bash
 pip install phylodater
