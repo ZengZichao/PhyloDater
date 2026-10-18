@@ -5,7 +5,7 @@
 **A Multi-Software Parallel Platform for Phylogenetic Molecular Dating**
 
 [![PyPI](https://img.shields.io/pypi/v/phylodater.svg)](https://pypi.org/project/phylodater/)
-[![Python Versions](https://img.shields.io/pypi/pyversions/phylodater.svg)](https://pypi.org/project/phylodater/)
+[![Python Versions](https://img.shields.io/badge/python-3.9%E2%80%933.14-blue.svg)](https://pypi.org/project/phylodater/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23067037.svg)](https://doi.org/10.5281/zenodo.23067037)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
