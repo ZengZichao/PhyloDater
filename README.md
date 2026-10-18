@@ -6,7 +6,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/phylodater.svg)](https://pypi.org/project/phylodater/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/phylodater.svg)](https://pypi.org/project/phylodater/)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/phylodater.svg)](https://pypi.org/project/phylodater/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23067037.svg)](https://doi.org/10.5281/zenodo.23067037)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 > **Version**: 0.1.0 | **License**: MIT License
