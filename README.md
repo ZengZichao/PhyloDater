@@ -8,6 +8,8 @@
 [![Python Versions](https://img.shields.io/badge/python-3.9%E2%80%933.14-blue.svg)](https://pypi.org/project/phylodater/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23067037.svg)](https://doi.org/10.5281/zenodo.23067037)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/ZengZichao/PhyloDater/actions/workflows/ci.yml/badge.svg)](https://github.com/ZengZichao/PhyloDater/actions/workflows/ci.yml)
+[![ORCID](https://img.shields.io/badge/ORCID-0000--0001--6553--970X-a6ce39?logo=orcid&logoColor=white)](https://orcid.org/0000-0001-6553-970X)
 
 > **Version**: 0.1.0 | **License**: MIT License
 
