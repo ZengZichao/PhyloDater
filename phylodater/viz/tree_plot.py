@@ -659,7 +659,7 @@ def compute_node_coordinates(
             y = float(y_counter[0])
         else:
             child_ys = [assign_y(child) for child in node.children]
-            y = np.mean(child_ys)
+            y = float(np.mean(child_ys))
 
         age, source = _node_age_with_source(node, root_node, root_age)
         x = float(age)

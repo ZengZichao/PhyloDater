@@ -21,7 +21,9 @@ def test_rejects_parent_segment(tmp_path: Path) -> None:
         safe_writer(tmp_path / ".." / "escape.txt")
 
 
-def test_rejects_relative_parent_segment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_rejects_relative_parent_segment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.chdir(tmp_path)
     with pytest.raises(ValueError, match=r"\.\."):
         safe_writer(Path("a") / ".." / "escape.txt")

@@ -320,16 +320,21 @@ class TestRootAgeInference:
         替身与真实 ete 对象的鸭子类型可能漂移，因此只要后端可导入就再跑一遍。
         """
         tree_class = None
-        for module_name in ("ete4", "ete3"):
+        for module_name in ("ete3", "ete4"):
             try:
                 tree_class = __import__(module_name, fromlist=["Tree"]).Tree
                 break
             except ImportError:
                 continue
         if tree_class is None:
-            pytest.skip("ete4/ete3 均不可导入（见审阅报告 A-5）")
+            pytest.skip("ete3/ete4 均不可导入（见审阅报告 A-5）")
 
-        tree = tree_class(ULTRAMETRIC_100, format=1)
+        # 模型层用 ete3 的 format=1 保留内部节点名（models/tree.py:1055）；
+        # ete4 的 Tree() 不接受该关键字，退化为默认解析。
+        try:
+            tree = tree_class(ULTRAMETRIC_100, format=1)
+        except TypeError:
+            tree = tree_class(ULTRAMETRIC_100)
         figure = DatingFigure(width=6, height=4, dpi=60)
         figure.add_tree(tree).add_geo_scale().render()
         ages = {c.name: c.age for c in figure.get_node_coordinates().values()}

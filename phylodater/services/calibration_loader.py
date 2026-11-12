@@ -465,6 +465,52 @@ def validate_calibration_payload(data: Any, source: str = "") -> List[str]:
     return errors
 
 
+# --------------------------------------------------------------------------- #
+# ``node.type`` 的"看得见的不生效"（审阅项 ALGO-003 的代码侧处置）
+# --------------------------------------------------------------------------- #
+
+#: 同类告警只发一次的登记表（沿用 ``phylodater/viz/tree_plot.py`` 的做法）：
+#: 一份几百个校准点的配置不该把日志刷满。
+_DEFINITION_TYPE_WARNED: Dict[str, str] = {}
+
+#: ``NodeDefinition.definition_type`` 里唯一"本来就什么都不用做"的取值。
+_DEFINITION_TYPE_DEFAULT = "auto"
+
+
+def _warn_definition_type_ignored(
+    logger: Any, calibration_name: str, raw_value: Any
+) -> None:
+    """节点块写了 ``type``，但加载器无法据其选点时，把沉默变成一条告警。
+
+    选点**只**取决于 ``taxa`` / ``mrca_pair`` 是否给出
+    （见 :meth:`CalibrationLoader._parse_calibration`）：``type: mrca`` 与
+    ``type: auto`` 行为完全相同。这里不改变任何解析行为，只是把这一事实说出来。
+    同一个取值在一个进程里只报一次。
+    """
+    honoured = (
+        isinstance(raw_value, str)
+        and raw_value.strip().lower() == _DEFINITION_TYPE_DEFAULT
+    )
+    if honoured or raw_value is None:
+        return
+
+    key = f"{type(raw_value).__name__}:{str(raw_value).strip().lower()}"
+    if key in _DEFINITION_TYPE_WARNED:
+        return
+
+    message = (
+        f"Calibration '{calibration_name}': the node-definition field 'type' "
+        f"(value {raw_value!r}) is recorded but has no effect -- "
+        f"'{_DEFINITION_TYPE_DEFAULT}', 'mrca' and 'mrca_pair' all behave "
+        f"identically. Node selection is driven by 'taxa' / 'mrca_pair': list "
+        f"'taxa: [...]' or 'mrca_pair: [tip_a, tip_b]' to pin the node "
+        f"explicitly, and 'type' may then be dropped. (Reported once per "
+        f"distinct value; see phylodater.models.calibration.NodeDefinition.)"
+    )
+    _DEFINITION_TYPE_WARNED[key] = message
+    logger.warning(message)
+
+
 class CalibrationLoader:
     """
     校准配置加载器
@@ -594,6 +640,9 @@ class CalibrationLoader:
                 raise CalibrationError(
                     f"{label} '{name}'.node: 无法解析节点定义 ({e})"
                 ) from e
+            # ``type`` 只被记录、不被分派：写了 mrca/mrca_pair 却指望它绕过自动
+            # 解析的用户必须听见这一点（审阅项 ALGO-003）。选点行为不变。
+            _warn_definition_type_ignored(self.logger, name, data["node"].get("type"))
             # node 块内定义的 taxa / mrca_pair 优先级更高
             if node_def.taxa:
                 resolved_taxa = node_def.taxa
