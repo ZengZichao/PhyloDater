@@ -3,7 +3,7 @@
 # Test Results
 
 Results of the validation campaign described in [TESTING.md](TESTING.md). Every
-number below was produced by the commands in this file on the machine and
+number below was produced by the commands in §8 on the machine and
 environment recorded in §1, and is reproducible from the shipped artefacts in
 [`test-data/benchmark/results/`](../test-data/benchmark/results/).
 
@@ -202,7 +202,7 @@ python -B -m pytest tests -q --collect-only   # counts only, no execution
 * Engine-dependent tests skip with an explicit reason when a binary is absent, so
   the same command works on a machine without the tools installed.
 
-## 4.2 Coverage
+### 4.2 Coverage
 
 ```bash
 python -B -m pytest tests -q --cov=phylodater --cov-report=term
@@ -280,6 +280,10 @@ $ python -m phylodater check
 ✓ 所有检查通过！
 ```
 
+Those last two lines are the program's verbatim Chinese output (the summary is printed
+in Chinese by design and is quoted here unmodified); they read "Total: 26 checks, 26
+passed, 0 failed" and "✓ All checks passed!".
+
 The 26 checks cover the required Python dependencies (biopython, dendropy, numpy,
 pandas, pyyaml, matplotlib), the four optional engine dependencies — `logdate`
 (wLogDate), `emd` (MD-Cat), `pyr8s` (r8s) and `ete3`, probed but never required for
@@ -310,7 +314,7 @@ cross-validation API.
 
 ## 7. Engine- and environment-independent limitations
 
-* TreePL's self-reported banner is `treePL version 1.0` even for the 2.6.3 build;
+* treePL's self-reported banner is `treePL version 1.0` even for the 2.6.3 build;
   version provenance therefore also relies on the recorded executable path.
 * PATHd8 prints no version at all.
 * The Docker image ships 3 of the 7 engines (EXTERNAL_TOOLS.md §7).

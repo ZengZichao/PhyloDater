@@ -147,7 +147,7 @@ wrong reading here would invalidate the whole benchmark:
 * **Clade matching.** Nodes are identified by their descendant leaf set, not by
   node names: several engines strip or rename internal labels
   (`IntNode7`, `I9`, none at all).
-* Annotation stripping. `[&date=…]`, `[t=…, mu=…]`, `[&95%HPD={…}]` and internal
+* **Annotation stripping.** `[&date=…]`, `[t=…, mu=…]`, `[&95%HPD={…}]` and internal
   labels are removed before re-parsing, and both DendroPy 4.x and 5.x label
   accessors are supported.
 

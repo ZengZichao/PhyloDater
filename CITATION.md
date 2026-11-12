@@ -7,10 +7,10 @@ companion manuscript is published, please cite that too.
 
 ## Software citation (plain text)
 
-> Zeng, Zichao. PhyloDater: A multi-software parallel platform for
-> phylogenetic molecular dating. GitHub repository.
+> Zeng, Zichao, & Wang, Yinzhao. PhyloDater: a unified platform integrating
+> multiple methods for phylogenetic molecular dating. GitHub repository.
 > https://github.com/ZengZichao/phylodater
-> ORCID: 0000-0001-6553-970X
+> ORCID: 0000-0001-6553-970X (Z. Zeng); 0000-0001-8715-1386 (Y. Wang)
 
 ## Archived software citation (Zenodo, version DOI)
 
@@ -34,8 +34,8 @@ version `v0.1.0`, and the same keyword list as [CITATION.cff](CITATION.cff).
 
 ```bibtex
 @software{zeng2026phylodater,
-  author = {Zeng, Zichao},
-  title = {PhyloDater: A multi-software parallel platform for phylogenetic molecular dating},
+  author = {Zeng, Zichao and Wang, Yinzhao},
+  title = {PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
   version = {0.1.0},
@@ -81,3 +81,9 @@ method by method in [docs/TESTING.md](docs/TESTING.md) §8 and measured in
 PhyloDater is released under the MIT License — see [LICENSE](LICENSE). Optional
 dependencies may carry other terms; see
 [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+
+---
+
+> 📚 The Chinese counterpart of this citation guide is
+> [CITATION_CN.md](CITATION_CN.md), the human-readable Chinese version of the
+> information above and of [CITATION.cff](CITATION.cff).

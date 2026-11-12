@@ -2,7 +2,7 @@
 
 # PhyloDater
 
-**多软件并行系统发育定年平台 / A Multi-Software Parallel Platform for Phylogenetic Molecular Dating**
+**多软件并行系统发育分子定年平台**
 
 [![Python Version](https://img.shields.io/badge/python-3.9%20--%203.14-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -13,7 +13,7 @@
 
 ## 概述
 
-PhyloDater 是一个统一的系统发育定年平台，整合多种主流定年软件，提供一致的接口和标准化的结果输出。
+PhyloDater 是一个统一的系统发育分子定年平台，整合多种主流定年软件，提供一致的接口和标准化的结果输出。
 
 > **注意**：本软件处理系统发育树（非基因组坐标），不涉及 0-based/1-based 坐标体系问题。
 
@@ -30,8 +30,7 @@ PhyloDater 是一个统一的系统发育定年平台，整合多种主流定年
 - **分类学解析**：支持 GTDB 嵌入式格式和表格分号式格式
 - **深度输入验证**：括号平衡、负分支长度、重复节点名、恶意字符检测
 - **实时日志**：ISO 8601 时间戳，流式输出，支持文件持久化
-- **单系群判定**：自动识别 LUCA、LACA、LBCA 等特殊标识符
-- **自定义软件路径**：通过配置文件 `software_paths` 指定各外部软件二进制路径
+- **单系性判定**：自动识别 LUCA、LACA、LBCA 等特殊标识符及任意分类单元
 
 ### 支持的定年方法
 
@@ -42,25 +41,25 @@ PhyloDater 是一个统一的系统发育定年平台，整合多种主流定年
 | **r8s** | 经典分子钟定年工具 | `method`、`smoothing`、`algorithm` |
 | **treePL** | 基于惩罚似然的定年方法 | `initial_smooth`、`cvstart`、`cvstop`、`cviter`、`cvmultstep` |
 | **PATHd8** | 分子钟校准方法 | （无额外参数） |
-| **wLogDate** | 日志日期定年 | `backward_time`、`num_replicates`、`root_time`、`leaf_time`、`sequence_length`、`max_iter`、`pseudocount`、`zero_branch_len` |
+| **wLogDate** | 对数日期定年 | `backward_time`、`num_replicates`、`root_time`、`leaf_time`、`sequence_length`、`max_iter`、`pseudocount`、`zero_branch_len` |
 | **MD-Cat** | 矩阵校准日期 | `ncat`、`nrep`、`max_iter`、`backward_time`、`as_date`、`use_direct_import`、`ci_nboots`、`ci_plower`、`ci_pupper`、`annotate_level` |
 
 ### 分析流程
 
 ```
-输入文件                验证                   分析                   输出
-──────────────────────────────────────────────────────────────────────────────
-树文件 (.nwk)  ─┐
-                ├─→ QC Processing(可选) ─→ 树定根 ─→ 输入验证 ─┐
-序列文件 (.fa)  ─┤                            │           │         │
-                │                            ↓           ↓         ↓
-校准点 (.yaml) ─┘                       深度验证       MRCA 定位    定年方法执行
-                                        括号平衡       单系群判定    MCMCTree
-                                        负分支长度     特殊标识符    treePL
-                                        重复节点名     分类学解析    r8s/PATHd8/...
-                                        交叉验证                     │
-                                                                     ↓
-                                                              结果比较与报告
+输入文件             处理与验证                                                分析             输出
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+树文件 (.nwk)   ─┐
+                 ├─→ 质控处理（可选） ─→ 重新定根 ─→ 输入验证 ─→ 校准 ─┐
+序列文件 (.fa)  ─┤                                   │           │             │
+                 │                                   ↓           ↓             ↓
+校准点 (.yaml)  ─┘                                   深度验证    MRCA 定位     定年方法
+                                                     括号平衡    单系性判定    MCMCTree
+                                                     负分支长度  特殊标识符    treePL
+                                                     重复节点名  分类学解析    r8s/PATHd8/...
+                                                     交叉验证                         │
+                                                                                      ↓
+                                                                                结果比较与报告
 ```
 
 #### 方法专有参数默认值
@@ -75,8 +74,8 @@ PhyloDater 是一个统一的系统发育定年平台，整合多种主流定年
 | | `skip_rate_estimation` | `false` | 是否跳过阶段 0 速率估算（`true`=跳过并使用默认 rgene_gamma 先验）；版本行为差异见“PAML 4.8 支持”一节 |
 | | `paml_version` | `4.10.8` | 期望的 PAML 发布**系列**；探测到 4.10.x 可通过，4.8 不行 |
 | | `paml_path` | - | PAML 安装目录（推荐），会自动使用 `<paml_path>/bin/mcmctree`，并隔离同版本的 `baseml` 与 `codeml` |
-| | `mcmctree_bin` | `mcmctree` | MCMCTree 可执行文件完整路径或命令名 |
-| r8s | `method` | `NPRS` | 算法：`NPRS`（默认）/ `PL`（仅原生 r8s 二进制） |
+| | `mcmctree_bin` | `mcmctree` | MCMCTree 可执行文件路径或命令名 |
+| r8s | `method` | `NPRS` | 算法：`NPRS`（默认，两种后端均可用）/ `PL` / `LF`（仅原生 `r8s` 二进制） |
 | | `smoothing` | `None` | 平滑参数（None = 不写入 NEXUS） |
 | | `algorithm` | `TN` | 树搜索算法 |
 | | `r8s_bin` | `r8s` | r8s 或 pyr8s 可执行文件的名称或路径 |
@@ -92,10 +91,8 @@ PhyloDater 是一个统一的系统发育定年平台，整合多种主流定年
 | | `nrep` | `100` | 随机初始化次数 |
 | | `max_iter` | `100` | 最大 EM 迭代次数 |
 | | `ci_nboots` | `0` | 置信区间 bootstrap 次数；`0` = 关闭（与上游一致）。单次开销很大，请按需显式开启 |
-| wLogDate | `backward_time` | `True` | 使用反向时间方向 |
-| | `num_replicates` | `1` | 重复次数 |
-| | `max_iter` | `50000` | 最大迭代次数 |
-| | `pseudocount` | `0.01` | 分支长度伪计数 |
+
+wLogDate 默认值：`backward_time=True`、`num_replicates=1`、`max_iter=50000`、`pseudocount=0.01`。
 
 ## 安装
 
@@ -169,15 +166,15 @@ docker run -v $(pwd):/data phylodater dating \
 ```
 
 > **镜像到底含有什么。** 镜像只构建了 **7 个引擎中的 3 个** —— MCMCTree（PAML）、
-> LSD2（IQ-TREE 2）与 PATHd8 —— 因此不能把它说成"支持全部 7 种方法"的平台。
+> LSD2（IQ-TREE 2）与 PATHd8 —— 因此不能把它说成“支持全部 7 种方法”的平台。
 > 逐引擎的覆盖表见 [docs/EXTERNAL_TOOLS_CN.md](docs/EXTERNAL_TOOLS_CN.md) §7。
 > 请求一个引擎缺失的方法**不会静默跳过**，也**不会编造结果**：运行会依次打出
 > `<engine> not found`（含安装建议）、`... environment not available, skipping`、
 > `N methods failed: <method> (Environment not available)` 与 `No results to report`。
 > （2026-09-30 实测：在干净 sdist 安装、`PATH` 上没有任何引擎的情况下跑 CLI；
 > 与 `phylodater check` 可选依赖行所报告的行为一致。）本轮验证**没有执行**
-> `docker build` —— 验证机上没有 Docker/Podman 运行时 —— 所以镜像应按"此处未验证"
-> 对待，而不是"已测试"。
+> `docker build` —— 验证机上没有 Docker/Podman 运行时 —— 所以镜像应按“此处未验证”
+> 对待，而不是“已测试”。
 
 ## 快速开始
 
@@ -187,7 +184,7 @@ docker run -v $(pwd):/data phylodater dating \
 phylodater check
 ```
 
-输出示例（为发布环境上 2026-09-30 的原样实测输出）：
+输出示例——下表由工具以中文发出并原样展示（2026-09-30 于发布环境实测）：
 ```
 检查项                                      状态       信息
 ----------------------------------------------------------------------
@@ -206,13 +203,13 @@ phylodater check
 
 需要准备三种输入文件：
 
-#### （1）树文件
+#### 树文件
 
 支持格式：`.nwk`、`.newick`、`.tree`、`.tre`、`.nex`、`.nexus`、`.nhx`（带注释的 Newick）
 
-> **注意**：输入树必须为**有根树（rooted）**。校验阶段（`phylodater check` 或定年运行前）会直接拒绝无根树。若输入为无根树，请先完成定根（例如在合适的外类群上定根），再运行 PhyloDater。
+> **注意**：输入树必须为**有根树（rooted）**。校验阶段（`phylodater check` 或定年运行前）会直接拒绝无根树。若输入为无根树，请先在合适的外群上完成定根，再运行 PhyloDater。
 
-#### （2）序列比对文件
+#### 序列比对文件
 
 主要支持格式：FASTA（`.fasta`、`.fa`、`.fna`、`.faa`）、FASTQ（`.fastq`、`.fq`）
 
@@ -220,9 +217,9 @@ phylodater check
 
 > **注意**：PhyloDater 可检测 PHYLIP、Stockholm 等对齐格式，但不支持将这些格式用于分析。如需使用，请先转换为 FASTA。
 
-#### （3）校准点配置文件（YAML 格式）
+#### 校准点配置文件（YAML 格式）
 
-校准点配置示例（calibrations.yaml）
+校准点配置示例（calibrations.yaml）：
 
 ```yaml
 calibrations:
@@ -385,7 +382,7 @@ phylodater [通用参数] <子命令> [子命令参数]
 > **多版本 PAML 共存**：PAML 4.8 与 4.10.8 的二进制默认同名（`mcmctree`、`codeml`、`baseml`）。为避免版本混淆，建议：
 > 1. 将不同版本安装到独立目录（如 `/opt/paml-4.8`、`/opt/paml-4.10.8`），并在 `software_paths` 中指定 `paml_path` 指向目标版本的根目录；适配器会自动使用 `<paml_path>/bin/mcmctree`。
 > 2. 或直接通过 `mcmctree_bin` 给出完整路径，例如 `/opt/paml-4.10.8/bin/mcmctree`。
-> 3. 运行前 PhyloDater 会解析可执行文件 banner 中的实际 PAML 版本，并与 `paml_version` 比对**发布系列**：任意 4.10.x 都能满足默认值 `4.10.8`，而跨系列不一致（例如 4.8 二进制）会被明确报错跳过，从而避免控制文件格式错版。
+> 3. 运行前 PhyloDater 会解析可执行文件 banner 中的实际 PAML 版本，并与 `paml_version` 比对**发布系列**：任意 4.10.x 都能满足默认值 `4.10.8`，而跨系列不一致（例如 4.8 二进制）会被明确报错跳过，从而避免控制文件格式不匹配。
 
 ## 分类学解析
 
@@ -425,23 +422,23 @@ GB_GCA_000252485.1	d__Bacteria;p__Cyanobacteriota;c__Cyanobacteriia;...
 
 使用 `--taxonomy-file` 参数指定表格文件。
 
-**标签一致性检查**：表格中出现的末端若在树中不存在，发出 WARNING 并列出多余项；树中末端在表格中没有记录且 ID 中无法解析时，该末端分类信息置为“未知”。
+**标签一致性检查**：表格中出现的末端若在树中不存在，发出 WARNING；树中末端在表格中没有记录且 ID 中无法解析时，该末端分类信息置为“未知”。
 
 **来源优先级**：当同一节点同时具有嵌入式和表格两种来源信息时，通过 `--taxonomy-source-priority` 控制优先级（默认 `table` 表格优先）。如有冲突，发出 WARNING 并记录冲突详情。
 
-## 单系群判定
+## 单系性判定
 
-PhyloDater 支持通过指定类群名称自动判定单系群：
+PhyloDater 支持通过指定分类单元名称自动判定单系性：
 
-### 一般类群判定
+### 一般分类单元判定
 
 给定一个分类标签（如 "Cyanobacteriota"）：
-1. 收集所有属于该类群的末端节点
+1. 收集所有属于该分类单元的末端节点
 2. 计算这些末端的最近共同祖先（MRCA）
 3. 获取 MRCA 的所有后代末端
 4. 若后代集合等于步骤 1 的集合 → 单系群；否则 → 非单系群
 
-非单系群时，软件会发出 ERROR 并拒绝操作，同时列出不属于该类群的额外末端。
+非单系群时，软件会发出 ERROR 并拒绝操作，同时列出不属于该分类单元的额外末端。
 
 ### 特殊标识符
 
@@ -449,7 +446,7 @@ PhyloDater 支持通过指定类群名称自动判定单系群：
 - **LBCA**：所有 Bacteria 的 MRCA
 - **LACA**：所有 Archaea 的 MRCA
 
-特殊标识符大小写敏感，仅接受大写。计算前首先确认类群存在性，不存在则 ERROR。
+特殊标识符大小写敏感，仅接受大写。计算前会先确认分类单元是否存在。
 
 ## PAML 4.8 支持
 
@@ -476,8 +473,8 @@ phylodater dating -t tree.nwk -s aln.fasta -c cal.yaml -o out/ \
 
 ### 各 PAML 版本在速率估算上的行为差异
 
-| 版本 | "Substitution rate is per time unit" 输出 | 说明 |
-|------|-------------------------------------------|------|
+| PAML 版本 | "Substitution rate is per time unit" 输出 | 说明 |
+|-----------|-------------------------------------------|------|
 | ≤ 4.9h（含 4.8） | 输出 | 正常 |
 | 4.9i | **缺失** | 官方确认的 bug（见 PAML changelog v4.9j 条目）。PhyloDater 不支持 4.9i，此版本下速率估算会回退为默认先验。 |
 | 4.9j / 4.10.x（含 4.10.8） | 输出 | 4.9j 已修复该 bug，行为与 4.8 一致。仅格式上有细微差别：4.10.8 在速率标题与数值之间多打印一个空行，PhyloDater 的提取逻辑已兼容。 |
@@ -523,11 +520,11 @@ phylodater dating -t tree.nwk -s aln.fasta -c cal.yaml -o out/ \
 
 ### 交叉验证
 
-当同时提供树文件和序列文件时，默认执行末端标签双向匹配，确保两个集合完全一致。可通过 `--no-cross-check` 关闭。
+当同时提供树文件和序列文件时，默认执行末端标签双向匹配。可通过 `--no-cross-check` 关闭。
 
 ### 对抗性输入防护
 
-- **恶意符号注入**：检测控制字符和 Unicode 双向文本覆盖字符
+- **恶意字符注入**：检测控制字符和 Unicode 双向文本覆盖字符
 - **分类学循环依赖**：检测表格中的循环引用（如 `d__A;p__B` 和 `d__B;p__A`）
 - **空文件**：树文件或序列文件大小为 0 字节时终止
 
@@ -537,12 +534,12 @@ phylodater dating -t tree.nwk -s aln.fasta -c cal.yaml -o out/ \
 
 | 模式 | 行为 |
 |------|------|
+| `error`（默认） | 报错并终止（非交互式默认行为） |
 | `split` | 分别处理每棵树 |
 | `first` | 仅处理第一棵树 |
 | `last` | 仅处理最后一棵树 |
 | `random` | 随机选择一棵树处理 |
 | `ask` | 交互选择提示，然后以退出码 2 退出 |
-| `error`（默认） | 报错并终止（非交互式默认行为） |
 
 ## 日志系统
 
@@ -552,6 +549,8 @@ phylodater dating -t tree.nwk -s aln.fasta -c cal.yaml -o out/ \
 2025-03-21T10:15:30.123 | INFO     | module/func 开始解析树文件
 2025-03-21T10:15:30.456 | WARNING  | module/func 检测到大型树 (15000 个末端节点)
 ```
+
+（上面两行的日志正文为原样展示、未作改写：软件发出的日志本身即以中文输出。）
 
 ### 日志文件
 
@@ -586,7 +585,7 @@ results/
 └── pathd8/                 # PATHd8 结果
 ```
 
-#### 校准标注格式
+### 校准标注格式
 
 定年树文件中，校准节点以 `[&height=AGE,height_95%_HPD={LOWER,UPPER}]` 格式标注。
 
@@ -628,9 +627,9 @@ software:
     model: LG+G
 ```
 
-配置优先级：默认值 < YAML 文件 < 命令行参数。PhyloDater 会按各方法的模式检查并校验所有值。
+配置优先级：默认值 < YAML 文件 < 命令行参数。PhyloDater 会对所有值做类型检查，并按各方法的 schema 校验。
 
-## 错误码
+## 退出码
 
 | 退出码 | 含义 | 说明 |
 |--------|------|------|
@@ -660,15 +659,15 @@ software:
 
 ## 跨平台与编码
 
-- **编码**：所有文件读写使用 UTF-8，遇到非法字节时尝试 utf-8-sig
+- **编码**：所有文件读写使用 UTF-8，遇到非法字节时回退到 utf-8-sig
 - **路径处理**：使用 `pathlib.Path`，兼容 Windows、macOS 和 Linux
 - **换行符**：读取时自动归一化，写入统一使用 `\n`（Unix 风格）
 - **临时文件**：使用 `tempfile` 模块，确保异常退出时自动清理
 
 ## 版本管理
 
-- 版本号遵循语义化版本 `MAJOR.MINOR.PATCH`；发布版本静态锁定为 `0.1.0`（写于 `pyproject.toml` 与 `phylodater/_version.py`）——包内不再烘焙由 Git 派生的 `.dev`/哈希等版本迭代串
-- 在 Git 工作区内，`--version` 会额外报告当前短提交哈希，仅用于支持/排障
+- 版本号遵循语义化版本 `MAJOR.MINOR.PATCH`；发布版本静态锁定为 `0.1.0`（写于 `pyproject.toml` 与 `phylodater/_version.py`）——包内不再内置由 Git 派生的 `.dev`/哈希等版本迭代串
+- 在 Git 工作区内，`--version` 会额外报告当前短提交哈希，用于技术支持
 - CI 自动运行 `phylodater check` 验证所有测试用例
 
 `--version` 输出示例：
@@ -680,7 +679,7 @@ git: abc1234
 deps: BioPython=1.87, ETE3=3.1.3, DendroPy=5.0.8, NumPy=2.4.6
 ```
 
-#### 测试通过环境
+### 测试通过环境
 
 发布验证在 Python 3.12.14 的 conda 环境中完成，该环境装有全部七个引擎；操作系统、
 库版本、引擎版本及其来源见 [docs/TEST_RESULTS_CN.md](docs/TEST_RESULTS_CN.md) §1。
@@ -689,8 +688,8 @@ deps: BioPython=1.87, ETE3=3.1.3, DendroPy=5.0.8, NumPy=2.4.6
 
 > **覆盖率说明**：在验证环境上实测 `pytest tests --cov=phylodater` 为 **67.87%**
 > （加 `-m "not slow"` 为 67.89%，可见该数字不依赖引擎是否装齐）。`pyproject.toml`
-> 里的 CI 门槛因此从占位值 40 上调到 `fail_under = 60`——相对实测值留出约 8 个百分点
-> 的余量以吸收 CI 平台差异；它是下限，不是目标值。
+> 中的 CI 门槛为 `fail_under = 60`——相对实测值留出余量以吸收 CI 平台差异；它是下限，
+> 不是目标值。
 
 ## 示例数据
 
@@ -729,7 +728,7 @@ phylodater/
 │   ├── models/              # 数据模型（树、约束、校准点、结果）
 │   ├── services/            # 分类学解析、校准加载/解析、验证、定根、名称映射
 │   ├── viz/                 # 可视化（定年图、树/地理图、后端）
-│   └── viz/data/            # 随包发布的地质年代表（CSV package data）
+│   └── data -> viz/data/    # 随包发布的地质年代表（CSV package data）
 ├── examples/                # mini 示例数据集（含 truth.yaml 与校验和）
 ├── test-data/
 │   └── benchmark/           # 带真值的参考基准数据集 + 生成脚本
@@ -745,7 +744,7 @@ phylodater/
 │   └── validation/          # 真实引擎端到端验证（标记：slow、
 │                            #   requires_mcmctree、requires_lsd2 …）
 ├── scripts/
-│   ├── run_reference_benchmark.py   # 唯一官方基准：按真值打分
+│   ├── run_reference_benchmark.py   # 官方基准，按真值打分
 │   ├── check_docs.py                # 双语政策与链接门禁
 │   ├── generate_checksums.py        # 数据集校验和清单
 │   ├── probe_pyr8s_constraints.py   # pyr8s 能力探测（结论进 docs）
@@ -786,7 +785,7 @@ python scripts/run_reference_benchmark.py   # 七个引擎对真值评分
 | PyYAML | >=6.0,<7.0 | MIT |
 | SciPy | >=1.9.0,<2.0 | BSD 3-Clause |
 | Matplotlib | >=3.5.0 | PSF-based |
-| psutil | >=5.9.0,<6.0 | BSD 3-Clause |
+| psutil | >=5.9.0 | BSD 3-Clause |
 
 > **注意**：ETE3 为可选依赖（声明于 `extras_require["ete3"]`），默认通过 pip 安装。其余库均为核心依赖。
 
@@ -800,7 +799,7 @@ python scripts/run_reference_benchmark.py   # 七个引擎对真值评分
 - [架构](docs/ARCHITECTURE_CN.md) · [设计决策](docs/ARCHITECTURE_DECISIONS_CN.md) · [错误码](docs/ERROR_CODES_CN.md)
 - [贡献指南](CONTRIBUTING_CN.md)
 
-所有文档均有中英两个版本，其中英文为权威版本（并列时排在前面）。
+所有文档均有中英两个版本（中文版为 `*_CN.md`），其中英文为权威版本（并列时排在前面）。
 
 ## 贡献
 
@@ -808,7 +807,7 @@ python scripts/run_reference_benchmark.py   # 七个引擎对真值评分
 
 - **问题报告**：[GitHub Issues](https://github.com/ZengZichao/phylodater/issues)
 - **功能建议**：[GitHub Discussions](https://github.com/ZengZichao/phylodater/discussions)
-- **联系邮箱**：曾子超（Zichao Zeng）— zengzichao@sjtu.edu.cn · ORCID: [0000-0001-6553-970X](https://orcid.org/0000-0001-6553-970X)
+- **联系方式**：曾子超（Zichao Zeng）— zengzichao@sjtu.edu.cn · ORCID: [0000-0001-6553-970X](https://orcid.org/0000-0001-6553-970X)
 
 ## 许可证
 
@@ -818,19 +817,20 @@ python scripts/run_reference_benchmark.py   # 七个引擎对真值评分
 
 如果你在研究中使用了 PhyloDater，请引用：
 
-> 曾子超（Zeng, Zichao）. (2026). PhyloDater: A multi-software parallel platform for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater （ORCID: 0000-0001-6553-970X）
+> Zeng, Zichao, & Wang, Yinzhao. (2026). PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater (ORCID: 0000-0001-6553-970X; 0000-0001-8715-1386)
 
 BibTeX 格式：
 ```bibtex
 @software{zeng2026phylodater,
-  author = {Zeng, Zichao},
-  title = {PhyloDater: A multi-software parallel platform for phylogenetic molecular dating},
+  author = {Zeng, Zichao and Wang, Yinzhao},
+  title = {PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
   version = {0.1.0},
+  doi = {10.5281/zenodo.23067037},
   note = {ORCID: 0000-0001-6553-970X}
 }
 ```
 
-完整的引用指引（机器可读 CFF、引擎引用，以及"目前没有论文 DOI"这一事实）
+完整的引用指引（机器可读 CFF、引擎引用，以及“目前没有论文 DOI”这一事实）
 见 [CITATION_CN.md](CITATION_CN.md)。

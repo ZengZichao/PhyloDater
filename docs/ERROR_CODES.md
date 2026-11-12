@@ -30,14 +30,22 @@ Some dating methods impose additional restrictions on calibration constraints. P
 
 **Example error message**:
 ```
-Method 'mcmctree' calibration incompatible:
-  - MCMCTree does not support a fixed root age. Root calibration 'Root' is fixed=500.0 Ma,
-    but MCMCTree can only use it as an upper bound (RootAge='<500.0'), so the root age cannot be exactly fixed.
-  - Suggested fixes (choose one):
-    1) Change the root constraint to uniform, e.g. min=499.9, max=500.1;
-    2) Change the root constraint to maximum, e.g. max=500.0;
-    3) If an exact fixed root is required, use treePL, PATHd8, or LSD2 instead.
+方法 'mcmctree' 的校准配置不兼容：
+  - MCMCTree 不支持固定根节点年龄。根节点校准 'Root' 当前为 fixed=500.0 Ma，
+    但 MCMCTree 只能将其作为上界（RootAge='<500.0'）使用，导致根节点年龄无法精确固定。
+  - 建议修改方案（任选其一）：
+    1) 将根节点约束改为 uniform，例如 min=499.9, max=500.1；
+    2) 将根节点约束改为 maximum，例如 max=500.0；
+    3) 如果必须精确固定根节点，请改用 treePL/pathd8/lsd2 等方法。
 ```
+
+**English gloss** (the block above is reproduced verbatim from the program, which emits this
+message in Chinese only): "Method 'mcmctree' calibration configuration is incompatible:
+— MCMCTree does not support a fixed root age. Root calibration 'Root' is currently
+fixed=500.0 Ma, but MCMCTree can only use it as an upper bound (RootAge='<500.0'), so the
+root age cannot be exactly fixed. — Suggested fixes (choose one): 1) change the root
+constraint to uniform, e.g. min=499.9, max=500.1; 2) change the root constraint to maximum,
+e.g. max=500.0; 3) if an exactly fixed root is required, use treePL/pathd8/lsd2 instead."
 
 **Cause**: MCMCTree's `RootAge` control-file parameter can only specify an upper bound (e.g. `<500`), not a true fixed age. If a `fixed` constraint is supplied, MCMC sampling will converge to a root age below that value, producing unexpected results.
 
@@ -61,7 +69,7 @@ PhyloDater uses structured exception classes for precise error handling:
 | `ConsistencyError` | ValidationError | 3 | Tree-sequence label mismatch |
 | `PhyloFormatError` | ValidationError | 3 | Unsupported file format or format error |
 | `NegativeBranchLengthError` | TreeValidationError | 3 | Tree contains negative branch lengths |
-| `InputSizeLimitError` | ValidationError | 3 | Input file exceeds size limit (500MB) |
+| `InputSizeLimitError` | ValidationError | 3 | Input file exceeds size limit (500 MB) |
 | `CalibrationError` | PhyloDaterError | 3 | Calibration configuration error |
 | `CalibrationConflictError` | CalibrationError | 3 | Conflicting calibration constraints |
 | `CalibrationResolutionError` | CalibrationError | 3 | Calibration point resolution failure |

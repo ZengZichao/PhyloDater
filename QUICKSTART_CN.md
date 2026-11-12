@@ -105,7 +105,7 @@ phylodater dating \
     --method-args "num_runs=4"
 ```
 
-### 定根选项
+### 重新定根选项
 
 ```bash
 phylodater dating \
@@ -116,6 +116,8 @@ phylodater dating \
     --method pathd8 \
     --reroot midpoint
 ```
+
+可用策略：`outgroup`、`midpoint`、`mad`、`none`。
 
 ### 使用 PAML 4.8
 
@@ -133,7 +135,7 @@ phylodater dating \
 
 PAML 版本和二进制文件路径通过 `--method-args` 传递，而非作为顶层 CLI 选项。
 
-由于 PAML 4.8 与 4.10.8 的二进制默认同名（`mcmctree`、`codeml`、`baseml`），推荐按版本分目录安装，并指定 `paml_path`：
+由于 PAML 4.8 与 4.10.8 的二进制同名（`mcmctree`、`codeml`、`baseml`），须按版本分目录安装，并设置 `paml_path`：
 
 ```bash
 phylodater dating \
@@ -145,7 +147,7 @@ phylodater dating \
     --method-args "paml_path=/opt/paml-4.10.8,paml_version=4.10.8"
 ```
 
-PhyloDater 会在运行前解析 `mcmctree` 的 banner 版本，并与 `paml_version` 比对**发布系列**：探测到 4.10.10 可满足默认值 `4.10.8`（同一 4.10 系列内控制文件语义一致），而 4.8 二进制对 4.10 期望则会被明确拒绝——两者的控制文件确实不同。指定 `paml_path` 后，PhyloDater 还会把 `<paml_path>/bin` 临时前置到 `PATH`，确保 `mcmctree` 内部调用的 `baseml` 与 `codeml` 和 `mcmctree` 属于同一版本。若 `PATH` 中已有同名命令，可通过 `mcmctree_bin=/opt/paml-4.10.8/bin/mcmctree` 强制指定完整路径。
+PhyloDater 会在运行前解析 `mcmctree` 的 banner 版本，并与 `paml_version` 比对**发布系列**：探测到 4.10.10 可满足默认值 `4.10.8`（同一 4.10 系列内控制文件语义一致），而 4.8 二进制对 4.10 期望则会被明确拒绝——两者的控制文件确实不同。指定 `paml_path` 后，PhyloDater 还会把 `<paml_path>/bin` 临时前置到 `PATH`，确保 `mcmctree` 内部调用的 `baseml` 与 `codeml` 和 `mcmctree` 属于同一版本。若 `PATH` 中已有同名命令，应使用 `mcmctree_bin=/opt/paml-4.10.8/bin/mcmctree` 强制指定可执行文件。
 
 ## 4. 查看结果（1 分钟）
 
@@ -158,8 +160,8 @@ ls my_results/
 主要输出文件：
 
 - `summary.txt` - 执行摘要
-- `comparison_table.tsv` - 节点年龄比较表
-- `comparison_table.txt` - 文本格式比较表
+- `comparison_table.tsv` - 节点年龄比较表（TSV）
+- `comparison_table.txt` - 节点年龄比较表（文本）
 - `pathd8/timetree.nex` - 时间树（PATHd8 NEXUS 格式）
 - `mcmctree/run1/FigTree.tre` - 时间树（MCMCTree）
 - `runtime_metadata.json` - 运行时元数据
@@ -175,7 +177,7 @@ phylodater dating -t tree.nwk -s alignment.fasta -c cal.yaml -o results/ --metho
 phylodater dating -t tree.nwk -s alignment.fasta -c cal.yaml -o results/ --method pathd8
 ```
 
-> Each method writes to its own subdirectory under `results/`.
+> 每种方法写入 `results/` 下各自的子目录。
 
 ### 指定替换模型（LSD2）
 
@@ -248,7 +250,7 @@ PhyloDater 支持多种校准类型：
 | `skew_normal` | 偏正态分布 |
 | `skew_t` | 偏 t 分布 |
 
-> **注意**：MCMCTree 的 `RootAge` 只能设置为上界，不能真正固定根节点。若根节点使用 `fixed`，PhyloDater 会在执行前报错并提示改为 `uniform` 或 `maximum`，或改用其他方法。不同方法可使用不同的校准文件。
+> **注意**：MCMCTree 的 `RootAge` 只能设置为上界，不能真正固定根节点。若根节点使用 `fixed`，PhyloDater 会在执行前报错，提示改为 `uniform` 或 `maximum`；若需要精确的固定根节点年龄，改用 treePL、PATHd8 或 LSD2。不同方法可使用不同的校准文件。
 
 ## 序列格式
 
@@ -274,9 +276,9 @@ PhyloDater 支持 8 种校准类型：`fixed`、`uniform`、`soft_lower`、`maxi
 
 PhyloDater 支持 FASTA 和 FASTQ 格式用于分析。PHYLIP、Stockholm、Clustal 格式仅可检测，建议转换为 FASTA。
 
-### 如何检验收敛性？
+### 如何检验 MCMC 收敛性？
 
-使用 `--method-args "num_runs=4"` 参数运行多次 MCMCTree，软件会自动计算 PSRF 和 ESS，用于收敛性诊断。
+以 `--method-args "num_runs=4"` 运行 MCMCTree，软件会自动计算 PSRF 和 ESS，用于收敛性诊断。
 
 ### 如何定根？
 
@@ -284,4 +286,4 @@ PhyloDater 支持 FASTA 和 FASTQ 格式用于分析。PHYLIP、Stockholm、Clus
 
 ### 如何指定 PAML 版本？
 
-使用 `--method-args "paml_version=4.8"` 指定 PAML 版本。PhyloDater 据此选择控制文件格式和速率估算流程。
+使用 `--method-args "paml_version=4.8"` 指定 PAML 版本。这会影响 MCMCTree 控制文件的格式与速率估算流程。

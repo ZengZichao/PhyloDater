@@ -11,7 +11,7 @@
 **状态**：已通过（2024-01-15）
 
 **背景**：
-用户需要使用不同定年方法（如 MCMCTree、treePL、PATHd8 等）进行比较分析，但各方法的输入格式、输出结构和参数配置差异很大。如果在主管线代码中直接处理这些差异，会导致：
+用户需要使用不同定年方法（如 MCMCTree、treePL、PATHd8 等）进行比较分析，但各方法的输入格式、输出结构和参数配置差异很大。如果在管线代码中直接处理这些差异，会导致：
 - 代码复杂度随方法数量线性增长
 - 新增方法需要修改核心管线
 - 各方法之间的实现细节泄漏到业务逻辑层
@@ -65,8 +65,8 @@ class DatingMethod(ABC):
 
 **背景**：
 不同定年引擎输出格式各异：
-- MCMCTree: FigTree.tre 格式，带 HPD 区间
-- treePL: Newick 格式，仅点估计
+- MCMCTree：FigTree.tre 格式，带 HPD 区间
+- treePL：Newick 格式，仅点估计
 - LSD2：支持置信区间
 
 可视化模块需要统一的方式访问结果。
@@ -137,14 +137,14 @@ class PipelineConfig:
 环境变量用于运行时覆盖：
 - `PHYLODATER_SEED`：全局随机种子
 - `PHYLODATER_THREADS`：并行线程数
-- `PHYLODATER_BURNIN`: MCMC burnin 代数
+- `PHYLODATER_BURNIN`：MCMC burnin 代数
 - `PHYLODATER_TIMEOUT`：执行超时时间
 
 审阅项 E-6 修正了线程数的解析链路，让文档里写的优先级成为真实行为。
-`phylodater dating` 的 worker 数现在按
+`phylodater dating` 的工作线程数现在按
 `--threads/-j`（仅在显式给出时）> `PHYLODATER_THREADS`（仅在取值为正整数时）>
-YAML `software.common.nthreads` > 内置默认 `4` 依次裁定。修复前 argparse 的默认值
-`4` 总是被当作"用户指定的值"下传，于是环境变量与 YAML 里的线程数永远赢不过它；
+YAML `software.common.nthreads` > 内置默认 `4` 依次确定。修复前 argparse 的默认值
+`4` 总是被当作“用户指定的值”下传，于是环境变量与 YAML 里的线程数永远赢不过它；
 同时示例配置写的是 `threads:`、数据类字段却叫 `nthreads`，两边对不上，
 YAML 里的线程设置会被当作 "Unknown parameter" 丢弃。现在 `threads` 仍作为
 `software.common.nthreads` 的弃用别名被接受（伴随一条告警；两个键同时出现时以
@@ -157,7 +157,7 @@ YAML 里的线程设置会被当作 "Unknown parameter" 丢弃。现在 `threads
 
 ---
 
-## ADR-004：断点续跑机制设计
+## ADR-004：检查点续跑机制（checkpoint-resume）设计
 
 **状态**：已通过（2024-04-01）
 
@@ -274,13 +274,15 @@ class ExecutionError(PhyloDaterError):
     suggestion: Optional[str]
 ```
 
-错误分类辅助函数根据外部程序输出版本分类：
+根据外部程序输出生成分类结果的辅助函数：
 
 ```python
 def classify_execution_error(stderr: str, returncode: int) -> tuple:
     if "out of memory" in stderr_lower:
         return (ErrorCategory.RESOURCE_LIMITED, "请尝试减少数据规模...")
 ```
+
+上述代码片段中的建议字符串是内置的中文提示，逐字引自 `phylodater/core/exceptions.py:151`。
 
 **后果**：
 - **正面**：用户可快速判断错误类型和解决方案
@@ -294,7 +296,7 @@ def classify_execution_error(stderr: str, returncode: int) -> tuple:
 **状态**：已通过（2026-07-12）
 
 **背景**：
-不同定年方法对校准约束的支持存在差异。例如 MCMCTree 的 `RootAge` 只能设置为上界，无法真正固定根节点年龄；如果用户提供 `fixed` 根节点约束，MCMC 采样会收敛到低于该值的某一点，导致结果偏离预期。此前这类问题要到运行中期才会暴露，浪费计算资源且用户体验差。
+不同定年方法对校准约束的支持存在差异。例如 MCMCTree 的 `RootAge` 只能设置为上界，无法真正固定根节点年龄；如果用户提供 `fixed` 根节点约束，MCMC 采样会收敛到低于该值的某一点，产生具有误导性的结果。此前这类问题要到运行中期才会暴露，浪费计算资源且用户体验差。
 
 **决策**：
 在 `DatingMethod` 抽象基类中新增 `validate_calibrations(calibrations)` 钩子，各适配器可在 `prepare_inputs()` 之前执行方法专属的校准检查。
@@ -325,7 +327,7 @@ class DatingMethod(ABC):
 - **正面**：PhyloDater 在执行早期发现不兼容配置，避免运行到一半才失败
 - **正面**：错误信息可包含针对性的修改建议（如改为 uniform、maximum 或换用其他方法）
 - **正面**：单方法失败不影响其他方法继续运行
-- **负面**：需要为每种方法维护校验逻辑
+- **负面**：需要为每个适配器维护验证逻辑
 
 **更新记录**：
 - 2026-07-12：通过 ADR；已在 MCMCTree 适配器中实现 fixed root 拦截。
@@ -360,7 +362,7 @@ class DatingMethod(ABC):
 
 1. 在本文档末尾添加新章节
 2. 包含：状态、背景、决策、方案选择、后果
-3. 状态选项：提议中、已接受、已拒绝、已废弃
+3. 状态选项：提议中、已通过、已被取代（Superseded）、已废弃
 
 ### 如何更新已有 ADR
 

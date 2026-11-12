@@ -58,7 +58,7 @@ listing it in `api/index.rst`.
 
 1. Write or update the English file first.
 2. Apply the same structural change to the `_CN` file in the same commit.
-3. Keep the two-line language switch banner at the top (English listed first).
+3. Keep the language switch banner at the top (English listed first).
 4. Link new documents from the table above and from the root README so they are
    discoverable from both entry points.
 

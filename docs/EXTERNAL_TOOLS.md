@@ -165,6 +165,19 @@ container, add the routes from §2 and §5 (`apt` packages `libnlopt0` and
 `libnlopt-dev` are already installed for a future treePL build). Update this
 table whenever the Dockerfile changes.
 
+> **The `complete` tag is not a seven-engine environment.** The stage is called
+> `complete`, and its `LABEL description` reads "Including all external
+> bioinformatics tools", but the table above is what the stage actually contains:
+> MCMCTree (PAML 4.10.8), LSD2 (IQ-TREE 2.3.4 `--date`) and PATHd8. Running
+> `--method treepl`, `--method r8s`, `--method wlogdate` or `--method mdcat` in
+> `phylodater/phylodater:complete` fails at `validate_environment()` with a
+> missing-executable error, and `phylodater check` reports those four engines as
+> unavailable. The release benchmark in [TEST_RESULTS.md](TEST_RESULTS.md) §1.1,
+> which does execute all seven engines, was run in the conda environment of §2 —
+> **not** in this image. A prominent comment block at the top of the `complete`
+> stage in [`Dockerfile`](../Dockerfile) records the same facts where a reader
+> building the image will see them.
+
 ---
 
 *See also: [TESTING.md](TESTING.md) (how the engines are validated),

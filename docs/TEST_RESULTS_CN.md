@@ -6,7 +6,7 @@
 本文 §8 中的命令在 §1 记录的环境上产生，并且可以从随包发布的
 [`test-data/benchmark/results/`](../test-data/benchmark/results/) 复现。
 
-**版本：** PhyloDater 0.1.0 | **日期：** 2026-09-29 | **结论：通过**——七个受支持的
+**版本：** PhyloDater 0.1.0 | **日期：** 2026-09-29 | **结论：PASS**——七个受支持的
 定年方法全部针对其**真实引擎**完成端到端运行，并满足全部验收门槛。
 
 ---
@@ -36,7 +36,7 @@
 
 安装来源、校验和以及为何选择该路径，见 [EXTERNAL_TOOLS_CN.md](EXTERNAL_TOOLS_CN.md)。
 
-## 2. 基准测试——总体结果
+## 2. 参考基准——总体结果
 
 数据集：`test-data/benchmark`（13 分类单元、3000 位点、JC69 严格分子钟、根龄 105 Ma、
 12 个内部节点、4 个校准；见 TESTING_CN.md §3）。门槛：MAE ≤ 10 Ma、最差节点相对误差
@@ -46,13 +46,13 @@
 
 | 方法 | 状态 | 耗时(s) | MAE(Ma) | RMSE(Ma) | 最大绝对误差(Ma) | 最大相对误差 |
 |------|------|---------|---------|----------|-------------------|--------------|
-| `mcmctree` | 通过 | 14.2 | 0.721 | 0.863 | 1.641 | 0.284 |
-| `lsd2` | 通过 | 4.2 | 1.881 | 2.373 | 4.912 | 0.303 |
-| `r8s`（pyr8s/NPRS） | 通过 | 4.4 | 0.183 | 0.256 | 0.528 | 0.013 |
-| `treepl` | 通过 | 64.4 | 1.099 | 1.527 | 3.044 | 0.029 |
-| `pathd8` | 通过 | 4.4 | 0.509 | 0.794 | 1.659 | 0.019 |
-| `wlogdate` | 通过 | 6.1 | 0.000 | 0.000 | 0.000 | 0.000 |
-| `mdcat` | 通过 | 10.5 | 0.081 | 0.106 | 0.163 | 0.069 |
+| `mcmctree` | PASS | 14.2 | 0.721 | 0.863 | 1.641 | 0.284 |
+| `lsd2` | PASS | 4.2 | 1.881 | 2.373 | 4.912 | 0.303 |
+| `r8s`（pyr8s/NPRS） | PASS | 4.4 | 0.183 | 0.256 | 0.528 | 0.013 |
+| `treepl` | PASS | 64.4 | 1.099 | 1.527 | 3.044 | 0.029 |
+| `pathd8` | PASS | 4.4 | 0.509 | 0.794 | 1.659 | 0.019 |
+| `wlogdate` | PASS | 6.1 | 0.000 | 0.000 | 0.000 | 0.000 |
+| `mdcat` | PASS | 10.5 | 0.081 | 0.106 | 0.163 | 0.069 |
 
 七个方法在以下各项全部通过：叶节点完整、拓扑一致、年龄非负、时序单调、校准被满足、
 12 个真值节点全部还原。
@@ -69,13 +69,13 @@ TESTING_CN.md §3 的方式重新定根。树总长从 1.0365 降到 0.8793 替�
 
 | 方法 | 状态 | 耗时(s) | MAE(Ma) | RMSE(Ma) | 最大绝对误差(Ma) | 最大相对误差 | 已披露的引擎局限 |
 |------|------|---------|---------|----------|-------------------|--------------|------------------|
-| `mcmctree` | 通过 | 14.0 | 0.730 | 0.878 | 1.650 | 0.289 | — |
-| `lsd2` | 通过 | 4.1 | 1.881 | 2.373 | 4.912 | 0.303 | — |
-| `r8s`（pyr8s/NPRS） | 通过 | 4.8 | 7.862 | 11.219 | 25.023 | 0.426 | `Primates` 54.64 Ma 超出 [68, 82]；`Glires` 53.75 Ma 超出 [60, 80] |
-| `treepl` | 通过 | 63.0 | 4.041 | 5.762 | 14.866 | 0.224 | — |
-| `pathd8` | 通过 | 4.1 | 4.492 | 6.262 | 15.652 | 0.240 | — |
-| `wlogdate` | 通过 | 6.0 | 1.850 | 3.199 | 9.666 | 0.180 | — |
-| `mdcat` | 通过 | 18.5 | 0.298 | 0.472 | 1.116 | 0.413 | — |
+| `mcmctree` | PASS | 14.0 | 0.730 | 0.878 | 1.650 | 0.289 | — |
+| `lsd2` | PASS | 4.1 | 1.881 | 2.373 | 4.912 | 0.303 | — |
+| `r8s`（pyr8s/NPRS） | PASS | 4.8 | 7.862 | 11.219 | 25.023 | 0.426 | `Primates` 54.64 Ma 超出 [68, 82]；`Glires` 53.75 Ma 超出 [60, 80] |
+| `treepl` | PASS | 63.0 | 4.041 | 5.762 | 14.866 | 0.224 | — |
+| `pathd8` | PASS | 4.1 | 4.492 | 6.262 | 15.652 | 0.240 | — |
+| `wlogdate` | PASS | 6.0 | 1.850 | 3.199 | 9.666 | 0.180 | — |
+| `mdcat` | PASS | 18.5 | 0.298 | 0.472 | 1.116 | 0.413 | — |
 
 对这张表的诚实解读：
 
@@ -94,9 +94,9 @@ TESTING_CN.md §3 的方式重新定根。树总长从 1.0365 降到 0.8793 替�
   逐条复核请求区间，为每个未满足的校准写入具名警告。基准的门槛是"满足**或被披露**"，
   上表最后一列正是适配器报告的内容。
 * **`pathd8` 的根节点行为在本轮得到改进。** 适配器过去会丢弃一切非点校准的根约束
-  （"PATHd8 没有针对根段的 min/max 指令"），导致根年龄完全由 MPL 依树长推导：请求
-  [100, 110] 却返回 153 Ma。已直接用 PATHd8 二进制确认根 mrca 支持 `minage`/`maxage`，
-  因此现在会写出该区间，根年龄返回 110 Ma（落在请求区间内；变体 B，12 节点 MAE 4.49 Ma）。
+  （"PATHd8 has no min/max directive for the root"），因此在请求 [100, 110] 时根龄落在了
+  153 Ma。已直接对 PATHd8 二进制确认它确实接受根 MRCA 上的 `minage`/`maxage`，
+  因此现在会写出该区间，根龄返回 110 Ma，落在请求区间之内（变体 B；全部 12 个节点的 MAE 4.49 Ma）。
 
 ### 2.3 类型改造后的耗时复核（无性能回退）
 
@@ -126,7 +126,7 @@ TESTING_CN.md §3 的方式重新定根。树总长从 1.0365 降到 0.8793 替�
 | 方法 | 重复运行结果 |
 |------|--------------|
 | `lsd2`、`r8s`、`treepl`、`pathd8`、`wlogdate`、`mdcat` | 节点年龄逐位一致 |
-| `mcmctree` | 相差 ≤ 0.3 Ma（不足根龄 0.3 %）——贝叶斯采样器不会因为固定 PRNG 种子就逐位可复现 |
+| `mcmctree` | 相差 ≤ 0.3 Ma（≤ 根龄的 0.3 %）——贝叶斯采样器不会因为固定 PRNG 种子就逐位可复现 |
 
 类型改造之后又按方法对 `node_ages.tsv` 的行做了哈希比对（变体 A 两次运行）：
 `lsd2`、`r8s`、`treepl`、`pathd8`、`wlogdate`、`mdcat` **逐位一致**；
@@ -155,8 +155,8 @@ python -B -m pytest tests -q --collect-only   # 只统计，不执行
 
 > **收集条目数对环境敏感，是"实测值"而不是"常量"。** 参数化用例与受标记门控的用例会随
 > 解释器小版本、以及哪些可选后端能被 import 而增减——`ete3`（Python ≥ 3.13 装不上）、
-> `ete4`、`plotly`、`psutil` 每一项都会改变可收集的内容。同一棵树在修复分支补入 unit
-> 测试之前的一个中间实测是 1,495 项（unit 1,114 / functional 199 / integration 24 /
+> `ete4`、`plotly`、`psutil` 每一项都会改变可收集的内容。同一棵树在修复分支补入单元测试
+> 之前的一个中间实测是 1,495 项（unit 1,114 / functional 199 / integration 24 /
 > validation 158）；当前树实测 1,550 项（unit **1,169** / functional 199 / integration
 > 24 / validation 158）。只有 `tests/unit` 变了。引用条目数时，请把解释器版本和命令一起
 > 给出。
@@ -164,8 +164,6 @@ python -B -m pytest tests -q --collect-only   # 只统计，不执行
 > **中间那一行的 29 项失败是测试工装缺陷，不是 29 个坏掉的功能**——见 §4.2 的可复现性
 > 缺陷披露。它们在修复分支上消失（`94b9781`），但该提交**尚未发布**，因此公开的
 > `v0.1.0` 归档仍然是这个样子。
-
-跳过的项都是**有意**的条件跳过（依赖特定可选后端或外部引擎二进制的环境判定），并非缺失覆盖。
 
 ### 4.1 分层说明
 
@@ -177,7 +175,7 @@ python -B -m pytest tests -q --collect-only   # 只统计，不执行
 * 依赖外部引擎的测试在二进制缺失时带明确原因跳过，因此同一条命令在没有这些工具的机器上
   也能通过。
 
-## 4.2 覆盖率
+### 4.2 覆盖率
 
 ```bash
 python -B -m pytest tests -q --cov=phylodater --cov-report=term
@@ -188,7 +186,7 @@ python -B -m pytest tests -q --cov=phylodater --cov-report=term
 
 | # | 读数 | 语句数 | 未覆盖 | 覆盖率 | 实测对象 | 地位 |
 |---|---|---|---|---|---|---|
-| **1** | **v0.1.0 干净树** | 16,729 | 5,483 | **67%** | `git archive v0.1.0` 解包到空目录——不含用户未提交改动、不含修复分支——macOS arm64、Python 3.11.15、pytest 9.1.1；**未装任何外部引擎、PATH 上没有 `python` 别名（只有 `python3`）**；这一跑即 §4 的中间行（29 失败 / 1,430 通过 / 36 跳过，94 s） | **稿件与 SI 的对外引用值**——它证实稿件原先写的"约 67%"对 v0.1.0 是正确的 |
+| **1** | **v0.1.0 干净树** | 16,729 | 5,483 | **67%** | `git archive v0.1.0` 解包到空目录——不含用户未提交改动、不含修复分支——macOS arm64、Python 3.11.15、pytest 9.1.1；**未装任何外部引擎、PATH 上没有 `python` 别名（只有 `python3`）**；这一跑即 §4 的中间行（29 失败 / 1,430 通过 / 36 跳过，94 s） | **稿件与 SI 的对外引用值**——它证实稿件原先写的 "approximately 67%" 对 v0.1.0 是正确的 |
 | **2** | 修复分支 | 16,892 | 5,325 | 68.48% | `fix/review-2026-10-08` 工作树，同机器同解释器；收集 1,550 / 通过 1,514 / 跳过 36 / 失败 0（在分支最终树上复跑，数值一致） | 真实，但**是分支值**：它不对应任何已发布工件，引用时必须这样标注 |
 | **3** | 陈旧 `.coverage` 在修复前的树上 | 16,742 | 5,631 | 66.4% | 工作树里那份被 gitignore 的 `.coverage` 数据文件的事后报告 | **无效**——数据文件与源码树不匹配；仅用于说明审阅阶段登记的那个数字从何而来 |
 | **4** | 陈旧 `.coverage` 在分支树上 | 16,892 | 7,054 | 58% | 同一份陈旧数据文件，对着分支树报告 | **无效**——同样的不匹配；分支新增的行在其中根本没有命中记录 |
@@ -211,8 +209,8 @@ python -B -m pytest tests -q --cov=phylodater --cov-report=term
    文件：它被 gitignore（`.gitignore` 里的 `.coverage*` 条目），是一份**不完整**、且早于
    本分支各项修复的记录，如今又对着**并非产生它的那棵树**报告。语句基数也会随树上的代码
    变化（16,742 对 16,892），于是同一份陈旧记录在一棵树上读作 66.4%、在另一棵树上读作
-   58%。本集群此前把稿件"更正为 66%"正是依据读数 3，因而是一次**错误更正**：读数 1 取
-   代它，稿件原来写的"approximately 67%"对 v0.1.0 成立。要重新得到数字就**重新生成**
+   58%。本集群此前对稿件所作的 "correct to 66%" 更正正是依据读数 3，因而是一次**错误更正**：
+   读数 1 取代它，稿件原来写的 "approximately 67%" 对 v0.1.0 成立。要重新得到数字就**重新生成**
    （用上面的 `--cov`），不要在陈旧数据文件上再报告；若想保留那份历史工件，先把数据文件
    指到别处（`export COVERAGE_FILE=$PWD/../.coverage.regen`）。
 3. **数字会随环境浮动，原因同 §4 的条目数。** `pyproject.toml` 里 `fail_under` 旁边的注释
@@ -225,7 +223,7 @@ python -B -m pytest tests -q --cov=phylodater --cov-report=term
    No such file or directory: 'python'` 在第 76 行调用 `subprocess.run()` 处抛出），
    分布为 `tests/validation/functional` 18 项、`tests/validation/security` 9 项、
    `tests/validation/integration` 1 项；它们在**任何断言之前**就失败，因此对被测包什么
-   也说明不了。剩下 1 项是 ete4 不兼容：
+   也说明不了。剩下 1 项是 `ete4` 不兼容：
    `tests/unit/test_viz_geo.py::TestRootAgeInference::test_documented_example_with_a_real_ete_backend`
    以 `Tree(newick, format=1)` 建树，而 ete4 的 `Tree()` 不接受 `format=1`。
    分支提交 `94b9781` 把该字面量换成 `sys.executable`（与 `tests/functional/conftest.py`
@@ -243,6 +241,9 @@ $ python -m phylodater check
 ✓ 所有检查通过！
 ```
 
+最后两行是程序原样输出的中文（汇总信息按设计就是以中文打印的，此处一字未改）；它们对应的
+英文是 "Total: 26 checks, 26 passed, 0 failed" 与 "✓ All checks passed!"。
+
 26 项检查覆盖：必需的 Python 依赖（biopython、dendropy、numpy、pandas、pyyaml、
 matplotlib）；四个可选的引擎依赖——`logdate`（wLogDate）、`emd`（MD-Cat）、`pyr8s`（r8s）
 与 `ete3`，只探测，从来不是 Python 层运行的前提；有无分类信息的 Newick 解析；
@@ -258,16 +259,16 @@ matplotlib）；四个可选的引擎依赖——`logdate`（wLogDate）、`emd`
 | 1 | LSD2 默认替换模型是氨基酸模型 `LG+G` | IQ-TREE 2 报 `ERROR: File not found LG`，方法根本无法运行 | 按比对类型解析模型（核酸 `GTR+G`、蛋白 `LG+G`）；显式给出明显不匹配的模型时抛 `ConfigurationError` | `TestLSD2ModelResolution`（5 项） |
 | 2 | MD-Cat 的 `--CI` 以逗号拼接的单个串传入 | 上游 `int("100,0.025,0.975")` 抛 `ValueError`，默认配置每次必失败 | 改为单个空白分隔串 `--CI "n lower upper"`（与上游 `.split()` 一致） | `TestMDCatCliContract` |
 | 3 | MD-Cat CI 默认 100 次 bootstrap | 每次运行数小时的隐式开销（实测 6 分类单元上**一次** bootstrap 就 > 10 分钟） | 默认 `ci_nboots = 0`，与上游一致；需显式开启 | `test_ci_parameters` |
-| 4 | PAML 版本闸门要求字面版本 `4.10.8` | 按文档 `conda install -c bioconda paml` 装到的 4.10.10 被直接拒绝："Environment not available" | 兼容判据改为主.次版本系列；同系列补丁差异放行并记信息日志；跨系列仍阻断 | `tests/unit/adapters/test_mcmctree_method.py` 新增 2 项 |
+| 4 | PAML 版本闸门要求字面版本 `4.10.8` | 按文档 `conda install -c bioconda paml` 装到的 4.10.10 被直接拒绝："Environment not available" | 兼容性改按 major.minor 系列判定；同系列的补丁差异放行并记信息日志；跨系列仍阻断 | `tests/unit/adapters/test_mcmctree_method.py` 新增 2 项 |
 | 5 | `runtime_metadata.json` 从不记录引擎版本 | 随包结果缺少引擎溯源 | 各适配器记录 `validate_environment()` 的探测结果，由 pipeline 写入 | 基准评分卡 + 适配器测试 |
 | 6 | 零依赖 Newick 游走器拒绝开头的 `[&R]` | BEAST/IQ-TREE/DendroPy 导出的树会让 MCMCTree 与 treePL 报 "Cannot parse Newick for tree operations"；祖先关系校验静默退化 | 游走器跳过起始注释；新增共享的 `strip_leading_newick_comments()` 为 ete3 归一化 | `TestLeadingCommentTolerance`（5 项） |
-| 7 | PATHd8 丢弃非点校准的根约束 | 根年龄被忽略：请求 [100,110] 却返回 153 Ma | 根区间改为在根 mrca 上写 `minage`/`maxage`（行为已对二进制验证） | `tests/unit/adapters/test_pathd8_method.py` |
+| 7 | PATHd8 丢弃非点校准的根约束 | 根年龄被忽略：请求 [100, 110] Ma 却返回 153 Ma | 根区间现在渲染为根 MRCA 上的 `minage`/`maxage`（行为已对二进制验证） | `tests/unit/adapters/test_pathd8_method.py` |
 | 8 | pyr8s 的区间校准既不被强制也不被报告 | 区间外的年龄照常进入报告，一字未提 | 运行前披露 + 运行后逐条对账，写入结果级警告 | `tests/unit/adapters/test_r8s_pyr8s_method.py` |
 | 9 | 三个单元测试断言进程级 `sys.modules` | 只因测试顺序（可视化测试导入了 ete3）而失败 | `module_imports_cleanly` fixture 在全新解释器中探测 | 改造后的三项测试 |
 | 10 | MCMCTree 原始调用冒烟测试写 `BDparas = 1 1 0.1` | PAML ≥ 4.10 中止："BDparas: expect flag for birth-death process prior" | 控制文件补上构造标志，与适配器一致 | `tests/integration/full_pipeline/test_all_dating_tools.py` |
 | 11 | 验证套件工装把自己的解释器硬编码成字面量 `'python'`（`tests/validation/helpers.py::run_cli()`），且 `TestMultiMethod` 只带 `slow` 而不带 `requires_mcmctree` | 在只有 `python3`、没有 `python` 别名的机器上，28 项 `tests/validation` 用例在触及任何断言之前就抛 `FileNotFoundError: No such file or directory: 'python'`；没有 PAML 时 MCMCTree 集成用例被记成失败而不是跳过 | `run_cli()` 改用 `sys.executable`（`tests/functional/conftest.py` 本来就这么写），并补上缺失的可用性标记。**尚未发布**：修复在分支提交 `94b9781`，公开的 `v0.1.0` 归档依旧受影响（见 §4.2 限定 4） | 分支提交 `94b9781`（未发布） |
 
-## 7. 与引擎/环境相关的局限
+## 7. 与引擎和环境无关的局限
 
 * treePL 自报横幅始终是 `treePL version 1.0`（即便构建自 2.6.3），因此版本溯源还依赖
   被记录的可执行文件路径。

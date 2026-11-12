@@ -10,13 +10,13 @@ under its own open-source license.
 | Library      | License (SPDX)                        | URL                                          |
 |--------------|---------------------------------------|----------------------------------------------|
 | BioPython    | BSD-3-Clause (Biopython License)      | https://biopython.org                        |
-| DendroPy     | BSD 3-Clause                          | https://github.com/jeetsukumaran/DendroPy    |
+| DendroPy     | BSD-3-Clause                          | https://github.com/jeetsukumaran/DendroPy    |
 | PyYAML       | MIT                                   | https://pyyaml.org                           |
-| SciPy        | BSD 3-Clause                          | https://scipy.org                            |
-| NumPy        | BSD 3-Clause                          | https://numpy.org                            |
-| Pandas       | BSD 3-Clause                          | https://pandas.pydata.org                    |
+| SciPy        | BSD-3-Clause                          | https://scipy.org                            |
+| NumPy        | BSD-3-Clause                          | https://numpy.org                            |
+| pandas       | BSD-3-Clause                          | https://pandas.pydata.org                    |
 | Matplotlib   | PSF-based (Matplotlib License)        | https://matplotlib.org                       |
-| psutil       | BSD 3-Clause                          | https://github.com/giampaolo/psutil          |
+| psutil       | BSD-3-Clause                          | https://github.com/giampaolo/psutil          |
 
 ## Optional dependencies
 
@@ -36,7 +36,7 @@ under GPLv3 terms. To remain fully MIT-licensed:
 - **With ETE3 installed**: The `phylodater.viz` module that uses ETE3 must be
   treated as GPLv3-licensed.
 
-All core dependencies (BioPython, DendroPy, NumPy, SciPy, Pandas, Matplotlib,
+All core dependencies (BioPython, DendroPy, NumPy, SciPy, pandas, Matplotlib,
 psutil, PyYAML) are BSD/MIT/PSF-licensed and are fully compatible with the MIT
 license of the PhyloDater core.
 

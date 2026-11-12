@@ -284,6 +284,8 @@ def classify_execution_error(stderr: str, returncode: int) -> tuple:
         return (ErrorCategory.RESOURCE_LIMITED, "请尝试减少数据规模...")
 ```
 
+The suggestion string in the snippet above is a built-in Chinese-language hint, quoted verbatim from `phylodater/core/exceptions.py:151`.
+
 **Consequences**:
 - **Positive**: Users can quickly determine the error type and solution
 - **Positive**: Supports automated error handling strategies
@@ -308,7 +310,7 @@ class DatingMethod(ABC):
         return []
 ```
 
-The pipeline calls this hook after `validate_environment()` and before `prepare_inputs()`. If non-empty errors are returned, the method is marked failed and the pipeline continues with the remaining methods.
+The pipeline calls this hook after `validate_environment()` and before `prepare_inputs()`. If non-empty errors are returned, an ERROR is logged, the method is marked failed and the pipeline continues with the remaining methods.
 
 **Options considered**:
 - **Option A (chosen)**: Base-class hook + adapter override
@@ -362,7 +364,7 @@ The pipeline calls this hook after `validate_environment()` and before `prepare_
 
 1. Add a new section at the end of this document
 2. Include: Status, Context, Decision, Choices, Consequences
-3. Status options: Proposed, Accepted, Accepted, Superseded, Deprecated
+3. Status options: Proposed, Accepted, Superseded, Deprecated
 
 ### How to Update an Existing ADR
 

@@ -2,8 +2,6 @@
 
 # Contributing Guide
 
-> 📚 This document is also available in [中文 (Chinese)](CONTRIBUTING.md).
-> 本文档的权威中文版见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 > **Last Updated**: 2026-04-09
 
 Thank you for considering contributing code to PhyloDater!
@@ -189,13 +187,13 @@ from ..infrastructure.configuration import (
     CommonConfig,
     SoftwarePaths,
     ToolConfig,
-    YourMethodConfig,          # 本适配器真正读取的那一份子配置
+    YourMethodConfig,          # the sub-config this adapter actually reads
 )
 
 
 @DatingMethodRegistry.register("your_method")
 class YourMethod(DatingMethod[YourMethodConfig]):
-    """基类按 ConfigT 参数化：self.config 静态视角下就是 YourMethodConfig。"""
+    """The base class takes ConfigT: statically, self.config is YourMethodConfig."""
 
     def __init__(
         self,
@@ -204,8 +202,8 @@ class YourMethod(DatingMethod[YourMethodConfig]):
         software_paths: Optional[SoftwarePaths] = None,
         common_config: Optional[CommonConfig] = None,
     ) -> None:
-        # 入口保留双形态（传整个 ToolConfig 或只传本方法子配置都可以），但在
-        # 交给基类之前先归一，所以后面 self.config.<参数> 都是类型精确的。
+        # Accept both forms (the whole ToolConfig or just this method's sub-config),
+        # but normalise before super().__init__ so self.config.<param> stays typed.
         common: Optional[CommonConfig] = common_config
         if isinstance(config, ToolConfig):
             method_config = config.your_method
@@ -246,8 +244,8 @@ class YourMethod(DatingMethod[YourMethodConfig]):
         pass
 
 
-# 注册已由类定义上方的 @DatingMethodRegistry.register("your_method") 完成（E-7）。
-# 历史的两参数形态仍然有效，两种写法等价：
+# Registration is already done by @DatingMethodRegistry.register("your_method") above
+# the class (E-7); the historical two-argument form still works, and the two are equal:
 # DatingMethodRegistry.register("your_method", YourMethod)
 ```
 

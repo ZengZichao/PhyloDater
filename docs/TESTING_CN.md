@@ -13,7 +13,7 @@
 
 ## 1. "受支持"意味着什么，以及必须测什么
 
-PhyloDater 声称支持七个 `dating` 方法。每个方法都是不同引擎之上的一层标准化外壳，
+PhyloDater 声称支持七个 `dating` 方法。每个方法都是不同引擎之上薄薄的一层标准化外壳，
 因此测试矩阵必须覆盖三个互相独立的层面：
 
 1. **外壳本身** —— PhyloDater 是否能构造出合法的引擎输入、成功调用引擎，并把输出
@@ -60,7 +60,7 @@ class TestMCMCTreeBenchmark: ...
 `wlogdate → logdate 包或 launch_wLogDate.py`、`mdcat → emd 包或 md_cat.py`、
 `pathd8 → PATHd8`、`treepl → treePL`、`mcmctree → mcmctree + baseml`。
 
-## 3. 基准数据集
+## 3. 参考基准数据集
 
 `test-data/benchmark/` 是一份**仿真**的、已知答案的数据集：
 
@@ -100,8 +100,8 @@ class TestMCMCTreeBenchmark: ...
   `examples/benchmark/degradation/` 下的"约束覆盖"数据集专门验证——在那里，
   **降级警告本身**才是被测试的对象。
 * **任意两个校准不会落到同一个节点**，也没有内部校准落在根节点上：MCMCTree 把根龄写进
-  控制文件（`RootAge`）而非写入树中；当它发现某个请求的校准在 `mcmctree.tree` 中缺失时，
-  会直接拒绝运行而不是带着一套被悄悄削弱过的约束继续。
+  控制文件（`RootAge`）而非写入树中；当它发现某个请求的校准在 `mcmctree.tree`（即传入的树）
+  中缺失时，会直接拒绝运行而不是带着一套被悄悄削弱过的约束继续。
 
 ## 4. 评分方法
 
@@ -111,20 +111,20 @@ class TestMCMCTreeBenchmark: ...
 |---|--------|----------|
 | 1 | 完成 | CLI 退出码为 0 **且** `runtime_metadata.json` 中 `status: completed` |
 | 2 | 叶节点完整 | 输出树的分类单元集合与输入完全一致，无重命名、无丢失 |
-| 3 | 拓扑一致 | 输出的内部演化支集合（以叶节点集合表示）= 输入；采用演化支匹配，因此节点*标签*不参与判定 |
+| 3 | 拓扑一致 | 输出的内部演化支集合（以叶节点集合表示）= 输入；采用 PolyPhy 式的演化支匹配，因此节点*标签*不参与判定 |
 | 4 | 年龄非负 | 每个内部节点年龄 ≥ 0 |
 | 5 | 时序单调 | 不存在子节点比其父节点更老 |
 | 6 | 校准被满足 | 点校准：\|估计值 − 年龄\| ≤ 1 Ma；区间校准：落在 `[min, max]` 内外扩区间宽度的 5 % |
 | 7 | 精度 | 对全部 12 个内部节点，与 `truth.yaml` 比较的 MAE、RMSE、最大绝对误差、最大相对误差 |
 
-随包基准使用的门槛是：**MAE ≤ 10 Ma**，且**最差不超过真值 0.5 倍相对误差**。
-门槛设置得足以吸收 3 kb 比对的统计噪声，又足够严格，以至于会"静默错标数量级"的方法
-（例如下方第 8 节提到的单位问题）必然被拦下。
+随包基准使用的门槛是：**MAE ≤ 10 Ma**，且**最差节点的相对误差 ≤ 0.5**。
+门槛刻意放宽到足以吸收 3 kb 比对的统计噪声，又足够严格，以至于会"静默错标数量级"的
+方法（例如下方第 8 项检查 / 缺陷表中记录的单位问题）必然被拦下。
 
 如何从各引擎输出中还原节点年龄——这一点至关重要，读错了整套基准就作废：
 
 * **时间树解码。** 定年后的树把时间写成分支**差值**，因此
-  `age(node) = 根到叶最大距离 − 该节点到根的距离`。若直接使用"到根的距离"，得到的是
+  `age(node) = max_root_to_tip_distance − distance_from_root(node)`。若直接使用"到根的距离"，得到的是
   "自根以来流逝的时间"——根为 0、最年轻的节点最大，恰好是把年龄完全颠倒。
 * **单位推断。** MCMCTree 输出 Ga，其余引擎输出 Ma。换算系数由根校准推断
   （在 1、10⁻³、10³、10⁶ 中取最接近者），而不是按方法硬编码；因此将来若某个引擎用了
@@ -191,7 +191,7 @@ PATHd8 交叉核验：按上游源码构建的二进制（Dockerfile 的配方�
 对同一 `--seed` 的两次独立基准运行逐节点比较：
 
 * `lsd2`、`r8s`、`treepl`、`pathd8`、`wlogdate`、`mdcat`：两次运行的节点估计**逐位一致**。
-* `mcmctree`：两次运行相差 ≤ 0.3 Ma（不足根龄的 0.3 %）。这是贝叶斯采样器的正常表现，
+* `mcmctree`：两次运行相差 ≤ 0.3 Ma（≤ 根龄的 0.3 %）。这是贝叶斯采样器的正常表现，
   固定 PRNG 种子并不能让 PAML 的 MCMC 达到逐位可复现。因此评判 MCMCTree 质量的正确
   闸门是 PhyloDater 记录的收敛诊断量（`max PSRF`、`min ESS`），而不是运行间完全相等。
 
@@ -221,12 +221,12 @@ PATHd8 交叉核验：按上游源码构建的二进制（Dockerfile 的配方�
 | LSD2 默认替换模型是氨基酸模型（`LG+G`），但流程针对核酸比对 | IQ-TREE 2 报 `ERROR: File not found LG`，方法完全无法运行 | `TestLSD2ModelResolution`（5 个用例） |
 | MD-Cat 的 `--CI` 以逗号拼接的单个串传入 | 上游 `int("100,0.025,0.975")` 抛 `ValueError`；默认开启的 CI 让每次运行都失败 | `TestMDCatCliContract` |
 | MD-Cat CI 默认 100 次 bootstrap | 数小时的隐式运行开销 | `TestMDCatConfig::test_ci_parameters` |
-| PAML 版本闸门要求逐字相等（`4.10.8`） | 按文档 `conda install -c bioconda paml` 安装的 4.10.10 被直接拒跑 | `test_validate_environment_same_series_other_patch_is_accepted`、`test_paml_versions_compatible_series_semantics` |
+| PAML 版本闸门要求逐字相等（`4.10.8`） | 按文档 `conda install -c bioconda paml` 安装的 4.10.10 被直接拒跑 | `tests/unit/adapters/test_mcmctree_method.py` 中的版本系列兼容性测试 |
 | `runtime_metadata.json` 从不记录引擎版本 | 随包发布的结果缺少引擎溯源信息 | 适配器版本记录 + 基准评分卡 |
 | 三个测试断言的是**进程级** `sys.modules` | 它们只因测试顺序（可视化测试导入了 ete3）而失败，与产品行为无关 | `module_imports_cleanly` fixture（子进程探测） |
 | MCMCTree 原始调用冒烟测试写出 `BDparas = 1 1 0.1` | PAML ≥ 4.10 中止："BDparas: expect flag for birth-death process prior" | `tests/integration/full_pipeline/test_all_dating_tools.py` 中已修正的控制文件串 |
 
-## 10. 已知局限（明示，不隐藏）
+## 10. 已知局限（已接受、已记录、不隐藏）
 
 * **Docker 镜像只覆盖七个引擎中的三个**（MCMCTree、LSD2、PATHd8），详见
   [EXTERNAL_TOOLS_CN.md](EXTERNAL_TOOLS_CN.md) §7。

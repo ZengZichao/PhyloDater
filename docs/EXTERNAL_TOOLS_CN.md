@@ -3,12 +3,12 @@
 # 外部定年引擎
 
 PhyloDater 是一个编排层：每一个 `dating` 方法都把真正的估算交给一个外部引擎。
-本文记录了 [TEST_RESULTS.md](TEST_RESULTS.md) 中随包发布的测试结果所对应的
+本文记录了 [TEST_RESULTS_CN.md](TEST_RESULTS_CN.md) 中随包发布的测试结果所对应的
 **每一个引擎的确切获取方式与验证过程**——定年结果的可复现性，取决于产出它的
 那个二进制文件。
 
 下列命令均在 conda 环境 `phylodater` 内、使用该环境自带的 `micromamba`
-（`micromamba 2.9.0`）执行。各软件包的渠道可用性于 2026-09-29 针对在线渠道元数据
+（`micromamba 2.9.0`）执行。各软件包的频道可用性于 2026-09-29 针对在线频道元数据
 做过核对；对于**已经不再**通过 conda 或 PyPI 分发的引擎，本文直接写明这一点，
 而不是保留一条注定失败的命令。
 
@@ -24,7 +24,7 @@ PhyloDater 是一个编排层：每一个 `dating` 方法都把真正的估算�
 | `treepl` | `treePL` 二进制 | bioconda/conda-forge/PyPI **均已不再发布** | 源码构建，或复用历史构建产物 + `patchelf`（见 §3） |
 | `pathd8` | `PATHd8` 二进制 | bioconda/conda-forge/PyPI **均已不再发布** | 从官方网站源码构建（见 §4） |
 
-> **关于渠道。** `treepl`、`pathd8`、`r8s` 如今在 `bioconda`/`conda-forge` 上都无法
+> **关于频道。** `treepl`、`pathd8`、`r8s` 如今在 `bioconda`/`conda-forge` 上都无法
 > 解析（`micromamba search` 返回 *no entries*，`https://api.anaconda.org/search?name=<pkg>`
 > 也没有 bioconda 命中）。因此旧文档以及大量流水线中常见的
 > `conda install -c bioconda treepl pathd8 r8s` 是**不能工作**的，不应把它当作受支持的
@@ -88,7 +88,7 @@ PhyloDater 以 `treepl` 之名调用该二进制（`software.treepl.treepl_bin`�
 ## 4. PATHd8
 
 PATHd8 以可移植 C 源码形式发布于官方网站 <https://www2.math.su.se/PATHd8/>；
-整个程序是一个翻译单元，通过 `headers/` 里的文件被包含进来：
+整个程序是一个翻译单元，它包含 `headers/` 里的文件：
 
 ```bash
 wget https://www2.math.su.se/PATHd8/PATHd8.zip && unzip PATHd8.zip
@@ -97,7 +97,7 @@ install -m 0755 PATHd8 "$CONDA_PREFIX/bin/"
 ```
 
 该构建已在 gcc 11（Ubuntu 22.04）上验证：编译无警告，且构建出的二进制在基准数据集上
-复现了环境中参考二进制的全部估算值（定年树完全一致，见
+精确复现参考二进制的估算值（定年树完全一致，见
 [TESTING_CN.md](TESTING_CN.md) §6）。
 
 PATHd8 不打印版本横幅、也不接受 `--version`，因此 PhyloDater 改为记录实际解析到的
@@ -113,7 +113,7 @@ PATHd8 不打印版本横幅、也不接受 `--version`，因此 PhyloDater 改�
 * 原版 `r8s`（Sanderson 2003）发布于 <https://sourceforge.net/projects/r8s/>，并有镜像
   <https://github.com/R8S/r8s>。本仓库此前给出的地址
   （`phymaster.massey.ac.nz`）已无法解析。
-* `pyr8s` 未发布于 PyPI 或任何 conda 渠道，只能从源码安装。
+* `pyr8s` 未发布于 PyPI 或任何 conda 频道，只能从源码安装。
 
 ## 6. PhyloDater 自动记录的内容
 
@@ -151,8 +151,18 @@ PATHd8 不打印版本横幅、也不接受 `--version`，因此 PhyloDater 改�
 | MD-Cat | 否 | — |
 
 因此该镜像只覆盖七个方法中的三个。若要在容器里使用其余引擎，请按 §2 与 §5 补齐
-（镜像中已安装 `libnlopt0` 与 `libnlopt-dev`，可为后续添加 treePL 构建复用）。
+（镜像中已安装 `apt` 包 `libnlopt0` 与 `libnlopt-dev`，以供后续构建 treePL 时使用）。
 每次修改 Dockerfile 都必须同步更新本表。
+
+> **`complete` 标签并不是一个七引擎齐全的环境。** 该 stage 名为 `complete`，它的
+> `LABEL description` 写着 "Including all external bioinformatics tools"，但上表才是这个
+> stage 实际包含的内容：MCMCTree（PAML 4.10.8）、LSD2（IQ-TREE 2.3.4 `--date`）和 PATHd8。
+> 在 `phylodater/phylodater:complete` 里运行 `--method treepl`、`--method r8s`、
+> `--method wlogdate` 或 `--method mdcat`，会在 `validate_environment()` 处以缺少可执行文件的
+> 错误失败，`phylodater check` 也会把这四个引擎报告为不可用。
+> [TEST_RESULTS_CN.md](TEST_RESULTS_CN.md) §1.1 中那份确实执行了全部七个引擎的发布基准，是在
+> §2 的 conda 环境里跑的——**不是**在这个镜像里。[`Dockerfile`](../Dockerfile) 中 `complete`
+> stage 的顶部有一段醒目注释块，在构建镜像的读者能看到的地方记录了同样的事实。
 
 ---
 

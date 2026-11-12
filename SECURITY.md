@@ -32,13 +32,14 @@ The following are **out of scope**:
 
 - Vulnerabilities in third-party dependencies (report to upstream maintainers)
 - Social engineering attacks
-- DoS through extremely large input files (use `--max-input-size`)
+- DoS through extremely large input files (rejected by the built-in 500 MB
+  input-size guard)
 
 ## Plugin Security
 
 PhyloDater's plugin system only loads Python files from explicitly allowed
-directories (see `infrastructure/plugins.py`). Plugins from arbitrary paths
-are rejected by default. Do not disable this safety check.
+directories (see `phylodater/infrastructure/plugins.py`). Plugins from
+arbitrary paths are rejected by default. Do not disable this safety check.
 
 ## Disclosure Policy
 

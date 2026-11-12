@@ -53,7 +53,7 @@ Tree file (.nwk)  ─┐
                     ├─→ QC Processing(optional) ─→ Rerooting ─→ Input Validation ─→ Calibration ─┐
 Alignment (.fa)   ─┤                                                    │                   │                   │
                     │                                                    ↓                   ↓                   ↓
-Calibration (.yaml)┘                                                 Deep Validation       MRCA定位          Dating Method
+Calibration (.yaml)┘                                                 Deep Validation       MRCA Localization Dating Method
                                                                        Bracket balance        Monophyly          MCMCTree
                                                                        Negative branches      Special IDs        treePL
                                                                        Duplicate names        Taxonomy           r8s/PATHd8/...
@@ -558,9 +558,12 @@ By default, tree files are expected to contain a single tree. If multiple trees 
 ### Log Format
 
 ```
-2025-03-21T10:15:30.123 | INFO     | module/func Parsing tree file
-2025-03-21T10:15:30.456 | WARNING  | module/func Large tree detected (15000 tips)
+2025-03-21T10:15:30.123 | INFO     | module/func 开始解析树文件
+2025-03-21T10:15:30.456 | WARNING  | module/func 检测到大型树 (15000 个末端节点)
 ```
+
+(The message bodies are shown verbatim: logs are emitted in Chinese; the two lines
+above read "Parsing tree file" and "Large tree detected (15000 tips)".)
 
 ### Log File
 
@@ -798,7 +801,7 @@ python scripts/run_reference_benchmark.py   # seven engines vs ground truth
 | PyYAML | >=6.0,<7.0 | MIT |
 | SciPy | >=1.9.0,<2.0 | BSD 3-Clause |
 | Matplotlib | >=3.5.0 | PSF-based |
-| psutil | >=5.9.0,<6.0 | BSD 3-Clause |
+| psutil | >=5.9.0 | BSD 3-Clause |
 
 > **Note**: ETE3 is an optional dependency (declared in `extras_require["ete3"]`). It is installed via pip by default. All other libraries are core dependencies.
 
@@ -831,16 +834,17 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
 If you use PhyloDater in your research, please cite:
 
-> Zeng, Zichao. (2026). PhyloDater: A multi-software parallel platform for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater (ORCID: 0000-0001-6553-970X)
+> Zeng, Zichao, & Wang, Yinzhao. (2026). PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater (ORCID: 0000-0001-6553-970X; 0000-0001-8715-1386)
 
 BibTeX format:
 ```bibtex
 @software{zeng2026phylodater,
-  author = {Zeng, Zichao},
-  title = {PhyloDater: A multi-software parallel platform for phylogenetic molecular dating},
+  author = {Zeng, Zichao and Wang, Yinzhao},
+  title = {PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
   version = {0.1.0},
+  doi = {10.5281/zenodo.23067037},
   note = {ORCID: 0000-0001-6553-970X}
 }
 ```
