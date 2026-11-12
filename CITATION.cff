@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it using the metadata below. A preferred article citation will be added once the manuscript is published."
 type: software
-title: "PhyloDater: A multi-software parallel platform for phylogenetic molecular dating"
+title: "PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating"
 abstract: "PhyloDater is a unified phylogenetic dating platform that integrates multiple mainstream dating software, providing consistent interfaces and standardized result outputs."
 authors:
   - family-names: "Zeng"
@@ -9,6 +9,11 @@ authors:
     name: "Zichao Zeng"
     email: "zengzichao@sjtu.edu.cn"
     orcid: "https://orcid.org/0000-0001-6553-970X"
+  - family-names: "Wang"
+    given-names: "Yinzhao"
+    name: "Yinzhao Wang"
+    email: "wyz@sjtu.edu.cn"
+    orcid: "https://orcid.org/0000-0001-8715-1386"
 repository-code: "https://github.com/ZengZichao/phylodater"
 license: MIT
 version: 0.1.0

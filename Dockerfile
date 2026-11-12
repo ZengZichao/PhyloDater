@@ -84,6 +84,43 @@ FROM runtime as complete
 LABEL maintainer="Zichao Zeng <zengzichao@sjtu.edu.cn>"
 LABEL description="PhyloDater Complete: Including all external bioinformatics tools"
 
+# =============================================================================
+# READ THIS BEFORE TRUSTING THE "complete" TAG  (review item INSTALL-002)
+# -----------------------------------------------------------------------------
+# The stage name and the LABEL above state an intent, not the content of this
+# image.  As of v0.1.0 the `complete` stage ships THREE of PhyloDater's seven
+# dating engines; the other four must be added by hand.
+#
+#   SHIPPED HERE (built from upstream sources further down this stage):
+#     1. mcmctree   PAML 4.10.8 release tarball (abacus-gene/paml)
+#     2. lsd2       IQ-TREE 2.3.4 Linux tarball -- LSD2 is the `--date` mode of
+#                   iqtree2, so no separate LSD2 build is involved
+#     3. pathd8     PATHd8.zip from www2.math.su.se, compiled with gcc -O3
+#
+#   NOT SHIPPED -- add them in a derived image (routes and caveats:
+#   docs/EXTERNAL_TOOLS.md §2-§5; the same table in prose is §7):
+#     4. treepl     no longer published on bioconda/conda-forge/PyPI; needs a
+#                   source build (git clone blackrim/treePL; configure; make) or
+#                   the historic conda 2.6.3 build repaired with patchelf.  The
+#                   cmake/make/libnlopt-dev/libnlopt0 packages installed below
+#                   exist precisely to make that build possible.
+#     5. r8s        `pip install git+https://github.com/iTaxoTools/pyr8s.git`
+#                   (NPRS only, range calibrations advisory) or the r8s binary
+#                   from SourceForge
+#     6. wlogdate   `pip install wlogdate` (provides launch_wLogDate.py)
+#     7. mdcat      `pip install git+https://github.com/uym2/MD-Cat.git`
+#
+#   CONSEQUENCE: `--method treepl|r8s|wlogdate|mdcat` inside this image fails at
+#   validate_environment() with a missing-executable error, and `phylodater check`
+#   reports those engines as unavailable.  A seven-method run such as the one in
+#   docs/TEST_RESULTS.md §1.1 was NOT executed in this image, so "complete" must
+#   not be quoted as "all seven engines".
+#
+#   No new engine builds are added here on purpose: each of the four missing
+#   routes needs its own source build and provenance record before it can be
+#   claimed as supported.
+# =============================================================================
+
 # Install additional build dependencies for external tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cmake \
