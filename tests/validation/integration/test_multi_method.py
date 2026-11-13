@@ -17,6 +17,7 @@ class TestMultiMethod:
     carries both markers; ``pytest_runtest_setup`` in
     ``tests/validation/conftest.py`` turns the marker into a skip.
     """
+
     def test_mcmctree_only(
         self,
         small_tree_path,

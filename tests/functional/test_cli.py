@@ -362,7 +362,15 @@ class TestCLIDatingArguments:
         # 输出目录被真实创建且非空 —— 否则下一条断言会对空目录**恒真**地通过。
         assert output_dir.is_dir() and produced, f"输出目录为空/缺失：{produced}"
         # 内容级兜底：按树扩展名找产物，避免"改了后缀名但仍是树"蒙混过关。
-        tree_suffixes = {".nwk", ".nwk.gz", ".newick", ".nexus", ".nex", ".tree", ".tre"}
+        tree_suffixes = {
+            ".nwk",
+            ".nwk.gz",
+            ".newick",
+            ".nexus",
+            ".nex",
+            ".tree",
+            ".tre",
+        }
         artifacts = [
             p for p in output_dir.rglob("*") if p.suffix.lower() in tree_suffixes
         ]

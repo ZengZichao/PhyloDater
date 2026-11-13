@@ -44,7 +44,9 @@ def _degradation_record(warning: Any) -> Optional[Dict[str, Any]]:
     这样"落档"这件事不依赖具体是谁发的警告。
     """
     category = getattr(warning, "category", None)
-    if not (isinstance(category, type) and issubclass(category, SemanticDegradationWarning)):
+    if not (
+        isinstance(category, type) and issubclass(category, SemanticDegradationWarning)
+    ):
         return None
     message = str(getattr(warning, "message", ""))
     attached = getattr(warning.message, "degradation", None)
@@ -140,7 +142,6 @@ def run_adapter_and_capture_degradations(
                 estimate.degraded_from = dict(record)
 
     return result
-
 
 
 def _derive_method_seeds(

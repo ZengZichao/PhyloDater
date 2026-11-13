@@ -124,9 +124,7 @@ class TestMethodSeedDerivation:
         assert len(set(values)) == len(values)
 
     def test_derive_changes_with_base_seed(self):
-        assert (
-            derive_method_seed(42, "treepl") != derive_method_seed(43, "treepl")
-        )
+        assert derive_method_seed(42, "treepl") != derive_method_seed(43, "treepl")
 
     def test_derive_ignores_method_name_case(self):
         assert derive_method_seed(7, "MCMCTree") == derive_method_seed(7, "mcmctree")

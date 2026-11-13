@@ -183,19 +183,18 @@ class TestMethodSeedForwarding:
         assert first.rng is not second.rng
         assert first.method_seed != second.method_seed
         # 同一子种子的两条流必然给出同一串数（可复现）
-        assert first.rng.random(3).tolist() == pipeline._create_adapter(
-            "probe_a"
-        ).rng.random(3).tolist()
+        assert (
+            first.rng.random(3).tolist()
+            == pipeline._create_adapter("probe_a").rng.random(3).tolist()
+        )
 
-    def test_same_base_seed_reproduces_across_pipelines(
-        self, tmp_path, probe_registry
-    ):
+    def test_same_base_seed_reproduces_across_pipelines(self, tmp_path, probe_registry):
         a = _pipeline(tmp_path / "a", seed=1234)
         b = _pipeline(tmp_path / "b", seed=1234)
 
-        assert [
-            a._create_adapter(name).recorded_seed for name in PROBE_NAMES
-        ] == [b._create_adapter(name).recorded_seed for name in PROBE_NAMES]
+        assert [a._create_adapter(name).recorded_seed for name in PROBE_NAMES] == [
+            b._create_adapter(name).recorded_seed for name in PROBE_NAMES
+        ]
 
     def test_serial_execution_forwards_sub_seed(
         self, tmp_path, probe_registry, monkeypatch
@@ -209,9 +208,9 @@ class TestMethodSeedForwarding:
         pipeline._execute_methods(None, None, [])
 
         assert set(pipeline.results) == set(PROBE_NAMES)
-        assert sorted(a.recorded_seed for a in SeedRecordingAdapter.instances) == sorted(
-            derive_method_seed(7, name) for name in PROBE_NAMES
-        )
+        assert sorted(
+            a.recorded_seed for a in SeedRecordingAdapter.instances
+        ) == sorted(derive_method_seed(7, name) for name in PROBE_NAMES)
 
     def test_parallel_execution_forwards_sub_seed(
         self, tmp_path, probe_registry, monkeypatch
@@ -226,9 +225,9 @@ class TestMethodSeedForwarding:
         pipeline._execute_methods(None, None, [])
 
         assert set(pipeline.results) == set(PROBE_NAMES)
-        assert sorted(a.recorded_seed for a in SeedRecordingAdapter.instances) == sorted(
-            derive_method_seed(7, name) for name in PROBE_NAMES
-        )
+        assert sorted(
+            a.recorded_seed for a in SeedRecordingAdapter.instances
+        ) == sorted(derive_method_seed(7, name) for name in PROBE_NAMES)
 
     def test_parallel_worker_does_not_touch_global_rng(
         self, tmp_path, probe_registry, monkeypatch
@@ -276,9 +275,9 @@ class TestRealEnginesGetOwnSeed:
             for name in self.SEED_BEARING
         }
 
-        assert len(set(seeds.values())) == len(self.SEED_BEARING), (
-            f"E-3 regression: 引擎仍共享同一个种子 {seeds}"
-        )
+        assert len(set(seeds.values())) == len(
+            self.SEED_BEARING
+        ), f"E-3 regression: 引擎仍共享同一个种子 {seeds}"
         for name, seed in seeds.items():
             assert seed == derive_method_seed(42, name)
 
@@ -327,9 +326,7 @@ class DegradationProbingAdapter(DatingMethod):
         UniformAgeConstraint(min_age=2.0, max_age=4.0).to_software_format(
             "wlogdate", name="nodeA", taxa_str="A+B"
         )
-        SoftLowerBoundConstraint(min_age=3.0).to_software_format(
-            "treepl", name="nodeB"
-        )
+        SoftLowerBoundConstraint(min_age=3.0).to_software_format("treepl", name="nodeB")
         MaximumAgeConstraint(max_age=5.0).to_software_format(
             "mdcat", name="nodeC", taxa_str="C+D"
         )
@@ -424,8 +421,10 @@ class TestDegradationWarningsArchived:
         class PreSeededAdapter(DegradationProbingAdapter):
             def parse_results(self) -> DatingResult:
                 result = super().parse_results()
-                result.warnings.append("wLogDate does not support range constraints. "
-                                       "Using midpoint 3.0 from range [2.0, 4.0]")
+                result.warnings.append(
+                    "wLogDate does not support range constraints. "
+                    "Using midpoint 3.0 from range [2.0, 4.0]"
+                )
                 return result
 
         adapter = PreSeededAdapter(ToolConfig(), tmp_path)
@@ -452,9 +451,7 @@ class TestDegradationWarningsArchived:
         assert not any("noise from elsewhere" in str(w) for w in result.warnings)
         assert any("noise from elsewhere" == str(w.message) for w in caught)
 
-    def test_without_unified_exit_constraint_degradations_are_lost(
-        self, tmp_path
-    ):
+    def test_without_unified_exit_constraint_degradations_are_lost(self, tmp_path):
         """E-8 的"修复前"锚点：绕过统一出口，约束级降级就只活在警告流里。
 
         这条测试钉住缺陷本身而不是巧合：三段调用照旧直跑，
@@ -470,9 +467,7 @@ class TestDegradationWarningsArchived:
             result = adapter.parse_results()
 
         assert len(caught) == 3
-        assert all(
-            issubclass(w.category, SemanticDegradationWarning) for w in caught
-        )
+        assert all(issubclass(w.category, SemanticDegradationWarning) for w in caught)
         assert result.warnings == [], "约束级降级竟已自己进了结果，E-8 口径需重审"
 
     def test_serial_pipeline_path_archives_degradations(

@@ -219,7 +219,15 @@ class TestRegisterDecoratorForm:
 
         missing = [
             name
-            for name in ("mcmctree", "r8s", "lsd2", "pathd8", "treepl", "mdcat", "wlogdate")
+            for name in (
+                "mcmctree",
+                "r8s",
+                "lsd2",
+                "pathd8",
+                "treepl",
+                "mdcat",
+                "wlogdate",
+            )
             if not DatingMethodRegistry.is_registered(name)
         ]
         if missing:
