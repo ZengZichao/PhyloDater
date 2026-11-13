@@ -58,7 +58,12 @@ jobs:
       # 全部能跑完。
       max-parallel: 4
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        # ubuntu-24.04 而非 ubuntu-latest：ubuntu-latest 已切到 Ubuntu 26.04，
+        # 而 actions/python-versions 只为 22.04/24.04 编译过 3.9 二进制
+        # （见 versions-manifest.json 中 3.9.25 的 files 字段），
+        # setup-python 会直接报 "The version '3.9' ... was not found for
+        # Ubuntu 26.04"。macos-latest 不受影响：darwin 构建不带版本限定。
+        os: [ubuntu-24.04, macos-latest]
         # Verified matrix (see test-data/benchmark/results/PYTHON_SUPPORT_MATRIX.txt):
         # 3.8 is excluded because the package needs importlib.resources.files (3.9+).
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
