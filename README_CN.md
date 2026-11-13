@@ -59,7 +59,7 @@ PhyloDater 是一个统一的系统发育分子定年平台，整合多种主流
                                                      重复节点名  分类学解析    r8s/PATHd8/...
                                                      交叉验证                         │
                                                                                       ↓
-                                                                                结果比较与报告
+                                                                                    结果与报告
 ```
 
 #### 方法专有参数默认值
@@ -264,7 +264,7 @@ calibrations:
 
 #### 方法专属校准注意事项
 
-- **MCMCTree 根节点**：MCMCTree 的 `RootAge` 只能设置为上界，不能真正固定根节点年龄。若根节点使用 `fixed` 约束，PhyloDater 会在执行前报错并提示修改。建议将 MCMCTree 的根节点改为 `uniform` 或 `maximum`，或改用 treePL、PATHd8、LSD2 等方法固定根节点。
+- **MCMCTree 根节点**：MCMCTree 的 `RootAge` 只能设置为上界，不能真正固定根节点年龄。若根节点使用 `fixed` 约束，PhyloDater 会在执行前报错。请将 MCMCTree 的根节点改用 `uniform` 或 `maximum`；如确需精确固定的根年龄，请改用 treePL、PATHd8、LSD2 等方法。
 - **不同方法可使用不同校准文件**：各定年工具对约束类型的支持并不相同，用户可为不同方法准备不同的 YAML 校准文件，通过 `-c/--calibrations` 分别传入。
 
 ### 3. 运行定年分析
@@ -281,7 +281,7 @@ phylodater dating \
 ### 4. 使用方法专有参数
 
 ```bash
-# MCMCTree: 指定 PAML 4.8 版本（建议同时指定 paml_path，避免 mcmctree 及其调用的 baseml/codeml 版本混合）
+# MCMCTree: 指定 PAML 4.8 版本（同时指定 paml_path，避免 mcmctree 与另一 PAML 版本的 baseml/codeml 混用）
 phylodater dating \
     -t tree.nwk -s alignment.fasta -c cal.yaml -o results/ \
     --method mcmctree \
@@ -550,7 +550,7 @@ phylodater dating -t tree.nwk -s aln.fasta -c cal.yaml -o out/ \
 2025-03-21T10:15:30.456 | WARNING  | module/func 检测到大型树 (15000 个末端节点)
 ```
 
-（上面两行的日志正文为原样展示、未作改写：软件发出的日志本身即以中文输出。）
+（上面两行的日志正文为原样展示、未作改写：软件发出的日志本身即以中文输出，两行内容分别对应英文 "Parsing tree file" 与 "Large tree detected (15000 tips)"。）
 
 ### 日志文件
 

@@ -81,11 +81,11 @@ PhyloDater 使用结构化的异常类实现精确定位的错误处理：
 
 | 警告类 | 父类 | 说明 |
 |---------------|--------|-------------|
-| `ConvergenceWarning` | PhyloDaterWarning | MCMC 收敛诊断阈值超限 |
-| `SemanticDegradationWarning` | PhyloDaterWarning | 输入语义降级（如约束类型降级） |
-| `EnvironmentWarning` | PhyloDaterWarning | 环境问题（如可选依赖缺失） |
-| `ResourceWarning` | PhyloDaterWarning | 资源使用警告（如检测到大型树） |
-| `UnknownParameterWarning` | PhyloDaterWarning | 遇到未知的 method-args 参数 |
+| `ConvergenceWarning` | ExecutionError | MCMC 收敛诊断阈值超限 |
+| `SemanticDegradationWarning` | PhyloDaterError, UserWarning | 输入语义降级（如约束类型降级） |
+| `EnvironmentWarning` | PhyloDaterError | 环境问题（如可选依赖缺失） |
+| `ResourceWarning` | PhyloDaterError | 资源使用警告（如检测到大型树） |
+| `UnknownParameterWarning` | PhyloDaterError | 遇到未知的 method-args 参数 |
 
 ## 分类表格式
 

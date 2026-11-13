@@ -73,7 +73,7 @@
   `docker-compose.yml`，以及 `CITATION.cff` / `CITATION.md`。
 - **测试与基准设施**：收集 1,489 个测试（1,487 通过、2 跳过），覆盖 unit、
   functional、integration 与 release-validation 四层；26 项 `phylodater check`
-  自检；覆盖率实测 67.87%，门槛 `fail_under = 60`；13 个尖端分类单元 / 3 kb 参考
+  自检；覆盖率实测 67.87%，门槛 `fail_under = 60`；13 个分类单元 / 3 kb 参考
   基准及其归档记分卡（`test-data/benchmark/results/`）；以及运行 lint、文档策略、mypy
   与测试矩阵的 CI 工作流（`docs/TEST_RESULTS.md` §4-§5、`.github/workflows/ci.yml`）。
 

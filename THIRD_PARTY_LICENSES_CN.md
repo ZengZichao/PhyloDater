@@ -66,5 +66,5 @@ PhyloDater 集成下列外部引擎。它们**不**随 PhyloDater 分发，必�
 各第三方依赖的完整许可文本请见本项目的 `LICENSE` 文件，以及 `pyproject.toml`
 中的弃用说明。
 
-如果您发现任何许可方面的问题或冲突，请在
+如果您发现任何许可方面的问题或不兼容，请在
 https://github.com/ZengZichao/phylodater/issues 提交 issue。

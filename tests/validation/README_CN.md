@@ -46,7 +46,7 @@ PHYLODATER_KEEP_TMP=1 python -m pytest tests/validation/integration -v   # 保�
 
 `python -m pytest tests`（`pyproject.toml` 中默认的 `testpaths`）已经包含本套件。
 
-## 自定义 Marker
+## Marker
 
 | marker | 含义 |
 |--------|------|

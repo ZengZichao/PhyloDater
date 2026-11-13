@@ -30,7 +30,7 @@ PhyloDater 声称支持七个 `dating` 方法。每个方法都是不同引擎�
 
 ```
 tests/
-├── unit/          29 个文件 - 纯 Python：模型、约束、配置、服务、适配器逻辑
+├── unit/          30 个文件 - 纯 Python：模型、约束、配置、服务、适配器逻辑
 ├── functional/    12 个文件 - CLI 行为、输入校验、报告、安全、可视化
 ├── integration/    4 个文件 - 多步流水线、绘图、引擎原始调用冒烟测试
 └── validation/    29 个文件 - 发布验证套件（真实引擎、端到端）
@@ -46,7 +46,7 @@ tests/
 | `integration` | 仅"引擎原始调用"测试需要 | 二进制存在则执行，否则跳过 |
 | `validation` | 真实端到端运行 | 引擎已安装则执行，否则跳过并给出明确原因 |
 
-需要引擎的测试必须显式声明，于是一台没有 PAML 的机器上报出的是 *skipped*，
+需要引擎的测试会显式声明所需引擎，于是一台没有 PAML 的机器上报出的是 *skipped*，
 而绝不是 *passed*：
 
 ```python
@@ -95,7 +95,7 @@ class TestMCMCTreeBenchmark: ...
 * **只使用点校准与双边区间校准。** `Homininae` 固定 9 Ma、`Primates` uniform 68–82、
   `Glires` uniform 60–80、`Root` uniform 100–110（均以真值为中心）。单边约束
   （`maximum`、`soft_lower`）**不在此数据集中使用**：只接受点校准的引擎（wLogDate、
-  MD-Cat）会把它降级为隐式区间 `[0, max]` 的中点，这可能与其余校准构成时间上矛盾的
+  MD-Cat）会把它降级为隐式区间的中点，这可能与其余校准构成时间上矛盾的
   约束组，并直接在引擎内部中止。这类约束类型改由
   `examples/benchmark/degradation/` 下的"约束覆盖"数据集专门验证——在那里，
   **降级警告本身**才是被测试的对象。
@@ -114,7 +114,7 @@ class TestMCMCTreeBenchmark: ...
 | 3 | 拓扑一致 | 输出的内部演化支集合（以叶节点集合表示）= 输入；采用 PolyPhy 式的演化支匹配，因此节点*标签*不参与判定 |
 | 4 | 年龄非负 | 每个内部节点年龄 ≥ 0 |
 | 5 | 时序单调 | 不存在子节点比其父节点更老 |
-| 6 | 校准被满足 | 点校准：\|估计值 − 年龄\| ≤ 1 Ma；区间校准：落在 `[min, max]` 内外扩区间宽度的 5 % |
+| 6 | 校准被满足 | 点校准：\|估计值 − 年龄\| ≤ 1 Ma；区间校准：落在按区间宽度外扩 5 % 后的 `[min, max]` 之内 |
 | 7 | 精度 | 对全部 12 个内部节点，与 `truth.yaml` 比较的 MAE、RMSE、最大绝对误差、最大相对误差 |
 
 随包基准使用的门槛是：**MAE ≤ 10 Ma**，且**最差节点的相对误差 ≤ 0.5**。
@@ -221,7 +221,7 @@ PATHd8 交叉核验：按上游源码构建的二进制（Dockerfile 的配方�
 | LSD2 默认替换模型是氨基酸模型（`LG+G`），但流程针对核酸比对 | IQ-TREE 2 报 `ERROR: File not found LG`，方法完全无法运行 | `TestLSD2ModelResolution`（5 个用例） |
 | MD-Cat 的 `--CI` 以逗号拼接的单个串传入 | 上游 `int("100,0.025,0.975")` 抛 `ValueError`；默认开启的 CI 让每次运行都失败 | `TestMDCatCliContract` |
 | MD-Cat CI 默认 100 次 bootstrap | 数小时的隐式运行开销 | `TestMDCatConfig::test_ci_parameters` |
-| PAML 版本闸门要求逐字相等（`4.10.8`） | 按文档 `conda install -c bioconda paml` 安装的 4.10.10 被直接拒跑 | `tests/unit/adapters/test_mcmctree_method.py` 中的版本系列兼容性测试 |
+| PAML 版本闸门要求逐字相等（`4.10.8`） | bioconda 的 `paml` 4.10.10——即文档给出的安装途径——被直接拒跑 | `tests/unit/adapters/test_mcmctree_method.py` 中的版本系列兼容性测试 |
 | `runtime_metadata.json` 从不记录引擎版本 | 随包发布的结果缺少引擎溯源信息 | 适配器版本记录 + 基准评分卡 |
 | 三个测试断言的是**进程级** `sys.modules` | 它们只因测试顺序（可视化测试导入了 ete3）而失败，与产品行为无关 | `module_imports_cleanly` fixture（子进程探测） |
 | MCMCTree 原始调用冒烟测试写出 `BDparas = 1 1 0.1` | PAML ≥ 4.10 中止："BDparas: expect flag for birth-death process prior" | `tests/integration/full_pipeline/test_all_dating_tools.py` 中已修正的控制文件串 |

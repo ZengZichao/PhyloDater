@@ -11,8 +11,6 @@
 > https://github.com/ZengZichao/phylodater
 > ORCID: 0000-0001-6553-970X (Z. Zeng); 0000-0001-8715-1386 (Y. Wang)
 
-以上以 `CITATION.cff` 登记的英文题名为准。
-
 ## 归档软件引用（Zenodo，版本 DOI）
 
 v0.1.0 发布版已在 Zenodo 归档并注册了可解析的 DOI。需要"锁定到具体版本"的引用时，

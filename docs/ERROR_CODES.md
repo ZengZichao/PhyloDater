@@ -87,11 +87,11 @@ Non-fatal issues use warning classes (logged but do not terminate):
 
 | Warning Class | Parent | Description |
 |---------------|--------|-------------|
-| `ConvergenceWarning` | PhyloDaterWarning | MCMC convergence diagnostic threshold exceeded |
-| `SemanticDegradationWarning` | PhyloDaterWarning | Input semantics degraded (e.g., constraint type downgraded) |
-| `EnvironmentWarning` | PhyloDaterWarning | Environment issue (e.g., optional dependency missing) |
-| `ResourceWarning` | PhyloDaterWarning | Resource usage warning (e.g., large tree detected) |
-| `UnknownParameterWarning` | PhyloDaterWarning | Unknown method-args parameter encountered |
+| `ConvergenceWarning` | ExecutionError | MCMC convergence diagnostic threshold exceeded |
+| `SemanticDegradationWarning` | PhyloDaterError, UserWarning | Input semantics degraded (e.g., constraint type downgraded) |
+| `EnvironmentWarning` | PhyloDaterError | Environment issue (e.g., optional dependency missing) |
+| `ResourceWarning` | PhyloDaterError | Resource usage warning (e.g., large tree detected) |
+| `UnknownParameterWarning` | PhyloDaterError | Unknown method-args parameter encountered |
 
 ## Taxonomy Table Format
 

@@ -40,7 +40,7 @@
 
 数据集：`test-data/benchmark`（13 分类单元、3000 位点、JC69 严格分子钟、根龄 105 Ma、
 12 个内部节点、4 个校准；见 TESTING_CN.md §3）。门槛：MAE ≤ 10 Ma、最差节点相对误差
-≤ 0.5，且每个请求的校准要么被满足、要么被适配器**显式披露**为未满足。
+≤ 0.5，且每个请求的校准要么被满足、要么被**显式披露**为未满足。
 
 ### 2.1 变体 A——输入树使用（无噪声的）期望钟长
 
@@ -246,7 +246,7 @@ $ python -m phylodater check
 
 26 项检查覆盖：必需的 Python 依赖（biopython、dendropy、numpy、pandas、pyyaml、
 matplotlib）；四个可选的引擎依赖——`logdate`（wLogDate）、`emd`（MD-Cat）、`pyr8s`（r8s）
-与 `ete3`，只探测，从来不是 Python 层运行的前提；有无分类信息的 Newick 解析；
+与 `ete3`，只探测，从来不是 Python 层运行的前提；有无嵌入式分类信息的 Newick 解析；
 两种分类学格式（嵌入式 GTDB 与表格分号式，含正确的缺失等级处理：`species=None`
 是契约而不是 bug）；单系性判断（非单系、单系与 LUCA 特殊标识符）；深度校验（括号平衡、
 重复 ID）；LUCA/ROOT 特殊标识符；500 MB 输入体积限制；恶意字符拒绝；多树 NEXUS 处理；

@@ -135,7 +135,7 @@ conda install -c bioconda paml iqtree r8s treepl pathd8
 ```yaml
 software_paths:
   # 若 conda 包仅包含一个 PAML 版本，指定 paml_path 即可；
-  # 多版本共存时建议分目录安装并分别指定 paml_path
+  # 多版本共存时分目录安装并相应指定 paml_path
   paml_path: /path/to/paml
   iqtree_bin: /path/to/iqtree2
   # 当 PATH 中存在同名 mcmctree 时，使用完整路径强制选择版本

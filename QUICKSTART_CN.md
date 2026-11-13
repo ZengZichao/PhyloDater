@@ -50,7 +50,7 @@ examples/
 └── calibrations.yaml  # 校准点配置
 ```
 
-> **输入树必须为有根树**：校验阶段会直接拒绝无根树。运行前请先完成定根（例如在合适的外类群上定根）。
+> **输入树必须为有根树**：校验阶段会直接拒绝无根树。运行前请先完成定根（例如在外类群上定根）。
 
 ### 最小配置文件
 
@@ -250,7 +250,7 @@ PhyloDater 支持多种校准类型：
 | `skew_normal` | 偏正态分布 |
 | `skew_t` | 偏 t 分布 |
 
-> **注意**：MCMCTree 的 `RootAge` 只能设置为上界，不能真正固定根节点。若根节点使用 `fixed`，PhyloDater 会在执行前报错，提示改为 `uniform` 或 `maximum`；若需要精确的固定根节点年龄，改用 treePL、PATHd8 或 LSD2。不同方法可使用不同的校准文件。
+> **注意**：MCMCTree 的 `RootAge` 只能设置为上界，不能真正固定根节点。若根节点使用 `fixed`，PhyloDater 会在执行前报错。MCMCTree 的根节点请使用 `uniform` 或 `maximum`；若需要精确的固定根节点年龄，请改用 treePL、PATHd8 或 LSD2。不同方法可使用不同的校准文件。
 
 ## 序列格式
 
@@ -270,7 +270,7 @@ PhyloDater 支持 FASTA 和 FASTQ 格式用于分析。PHYLIP、Stockholm、Clus
 
 ### 校准点文件是什么格式？
 
-PhyloDater 支持 8 种校准类型：`fixed`、`uniform`、`soft_lower`、`maximum`、`soft_bounds`、`gamma`、`skew_normal` 和 `skew_t`。使用 `uniform` 约束时，请同时提供 `min` 与 `max`。
+PhyloDater 支持多种校准类型：`fixed`、`uniform`、`soft_lower`、`maximum`、`soft_bounds`、`gamma`、`skew_normal` 和 `skew_t`。使用 `uniform` 约束时，请同时提供 `min` 与 `max`。
 
 ### 支持哪些序列格式？
 
@@ -280,7 +280,7 @@ PhyloDater 支持 FASTA 和 FASTQ 格式用于分析。PHYLIP、Stockholm、Clus
 
 以 `--method-args "num_runs=4"` 运行 MCMCTree，软件会自动计算 PSRF 和 ESS，用于收敛性诊断。
 
-### 如何定根？
+### 如何重新定根？
 
 使用 `--reroot` 参数指定定根策略之一：`outgroup`、`midpoint`、`mad`、`none`。
 
