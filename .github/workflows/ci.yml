@@ -6,14 +6,21 @@ on:
   pull_request:
     branches: [main, master]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
       with:
         # Must match [tool.mypy] python_version in pyproject.toml: mypy type-checks
         # against the stubs of this interpreter, and numpy >= 2.5 requires 3.12+.
@@ -46,6 +53,10 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      # 12 个 job（6 个 Python 版本 × 2 个平台）同时提交会挤爆 macOS runner
+      # 配额，实测有 7~8 个被标记为 cancelled 而非真正跑完。限流后
+      # 全部能跑完。
+      max-parallel: 4
       matrix:
         os: [ubuntu-latest, macos-latest]
         # Verified matrix (see test-data/benchmark/results/PYTHON_SUPPORT_MATRIX.txt):
@@ -53,10 +64,10 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -70,13 +81,18 @@ jobs:
         python -m phylodater check
 
     - name: Run tests with coverage
+      # 排除 slow 与 requires_* 标记：这些测试调用真实外部定年引擎
+      # （MCMCTree / treePL / PATHd8 / LSD2 / r8s / wLogDate / MD-Cat），
+      # 而 CI runner 并未安装这些二进制，直接跑必然失败。它们由
+      # `external-engines.yml` 在具备工具链的环境中单独执行。
       run: |
-        coverage run -m pytest tests/ -v
+        coverage run -m pytest tests/ -v \
+          -m "not slow and not requires_mcmctree and not requires_treepl and not requires_pathd8 and not requires_lsd2 and not requires_r8s and not requires_wlogdate and not requires_mdcat"
         coverage report
 
     - name: Upload coverage report
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: coverage-report-${{ matrix.python-version }}
         path: .coverage

@@ -16,8 +16,13 @@ authors:
     orcid: "https://orcid.org/0000-0001-8715-1386"
 repository-code: "https://github.com/ZengZichao/phylodater"
 license: MIT
+doi: 10.5281/zenodo.23067037
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.23067037"
+    description: Zenodo record for PhyloDater v0.1.0
 version: 0.1.0
-date-released: 2026-09-17
+date-released: 2026-09-30
 keywords:
   - phylogenetics
   - molecular-dating
@@ -26,9 +31,6 @@ keywords:
   - phylogeny
   - divergence-time
   - molecular-clock
-identifiers:
-  - type: doi
-    value: "10.5281/zenodo.23067037"
 related-identifiers:
   - relation: isSupplementTo
     resource-type: software
@@ -38,9 +40,9 @@ related-identifiers:
     resource-type: software
     identifier: "10.5281/zenodo.23066788"
     scheme: doi
-# The Zenodo record above is the registered archive of this exact release
-# (version v0.1.0, MIT licence, same keyword list); 10.5281/zenodo.23066788 is
-# its concept DOI, i.e. "any version". Both were read back from
+# The Zenodo record is the registered archive of this exact release (published
+# 2026-09-30, MIT licence, same keyword list); 10.5281/zenodo.23066788 is its
+# concept DOI, i.e. "any version". Both were read back from
 # https://zenodo.org/api/records/23067037 on 2026-10-08.
 #
 # Still no `preferred-citation`: that block is for the companion *article*, and

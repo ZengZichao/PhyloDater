@@ -9,6 +9,7 @@
 > Zeng, Zichao, & Wang, Yinzhao. PhyloDater: a unified platform integrating
 > multiple methods for phylogenetic molecular dating. GitHub repository.
 > https://github.com/ZengZichao/phylodater
+> DOI: 10.5281/zenodo.23067037 (https://doi.org/10.5281/zenodo.23067037)
 > ORCID: 0000-0001-6553-970X (Z. Zeng); 0000-0001-8715-1386 (Y. Wang)
 
 ## 归档软件引用（Zenodo，版本 DOI）
@@ -26,7 +27,8 @@ v0.1.0 发布版已在 Zenodo 归档并注册了可解析的 DOI。需要"锁定
 | 源码标签 | https://github.com/ZengZichao/phylodater/releases/tag/v0.1.0 | GitHub release |
 
 两个 DOI 均从 Zenodo 记录本身回读核验（`https://zenodo.org/api/records/23067037`，
-2026-10-08 获取）：许可证 MIT、版本 `v0.1.0`、关键词表与
+2026-10-08 获取；该记录的出版日期为 2026-09-30，即 [CITATION.cff](CITATION.cff)
+中的 `date-released`）：许可证 MIT、版本 `v0.1.0`、关键词表与
 [CITATION.cff](CITATION.cff) 一致。
 
 ## 软件引用（BibTeX 格式）
@@ -37,17 +39,17 @@ v0.1.0 发布版已在 Zenodo 归档并注册了可解析的 DOI。需要"锁定
   title = {PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
-  version = {0.1.0},
   doi = {10.5281/zenodo.23067037},
-  note = {ORCID: 0000-0001-6553-970X}
+  version = {0.1.0},
+  note = {ORCID: 0000-0001-6553-970X (Z. Zeng); 0000-0001-8715-1386 (Y. Wang)}
 }
 ```
 
 ## 关联论文（预印本 / 稿件）
 
-**目前没有已发表论文，因此这里不给任何论文条目。** 上面那个是**软件归档** DOI，
-不能替代论文引用——它指向归档代码，不指向同行评议的正文。本文件也刻意不放
-`10.XXXX/XXXX` 这类论文占位符：机器可读与人类可读的引用消费者
+**目前没有已发表论文，因此这里不给任何论文条目。** PhyloDater 目前唯一注册的
+DOI 是上面那两个 Zenodo 软件标识符——它们指向归档代码，不指向同行评议的正文。
+本文件也刻意不放 `10.XXXX/XXXX` 这类论文占位符：机器可读与人类可读的引用消费者
 （GitHub、Zenodo、Zotero）分不清占位符与真标识符，而在一条可被引用的记录里，
 一个假 DOI 比"没有 DOI"更糟。
 

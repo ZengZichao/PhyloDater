@@ -4,8 +4,12 @@
 
 **A Multi-Software Parallel Platform for Phylogenetic Molecular Dating**
 
-[![Python Version](https://img.shields.io/badge/python-3.9%20--%203.14-blue.svg)](https://www.python.org/)
+[![PyPI](https://img.shields.io/pypi/v/phylodater.svg)](https://pypi.org/project/phylodater/)
+[![Python Versions](https://img.shields.io/badge/python-3.9%E2%80%933.14-blue.svg)](https://pypi.org/project/phylodater/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23067037.svg)](https://doi.org/10.5281/zenodo.23067037)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/ZengZichao/PhyloDater/actions/workflows/ci.yml/badge.svg)](https://github.com/ZengZichao/PhyloDater/actions/workflows/ci.yml)
+[![ORCID](https://img.shields.io/badge/ORCID-0000--0001--6553--970X-a6ce39?logo=orcid&logoColor=white)](https://orcid.org/0000-0001-6553-970X)
 
 > **Version**: 0.1.0 | **License**: MIT License
 
@@ -97,6 +101,8 @@ wLogDate defaults: `backward_time=True`, `num_replicates=1`, `max_iter=50000`, `
 ## Installation
 
 ### Via pip
+
+The package is published on [PyPI](https://pypi.org/project/phylodater/) and released in sync with the GitHub releases:
 
 ```bash
 pip install phylodater
@@ -834,7 +840,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
 If you use PhyloDater in your research, please cite:
 
-> Zeng, Zichao, & Wang, Yinzhao. (2026). PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater (ORCID: 0000-0001-6553-970X; 0000-0001-8715-1386)
+> Zeng, Zichao, & Wang, Yinzhao. (2026). PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater (ORCID: 0000-0001-6553-970X; 0000-0001-8715-1386) · DOI: [10.5281/zenodo.23067037](https://doi.org/10.5281/zenodo.23067037)
 
 BibTeX format:
 ```bibtex
@@ -843,11 +849,12 @@ BibTeX format:
   title = {PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
-  version = {0.1.0},
   doi = {10.5281/zenodo.23067037},
-  note = {ORCID: 0000-0001-6553-970X}
+  version = {0.1.0},
+  note = {ORCID: 0000-0001-6553-970X (Z. Zeng); 0000-0001-8715-1386 (Y. Wang)}
 }
 ```
 
-Full citation guidance (machine-readable CFF, engine citations, and the fact that
-no article DOI exists yet) lives in [CITATION.md](CITATION.md).
+Full citation guidance (machine-readable CFF, engine citations, the software's
+Zenodo DOI 10.5281/zenodo.23067037, and the fact that no article DOI exists
+yet) lives in [CITATION.md](CITATION.md).

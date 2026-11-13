@@ -7,8 +7,9 @@ pytest-cov>=3.0
 pytest-xdist>=2.5
 
 # Code quality
+# flake8 was removed: linting is owned by ruff (see pyproject.toml and the
+# lint job in .github/workflows/ci.yml). Keep that single source of truth.
 black>=22.0
-flake8>=4.0
 mypy>=1.0
 isort>=5.10
 

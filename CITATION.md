@@ -10,6 +10,7 @@ companion manuscript is published, please cite that too.
 > Zeng, Zichao, & Wang, Yinzhao. PhyloDater: a unified platform integrating
 > multiple methods for phylogenetic molecular dating. GitHub repository.
 > https://github.com/ZengZichao/phylodater
+> DOI: 10.5281/zenodo.23067037 (https://doi.org/10.5281/zenodo.23067037)
 > ORCID: 0000-0001-6553-970X (Z. Zeng); 0000-0001-8715-1386 (Y. Wang)
 
 ## Archived software citation (Zenodo, version DOI)
@@ -27,8 +28,10 @@ Cite this one when you want a version-pinned reference:
 | Source tag | https://github.com/ZengZichao/phylodater/releases/tag/v0.1.0 | the GitHub release |
 
 Both DOIs were read back from the Zenodo record itself
-(`https://zenodo.org/api/records/23067037`, retrieved 2026-10-08): licence MIT,
-version `v0.1.0`, and the same keyword list as [CITATION.cff](CITATION.cff).
+(`https://zenodo.org/api/records/23067037`, retrieved 2026-10-08; the record's
+publication date is 2026-09-30, which is the `date-released` in
+[CITATION.cff](CITATION.cff)): licence MIT, version `v0.1.0`, and the same
+keyword list as [CITATION.cff](CITATION.cff).
 
 ## Software citation (BibTeX)
 
@@ -38,20 +41,21 @@ version `v0.1.0`, and the same keyword list as [CITATION.cff](CITATION.cff).
   title = {PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
-  version = {0.1.0},
   doi = {10.5281/zenodo.23067037},
-  note = {ORCID: 0000-0001-6553-970X}
+  version = {0.1.0},
+  note = {ORCID: 0000-0001-6553-970X (Z. Zeng); 0000-0001-8715-1386 (Y. Wang)}
 }
 ```
 
 ## Companion paper (preprint / manuscript)
 
-**There is none yet, so no article is quoted here.** The software DOI above is
-not a substitute: it identifies the archived code, not a peer-reviewed write-up.
-This file deliberately does not carry a `10.XXXX/XXXX` article placeholder —
-machine-readable and human-readable citation consumers (GitHub, Zenodo, Zotero)
-cannot tell a placeholder from a real identifier, and a fake DOI in a citable
-record is worse than no DOI.
+**There is none yet, so no article is quoted here.** The only DOIs registered
+for PhyloDater are the Zenodo software identifiers above — they identify the
+archived code, not a peer-reviewed write-up. This file deliberately does not
+carry a `10.XXXX/XXXX` article placeholder — machine-readable and
+human-readable citation consumers (GitHub, Zenodo, Zotero) cannot tell a
+placeholder from a real identifier, and a fake DOI in a citable record is worse
+than no DOI.
 
 Once the manuscript appears, add here — and only here — the real journal, year,
 volume, issue, pages and DOI, and add the matching `preferred-citation` block to

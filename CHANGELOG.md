@@ -19,9 +19,9 @@ as stated in [`README.md`](README.md) ("Version Management") and in
 > claimed here**: everything below describes the 0.1.0 release and the defects its
 > own validation campaign records as fixed.
 
-## [0.1.0] - 2026-09-17
+## [0.1.0] - 2026-09-30
 
-First public release. Date from `CITATION.cff` (`date-released: 2026-09-17`,
+First public release. Date from `CITATION.cff` (`date-released: 2026-09-30`,
 `version: 0.1.0`); the release-gate campaign behind the numbers below is dated
 2026-09-29 (`docs/TEST_RESULTS.md:10`, verdict **PASS**) and its archived command
 output was captured 2026-09-30 (`test-data/benchmark/results/validation_log.txt:3`).
