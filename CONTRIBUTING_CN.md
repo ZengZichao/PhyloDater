@@ -91,7 +91,7 @@ mypy   phylodater            # 阻断门禁，必须保持 0 错误
 |------|----------|----------|
 | `black --check`、`isort --check` | 是 | 已全部通过；配置在 `pyproject.toml`（`line-length = 88`，isort `profile = "black"`） |
 | `ruff check` | 是 | `phylodater`、`tests`、`scripts`、`test-data` 已全部通过 |
-| `mypy phylodater` | 是 | **0 个错误**（53 个源文件） |
+| `mypy phylodater` | 是 | **0 个错误**（54 个源文件） |
 
 mypy 已重新成为阻断门禁。`pyproject.toml` 里 `disallow_untyped_defs` 与
 `warn_return_any` 均为**开启**；它们曾经暴露的欠债（397 个错误；打开两个开关则 759 个）

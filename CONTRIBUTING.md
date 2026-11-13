@@ -92,7 +92,7 @@ mypy   phylodater            # blocking gate; must stay at 0 errors
 |------|-----------|-------------|
 | `black --check`, `isort --check` | yes | clean; configuration lives in `pyproject.toml` (`line-length = 88`, isort `profile = "black"`) |
 | `ruff check` | yes | clean for `phylodater`, `tests`, `scripts` and `test-data` |
-| `mypy phylodater` | yes | **0 errors** (53 source files) |
+| `mypy phylodater` | yes | **0 errors** (54 source files) |
 
 The mypy step is a blocking gate again. `disallow_untyped_defs` and
 `warn_return_any` are switched **on** in `pyproject.toml`; the debt they used to
