@@ -2,8 +2,6 @@
 
 # Contributing Guide
 
-> 📚 This document is also available in [中文 (Chinese)](CONTRIBUTING.md).
-> 本文档的权威中文版见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 > **Last Updated**: 2026-04-09
 
 Thank you for considering contributing code to PhyloDater!
@@ -94,7 +92,7 @@ mypy   phylodater            # blocking gate; must stay at 0 errors
 |------|-----------|-------------|
 | `black --check`, `isort --check` | yes | clean; configuration lives in `pyproject.toml` (`line-length = 88`, isort `profile = "black"`) |
 | `ruff check` | yes | clean for `phylodater`, `tests`, `scripts` and `test-data` |
-| `mypy phylodater` | yes | **0 errors** (53 source files) |
+| `mypy phylodater` | yes | **0 errors** (54 source files) |
 
 The mypy step is a blocking gate again. `disallow_untyped_defs` and
 `warn_return_any` are switched **on** in `pyproject.toml`; the debt they used to
@@ -173,7 +171,7 @@ phylodater/
 1. Create a new adapter class in `phylodater/adapters/`
 2. Inherit the `DatingMethod` base class
 3. Implement all abstract methods
-4. Register at the end of the adapter file: `DatingMethodRegistry.register("method_name", YourClass)`
+4. Register the class with the decorator `@DatingMethodRegistry.register("method_name")` placed directly above the class definition (review item E-7). The explicit two-argument call `DatingMethodRegistry.register("method_name", YourClass)` is still supported and behaves identically.
 5. Add unit tests
 
 ### Adapter Template
@@ -189,12 +187,13 @@ from ..infrastructure.configuration import (
     CommonConfig,
     SoftwarePaths,
     ToolConfig,
-    YourMethodConfig,          # 本适配器真正读取的那一份子配置
+    YourMethodConfig,          # the sub-config this adapter actually reads
 )
 
 
+@DatingMethodRegistry.register("your_method")
 class YourMethod(DatingMethod[YourMethodConfig]):
-    """基类按 ConfigT 参数化：self.config 静态视角下就是 YourMethodConfig。"""
+    """The base class takes ConfigT: statically, self.config is YourMethodConfig."""
 
     def __init__(
         self,
@@ -203,8 +202,8 @@ class YourMethod(DatingMethod[YourMethodConfig]):
         software_paths: Optional[SoftwarePaths] = None,
         common_config: Optional[CommonConfig] = None,
     ) -> None:
-        # 入口保留双形态（传整个 ToolConfig 或只传本方法子配置都可以），但在
-        # 交给基类之前先归一，所以后面 self.config.<参数> 都是类型精确的。
+        # Accept both forms (the whole ToolConfig or just this method's sub-config),
+        # but normalise before super().__init__ so self.config.<param> stays typed.
         common: Optional[CommonConfig] = common_config
         if isinstance(config, ToolConfig):
             method_config = config.your_method
@@ -245,7 +244,9 @@ class YourMethod(DatingMethod[YourMethodConfig]):
         pass
 
 
-DatingMethodRegistry.register("your_method", YourMethod)
+# Registration is already done by @DatingMethodRegistry.register("your_method") above
+# the class (E-7); the historical two-argument form still works, and the two are equal:
+# DatingMethodRegistry.register("your_method", YourMethod)
 ```
 
 ## Documentation

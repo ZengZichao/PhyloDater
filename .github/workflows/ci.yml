@@ -51,13 +51,21 @@ jobs:
       run: mypy phylodater
 
   test:
-    runs-on: ${{ matrix.os }}
+    # ubuntu-latest 只作为 job 名 / 状态上下文出现：main 分支保护要求的上下文是
+    # `test (ubuntu-latest, 3.9)` … `(…, 3.14)`，改名会让这些必需检查永不回报。
+    # 实际运行平台由下面的映射决定。
+    runs-on: ${{ matrix.os == 'ubuntu-latest' && 'ubuntu-24.04' || matrix.os }}
     strategy:
       # 12 个 job（6 个 Python 版本 × 2 个平台）同时提交会挤爆 macOS runner
       # 配额，实测有 7~8 个被标记为 cancelled 而非真正跑完。限流后
       # 全部能跑完。
       max-parallel: 4
       matrix:
+        # ubuntu 侧映射到 ubuntu-24.04：ubuntu-latest 已切到 Ubuntu 26.04，而
+        # actions/python-versions 只为 22.04/24.04 编译过 3.9 二进制（见
+        # versions-manifest.json 中 3.9.25 的 files 字段），setup-python 会直接报
+        # "The version '3.9' ... was not found for Ubuntu 26.04"。macos-latest
+        # 不受影响：darwin 构建不带发行版限定，3.9 照常可用。
         os: [ubuntu-latest, macos-latest]
         # Verified matrix (see test-data/benchmark/results/PYTHON_SUPPORT_MATRIX.txt):
         # 3.8 is excluded because the package needs importlib.resources.files (3.9+).

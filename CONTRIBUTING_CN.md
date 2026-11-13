@@ -2,6 +2,8 @@
 
 # 贡献指南
 
+> **最后更新**：2026-04-09
+
 感谢你考虑为 PhyloDater 贡献代码。
 
 ## 如何贡献
@@ -51,7 +53,7 @@ pip install -e ".[dev]"
 
 conda install -c bioconda -c conda-forge paml iqtree   # MCMCTree + LSD2
 pip install wlogdate
-pip install git+https://github.com/iTaxoTools/pyr8s.git   # r8s backend (NPRS only)
+pip install git+https://github.com/iTaxoTools/pyr8s.git   # r8s 后端（仅 NPRS）
 pip install git+https://github.com/uym2/MD-Cat.git        # MD-Cat
 # treePL 与 PATHd8：源码构建（见 docs/EXTERNAL_TOOLS_CN.md §3-§4）；
 # 两者均已不在 bioconda/conda-forge/PyPI 上发布。
@@ -69,7 +71,7 @@ phylodater check                          # 26 项环境自检
 依赖外部引擎的测试在二进制缺失时会带原因自行跳过，因此即使机器上七个引擎一个也没装，
 套件仍然可以运行。
 
-新增定年方法时必须同时给它配上真值运行：`python scripts/run_reference_benchmark.py`
+新增一种定年方法，就意味着要为它补一次真值运行：`python scripts/run_reference_benchmark.py`
 会拿 `test-data/benchmark/` 的仿真真值为每个方法打分——验收门槛见
 [docs/TESTING_CN.md](docs/TESTING_CN.md)，当前数值见
 [docs/TEST_RESULTS_CN.md](docs/TEST_RESULTS_CN.md)。
@@ -80,23 +82,23 @@ phylodater check                          # 26 项环境自检
 black phylodater tests scripts test-data
 isort  phylodater tests scripts test-data
 ruff check phylodater tests scripts test-data
-mypy   phylodater            # 阻断门禁，必须保持 0 error
+mypy   phylodater            # 阻断门禁，必须保持 0 错误
 ```
 
-**CI 关卡约定**（`.github/workflows/ci.yml`）：
+**CI 门禁约定**（`.github/workflows/ci.yml`）：
 
 | 工具 | 是否阻断 | 当前状态 |
 |------|----------|----------|
 | `black --check`、`isort --check` | 是 | 已全部通过；配置在 `pyproject.toml`（`line-length = 88`，isort `profile = "black"`） |
 | `ruff check` | 是 | `phylodater`、`tests`、`scripts`、`test-data` 已全部通过 |
-| `mypy phylodater` | 是 | **0 个错误**（53 个源文件） |
+| `mypy phylodater` | 是 | **0 个错误**（54 个源文件） |
 
 mypy 已重新成为阻断门禁。`pyproject.toml` 里 `disallow_untyped_defs` 与
 `warn_return_any` 均为**开启**；它们曾经暴露的欠债（397 个错误；打开两个开关则 759 个）
 已清偿。保持为 0 的实操规则：
 
-- 标注，而不是压制。用 `# type: ignore`、把返回值写成 `Any`、或靠 `cast()` 让报错消失
-  都在禁止之列；`cast` 只允许用于"第三方库无标注"处，且要用注释写明真实类型的来源。
+- 标注，而不是压制。用 `# type: ignore`、把返回类型写成 `-> Any`、或靠 `cast()` 让报错
+  消失都在禁止之列；`cast` 只允许用于“第三方库无标注”处，且要用注释写明真实类型的来源。
 - 适配器配置通过泛型基类定型——`class MyMethod(DatingMethod[MyConfig])`——构造函数在
   调用 `super().__init__` 之前先把 `ToolConfig | MyConfig` 的入口归一。绝不把
   `self.config` 放宽成 `Any`。
@@ -164,7 +166,7 @@ phylodater/
 1. 在 `phylodater/adapters/` 创建新的适配器类
 2. 继承 `DatingMethod` 基类
 3. 实现所有抽象方法
-4. 在适配器文件末尾注册：`DatingMethodRegistry.register("method_name", YourClass)`
+4. 在类定义上方用装饰器注册：`@DatingMethodRegistry.register("method_name")`（审阅项 E-7）。显式两参数调用 `DatingMethodRegistry.register("method_name", YourClass)` 依然有效，两者等价。
 5. 添加单元测试
 
 ### 适配器模板
@@ -184,6 +186,7 @@ from ..infrastructure.configuration import (
 )
 
 
+@DatingMethodRegistry.register("your_method")
 class YourMethod(DatingMethod[YourMethodConfig]):
     """基类按 ConfigT 参数化：self.config 静态视角下就是 YourMethodConfig。"""
 
@@ -236,7 +239,9 @@ class YourMethod(DatingMethod[YourMethodConfig]):
         pass
 
 
-DatingMethodRegistry.register("your_method", YourMethod)
+# 注册已由类定义上方的 @DatingMethodRegistry.register("your_method") 完成（E-7）。
+# 历史的两参数形态仍然有效，两种写法等价：
+# DatingMethodRegistry.register("your_method", YourMethod)
 ```
 
 ## 文档

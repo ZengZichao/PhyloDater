@@ -26,7 +26,7 @@ tests/validation/
 
 | 目录 | 用途 | 是否需要外部软件 |
 |------|------|------------------|
-| `tests/unit`、`tests/functional`、`tests/integration` | 开发者套件：快速、大多使用 mock | 仅"引擎原始调用"冒烟测试需要 |
+| `tests/unit`、`tests/functional`、`tests/integration` | 开发者套件：快速、大多使用 mock | 仅“引擎原始调用”冒烟测试需要 |
 | `tests/validation` | 发布验证：真实引擎、端到端 | 需要；引擎缺失时带原因跳过 |
 | `test-data/benchmark` + `scripts/run_reference_benchmark.py` | 对仿真真值的**精度**评分 | 需要 |
 
@@ -46,7 +46,7 @@ PHYLODATER_KEEP_TMP=1 python -m pytest tests/validation/integration -v   # 保�
 
 `python -m pytest tests`（`pyproject.toml` 中默认的 `testpaths`）已经包含本套件。
 
-## 自定义 Marker
+## Marker
 
 | marker | 含义 |
 |--------|------|
@@ -55,7 +55,7 @@ PHYLODATER_KEEP_TMP=1 python -m pytest tests/validation/integration -v   # 保�
 | `requires_mcmctree` … `requires_mdcat` | 每个定年引擎一个；引擎缺失时带明确原因跳过 |
 
 可用性由 `helpers.external_available()` 探测，它知道某些方法的后端是 Python 包而非
-可执行文件：
+二进制：
 
 | 方法 | 必须存在的东西 |
 |------|----------------|

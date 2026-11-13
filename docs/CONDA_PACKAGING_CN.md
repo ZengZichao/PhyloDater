@@ -60,7 +60,7 @@ about:
 1. Fork https://github.com/bioconda/bioconda-recipes
 2. 添加你的 recipe 到 `recipes/phylodater/`
 3. 提交 Pull Request
-4. 等待 review 和合并
+4. 等待审核与合并
 
 ### 3. 注意事项
 
@@ -81,10 +81,10 @@ about:
 
 合并后，conda-forge 会自动：
 - 为多个平台构建包
-- 上传到 conda-forge channel
+- 上传到 conda-forge 频道（channel）
 - 更新构建状态
 
-## 方案三：个人 conda channel
+## 方案三：个人 conda 频道
 
 ### 1. 使用 conda build
 
@@ -95,14 +95,14 @@ conda install conda-build
 # 构建包
 conda build recipes/phylodater -c conda-forge
 
-# 上传到 channel
+# 上传到频道
 anaconda upload /path/to/build/package.tar.bz2
 ```
 
-### 2. 分享你的 channel
+### 2. 分享你的频道
 
 ```bash
-# 添加 channel
+# 添加频道
 conda config --add channels your_channel_name
 
 # 安装
@@ -135,7 +135,7 @@ conda install -c bioconda paml iqtree r8s treepl pathd8
 ```yaml
 software_paths:
   # 若 conda 包仅包含一个 PAML 版本，指定 paml_path 即可；
-  # 多版本共存时建议分目录安装并分别指定 paml_path
+  # 多版本共存时分目录安装并相应指定 paml_path
   paml_path: /path/to/paml
   iqtree_bin: /path/to/iqtree2
   # 当 PATH 中存在同名 mcmctree 时，使用完整路径强制选择版本
@@ -164,5 +164,5 @@ PhyloDater 支持以下定年软件，每种软件都需要单独安装：
 | r8s | r8s 或 pyr8s | 经典分子钟定年工具 |
 | treePL | treepl | 基于惩罚似然的定年方法 |
 | PATHd8 | pathd8 | 分子钟校准方法 |
-| wLogDate | wlogdate | 日志日期定年 |
+| wLogDate | wlogdate | 对数日期定年（log-date） |
 | MD-Cat | mdcat | 矩阵校准日期 |

@@ -4,7 +4,7 @@
 
 This guide explains how to publish PhyloDater to conda (bioconda).
 
-## option 1: Contributing via Bioconda
+## Option 1: Contributing via Bioconda
 
 ### 1. Prepare recipe
 

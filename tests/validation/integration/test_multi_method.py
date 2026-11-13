@@ -6,7 +6,18 @@ from tests.validation.helpers import run_cli
 
 
 @pytest.mark.slow
+@pytest.mark.requires_mcmctree
 class TestMultiMethod:
+    """Runs the real MCMCTree engine end to end through the CLI.
+
+    ``requires_mcmctree`` is required in addition to ``slow``: this class shells
+    out to ``phylodater dating --method mcmctree``, so without PAML on PATH the
+    CLI legitimately exits 1 and the test reports a *failure* rather than an
+    unavailable engine. The sibling ``test_end_to_end_mcmctree.py`` already
+    carries both markers; ``pytest_runtest_setup`` in
+    ``tests/validation/conftest.py`` turns the marker into a skip.
+    """
+
     def test_mcmctree_only(
         self,
         small_tree_path,

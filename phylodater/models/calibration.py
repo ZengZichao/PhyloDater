@@ -349,9 +349,17 @@ class NodeDefinition:
     节点定义
 
     用于 YAML 配置中定义校准节点的位置
+
+    .. note::
+       ``definition_type``（YAML 里的 ``node.type``）目前是**保留字段**：它被读入
+       并随对象保存，但全包没有任何一处按它分派。节点是自动解析还是直接指定，
+       只取决于 ``taxa`` / ``mrca_pair`` 是否给出
+       （``services/calibration_loader.py`` 的 ``_parse_calibration``）。
+       因此 ``type: mrca`` 与 ``type: auto`` 行为相同；加载器在遇到非 ``auto``
+       取值时会发出一条一次性告警说明这一点（审阅项 ALGO-003）。
     """
 
-    definition_type: str = "auto"  # auto, mrca, mrca_pair
+    definition_type: str = "auto"  # 保留字段：auto, mrca, mrca_pair（当前无行为差异）
     taxa: Optional[List[str]] = None  # 用于 mrca 类型
     mrca_pair: Optional[List[str]] = None  # 用于 mrca_pair 类型
 

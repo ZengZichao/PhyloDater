@@ -16,7 +16,7 @@
 
 ## 来源
 
-树、比对与校准都是**生成的**，不是手写的：
+树、比对与校准都是**生成的，不是手写的**：
 
 ```bash
 python test-data/benchmark/generate_benchmark_dataset.py \

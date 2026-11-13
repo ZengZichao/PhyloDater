@@ -41,7 +41,7 @@ PhyloDater is a unified platform for phylogenetic molecular dating that integrat
 | Method | Description | `--method-args` Parameters |
 |--------|-------------|---------------------------|
 | **MCMCTree** | Bayesian dating from PAML package | `clock`, `num_runs`, `burnin`, `nsample`, `sampfreq`, `skip_rate_estimation`, `paml_version`, `paml_path`, `mcmctree_bin` |
-| **LSD2** | Fast dating in IQ-TREE2 | `model`, `date_ci`, `clock_sd`, `date_options`, `date_outlier` |
+| **LSD2** | Fast dating in IQ-TREE2 | `model`, `iqtree_bin`, `clock_sd`, `date_options`, `date_outlier` |
 | **r8s** | Classic molecular clock tool | `method`, `smoothing`, `algorithm` |
 | **treePL** | Penalized likelihood dating | `initial_smooth`, `cvstart`, `cvstop`, `cviter`, `cvmultstep` |
 | **PATHd8** | Molecular clock calibration | (no extra parameters) |
@@ -57,7 +57,7 @@ Tree file (.nwk)  ─┐
                     ├─→ QC Processing(optional) ─→ Rerooting ─→ Input Validation ─→ Calibration ─┐
 Alignment (.fa)   ─┤                                                    │                   │                   │
                     │                                                    ↓                   ↓                   ↓
-Calibration (.yaml)┘                                                 Deep Validation       MRCA定位          Dating Method
+Calibration (.yaml)┘                                                 Deep Validation       MRCA Localization Dating Method
                                                                        Bracket balance        Monophyly          MCMCTree
                                                                        Negative branches      Special IDs        treePL
                                                                        Duplicate names        Taxonomy           r8s/PATHd8/...
@@ -89,8 +89,8 @@ Calibration (.yaml)┘                                                 Deep Vali
 | | `cviter` | `10` | CV iteration count |
 | | `cvmultstep` | `0.1` | CV multiplier step |
 | LSD2 | `model` | _auto_ | Substitution model; resolved from the alignment type when unset (`GTR+G` for nucleotides, `LG+G` for proteins). Set explicitly to override, e.g. `HKY+G` |
-| | `date_ci` | `100` | Date confidence interval |
 | | `clock_sd` | `0.2` | Clock rate standard deviation |
+| | `date_options` | `None` | Extra IQ-TREE arguments, passed through verbatim — the only channel that actually reaches the command line |
 | MD-Cat | `ncat` | `50` | Number of rate categories |
 | | `nrep` | `100` | Random initialization count |
 | | `max_iter` | `100` | Maximum EM iterations |
@@ -368,7 +368,7 @@ Subcommands:
 | | `--outgroup` | Outgroup name | None |
 | | `--multi-tree-mode` | Multi-tree mode (`split`/`first`/`last`/`random`/`ask`/`error`) | `error` |
 | Calibration | `--auto-calibrate` | Auto-add calibration points | None |
-| Execution | `-j/--threads` | Parallel threads | `4` |
+| Execution | `-j/--threads` | Parallel worker threads; only wins when given explicitly, otherwise `PHYLODATER_THREADS` > `software.common.nthreads` > `4` (review item E-6) | None (falls through the chain) |
 | | `--seed` | Global random seed | Auto-generated |
 | | `--dry-run` | Dry-run mode (validation only) | No |
 | | `--mol-type` | Sequence molecule type (`DNA`/`RNA`/`protein`) | Auto-detect |
@@ -564,9 +564,12 @@ By default, tree files are expected to contain a single tree. If multiple trees 
 ### Log Format
 
 ```
-2025-03-21T10:15:30.123 | INFO     | module/func Parsing tree file
-2025-03-21T10:15:30.456 | WARNING  | module/func Large tree detected (15000 tips)
+2025-03-21T10:15:30.123 | INFO     | module/func 开始解析树文件
+2025-03-21T10:15:30.456 | WARNING  | module/func 检测到大型树 (15000 个末端节点)
 ```
+
+(The message bodies are shown verbatim: logs are emitted in Chinese; the two lines
+above read "Parsing tree file" and "Large tree detected (15000 tips)".)
 
 ### Log File
 
@@ -804,7 +807,7 @@ python scripts/run_reference_benchmark.py   # seven engines vs ground truth
 | PyYAML | >=6.0,<7.0 | MIT |
 | SciPy | >=1.9.0,<2.0 | BSD 3-Clause |
 | Matplotlib | >=3.5.0 | PSF-based |
-| psutil | >=5.9.0,<6.0 | BSD 3-Clause |
+| psutil | >=5.9.0 | BSD 3-Clause |
 
 > **Note**: ETE3 is an optional dependency (declared in `extras_require["ete3"]`). It is installed via pip by default. All other libraries are core dependencies.
 
@@ -837,18 +840,18 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 
 If you use PhyloDater in your research, please cite:
 
-> Zeng, Zichao. (2026). PhyloDater: A multi-software parallel platform for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater (ORCID: 0000-0001-6553-970X) · DOI: [10.5281/zenodo.23067037](https://doi.org/10.5281/zenodo.23067037)
+> Zeng, Zichao, & Wang, Yinzhao. (2026). PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating. GitHub repository. https://github.com/ZengZichao/phylodater (ORCID: 0000-0001-6553-970X; 0000-0001-8715-1386) · DOI: [10.5281/zenodo.23067037](https://doi.org/10.5281/zenodo.23067037)
 
 BibTeX format:
 ```bibtex
 @software{zeng2026phylodater,
-  author = {Zeng, Zichao},
-  title = {PhyloDater: A multi-software parallel platform for phylogenetic molecular dating},
+  author = {Zeng, Zichao and Wang, Yinzhao},
+  title = {PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
   doi = {10.5281/zenodo.23067037},
   version = {0.1.0},
-  note = {ORCID: 0000-0001-6553-970X}
+  note = {ORCID: 0000-0001-6553-970X (Z. Zeng); 0000-0001-8715-1386 (Y. Wang)}
 }
 ```
 

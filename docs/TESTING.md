@@ -33,7 +33,7 @@ engine; none of the seven is tested only through a stub.
 
 ```
 tests/
-├── unit/          29 files - pure Python: models, constraints, config, services, adapters' logic
+├── unit/          30 files - pure Python: models, constraints, config, services, adapters' logic
 ├── functional/    12 files - CLI behaviour, validation, reports, security, visualisation
 ├── integration/    4 files - multi-step pipelines, plotting, raw-engine smoke tests
 └── validation/    29 files - release-validation suite (real engines, end-to-end)
@@ -147,7 +147,7 @@ wrong reading here would invalidate the whole benchmark:
 * **Clade matching.** Nodes are identified by their descendant leaf set, not by
   node names: several engines strip or rename internal labels
   (`IntNode7`, `I9`, none at all).
-* Annotation stripping. `[&date=…]`, `[t=…, mu=…]`, `[&95%HPD={…}]` and internal
+* **Annotation stripping.** `[&date=…]`, `[t=…, mu=…]`, `[&95%HPD={…}]` and internal
   labels are removed before re-parsing, and both DendroPy 4.x and 5.x label
   accessors are supported.
 

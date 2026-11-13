@@ -85,9 +85,17 @@ dependencies = [
 # PhyloDater 的核心功能（含 MCMCTree 校准标注写树、定根）在两种情况下都可用。
 ete3 = ["ete3>=3.1.2,<4.0; python_version <= '3.12'"]
 ete4 = ["ete4>=3.0.0"]
+# 交互式绘图后端：``phylodater/viz/backends.py`` 的 ``PlotlyBackend``（注册名
+# ``plotly``，``get_backend("plotly")``）是真实实现，但 plotly 一直是"隐式可选"——
+# 它既不在核心依赖里，也没有任何 extra 声明它，于是文档承诺的交互式后端在
+# 任何一种受支持的安装方式之后都不可达（``_require_plotly`` 只会提示
+# ``pip install plotly``）。把它声明为 extra 后，``pip install 'phylodater[interactive]'``
+# 即可启用；核心依赖保持不变（plotly 不会被普通安装拉进来）。
+interactive = ["plotly>=5.0"]
 all = [
     "ete3>=3.1.2,<4.0; python_version <= '3.12'",
     "ete4>=3.0.0",
+    "plotly>=5.0",
 ]
 dev = [
     "pytest>=7.0",

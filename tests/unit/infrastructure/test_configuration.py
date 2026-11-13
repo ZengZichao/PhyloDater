@@ -2,6 +2,7 @@
 配置管理模块的单元测试
 """
 
+import pytest
 import yaml
 
 from phylodater.infrastructure.configuration import (
@@ -11,6 +12,7 @@ from phylodater.infrastructure.configuration import (
     MCMCTreeConfig,
     SoftwarePaths,
     ToolConfig,
+    derive_method_seed,
 )
 from phylodater.infrastructure.safe_io import safe_writer
 
@@ -94,6 +96,139 @@ class TestToolConfig:
         assert config.common.nthreads == 4
         assert config.common.seed is None
         assert config.common.verbose is False
+
+
+class TestMethodSeedDerivation:
+    """修复项 E-3：方法级子种子派生 + ``ToolConfig.clone_for_method``"""
+
+    METHODS = [
+        "mcmctree",
+        "lsd2",
+        "treepl",
+        "pathd8",
+        "r8s",
+        "wlogdate",
+        "mdcat",
+    ]
+
+    def test_derive_is_deterministic(self):
+        assert derive_method_seed(42, "mcmctree") == derive_method_seed(42, "mcmctree")
+
+    def test_derive_is_a_32bit_int(self):
+        value = derive_method_seed(42, "mcmctree")
+        assert isinstance(value, int)
+        assert 0 <= value < 2**32
+
+    def test_derive_gives_pairwise_distinct_seeds(self):
+        values = [derive_method_seed(42, name) for name in self.METHODS]
+        assert len(set(values)) == len(values)
+
+    def test_derive_changes_with_base_seed(self):
+        assert derive_method_seed(42, "treepl") != derive_method_seed(43, "treepl")
+
+    def test_derive_ignores_method_name_case(self):
+        assert derive_method_seed(7, "MCMCTree") == derive_method_seed(7, "mcmctree")
+
+    def test_derive_rejects_negative_base(self):
+        with pytest.raises(ValueError, match="non-negative"):
+            derive_method_seed(-1, "mcmctree")
+
+    def test_clone_for_method_replaces_common_seed(self):
+        base = ToolConfig()
+        base.common.seed = 42
+        base.common.nthreads = 3
+
+        clone = base.clone_for_method("mcmctree", 42)
+
+        assert clone.common.seed == derive_method_seed(42, "mcmctree")
+        # 其余字段照搬，且原对象一个字节都没被改
+        assert clone.common.nthreads == 3
+        assert base.common.seed == 42
+        assert clone is not base
+        assert clone.common is not base.common
+
+    def test_clone_for_method_is_deep_copy(self):
+        base = ToolConfig()
+        base.common.seed = 42
+        clone = base.clone_for_method("treepl", 42)
+
+        clone.treepl.initial_smooth = 0.5
+        clone.common.nthreads = 99
+
+        assert base.treepl.initial_smooth == 100.0
+        assert base.common.nthreads == 4
+
+    def test_clone_for_method_without_base_seed_keeps_seed(self):
+        """base_seed=None 时不假装能派生：副本种子保持原样（公开 API 兼容）"""
+        base = ToolConfig()
+        base.common.seed = 42
+
+        clone = base.clone_for_method("lsd2", None)
+
+        assert clone.common.seed == 42
+        assert clone.common is not base.common
+
+    def test_clone_for_method_is_stable_across_batch_sizes(self):
+        """同一方法在"3 方法并行"与"7 方法并行"下拿到同一个子种子。"""
+        base = ToolConfig()
+        small = base.clone_for_method("mdcat", 42).common.seed
+        large = ToolConfig().clone_for_method("mdcat", 42).common.seed
+        assert small == large
+
+
+class TestLegacyYamlKeyAliases:
+    """修复项 E-6：YAML 里 ``software.common.threads`` 与规范键 ``nthreads`` 的统一"""
+
+    def _write(self, tmp_path, common_block: dict):
+        path = tmp_path / "config.yaml"
+        with safe_writer(path) as f:
+            yaml.dump({"software": {"common": common_block}}, f)
+        return path
+
+    def test_canonical_key_silently_accepted(self, tmp_path):
+        cfg = Configuration().load_from_file(self._write(tmp_path, {"nthreads": 9}))
+        assert cfg.get_config().common.nthreads == 9
+
+    def test_legacy_key_still_works(self, tmp_path):
+        """旧模板/旧文档写的 threads 不能"写了白写"：仍生效 + 弃用告警。"""
+        cfg = Configuration().load_from_file(self._write(tmp_path, {"threads": 7}))
+        assert cfg.get_config().common.nthreads == 7
+
+    def test_legacy_key_emits_deprecation_warning(self, tmp_path, capsys):
+        Configuration().load_from_file(self._write(tmp_path, {"threads": 7}))
+        captured = capsys.readouterr()
+        combined = captured.out + captured.err
+        assert "threads" in combined
+        assert "nthreads" in combined
+
+    def test_canonical_key_wins_when_both_present(self, tmp_path):
+        cfg = Configuration().load_from_file(
+            self._write(tmp_path, {"threads": 2, "nthreads": 11})
+        )
+        assert cfg.get_config().common.nthreads == 11
+
+    def test_cli_override_beats_yaml_legacy_key(self, tmp_path):
+        cfg = Configuration().load_from_file(self._write(tmp_path, {"threads": 7}))
+        cfg.set_cli_override("common", "nthreads", 3)
+        assert cfg.get_config().common.nthreads == 3
+
+    def test_method_args_still_reject_legacy_key(self):
+        """CLI 侧不做静默别名：--method-args threads=... 必须报错并给出建议。"""
+        cfg = Configuration()
+        with pytest.raises(ValueError, match="Unknown parameter"):
+            cfg.set_cli_override("common", "threads", 4)
+
+    def test_example_config_uses_canonical_key(self):
+        """仓库里的 config.example.yaml 必须已经写规范键（不再自相矛盾）。"""
+        from pathlib import Path
+
+        example = Path(__file__).resolve().parents[3] / "config.example.yaml"
+        if not example.exists():  # pragma: no cover - 打包安装后可能不存在
+            pytest.skip("config.example.yaml not present")
+        text = example.read_text(encoding="utf-8")
+        assert "nthreads:" in text
+        # 不再有"software.common.threads"这一旧写法
+        assert "\n    threads:" not in text
 
 
 class TestConfiguration:

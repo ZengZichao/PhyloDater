@@ -176,6 +176,7 @@ _ENVELOPE_INTERVAL_DESCRIPTION = (
 _SINGLE_CHAIN_INTERVAL_DESCRIPTION = "single-chain 95% HPD as reported by MCMCTree"
 
 
+@DatingMethodRegistry.register("mcmctree")
 class MCMCTreeMethod(DatingMethod[MCMCTreeConfig]):
     """
     MCMCTree (PAML) 定年适配器
@@ -2663,10 +2664,6 @@ nsample  = {self.config.nsample}
         except Exception as e:
             self.logger.warning(f"Failed to restore MCMCTree leaf names: {e}")
             return nexus_text
-
-
-# 注册适配器
-DatingMethodRegistry.register("mcmctree", MCMCTreeMethod)
 
 
 def _parse_figtree_nexus(

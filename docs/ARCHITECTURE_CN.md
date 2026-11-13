@@ -11,22 +11,22 @@ PhyloDater 采用分层架构设计，遵循关注点分离原则：
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                        CLI Layer                            │
-│                    (命令行接口)                              │
+│                        (命令行接口)                         │
 ├─────────────────────────────────────────────────────────────┤
 │                      Service Layer                          │
-│    (Calibration, Tree Validation, Name Mapping)             │
+│                  (校准、树验证、名称映射)                   │
 ├─────────────────────────────────────────────────────────────┤
 │                       Core Layer                            │
-│    (Method Interface, Pipeline, Exceptions)                 │
+│                   (方法接口、管线、异常)                    │
 ├─────────────────────────────────────────────────────────────┤
 │                      Adapter Layer                          │
-│  (MCMCTree, LSD2, r8s, treePL, PATHd8, wLogDate, MD-Cat)    │
+│   (MCMCTree、LSD2、r8s、treePL、PATHd8、wLogDate、MD-Cat)   │
 ├─────────────────────────────────────────────────────────────┤
 │                      Model Layer                            │
-│     (Constraints, Calibration, Results, Tree)               │
+│                   (约束、校准、结果、树)                    │
 ├─────────────────────────────────────────────────────────────┤
 │                   Infrastructure Layer                      │
-│  (Configuration, Logging, Process Runner, Checkpoint)       │
+│              (配置、日志、进程运行器、检查点)               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -41,7 +41,7 @@ PhyloDater 采用分层架构设计，遵循关注点分离原则：
 
 **设计原则**：
 - 单一职责：只负责用户输入和输出展示
-- 依赖下层：通过 Service Layer 和 Core Layer 执行业务逻辑
+- 依赖下层：通过服务层（Service Layer）与核心层（Core Layer）执行业务逻辑
 
 ### 2. Service Layer（服务层）
 
@@ -69,27 +69,27 @@ PhyloDater 采用分层架构设计，遵循关注点分离原则：
 **主要组件**：
 - `method_interface.py`：定年方法抽象接口和注册表
 - `pipeline.py`：工作流引擎（顺序和并行）
-- `comparison_reporter.py`：结果比较报告生成
+- `comparison_reporter.py`：比较报告生成
 - `exceptions.py`：异常层次结构
 
 **关键设计模式**：
 - **策略模式**：`DatingMethod` 接口允许不同定年算法的统一调用
 - **注册表模式**：`DatingMethodRegistry` 实现方法动态发现和创建
 - **工厂模式**：通过注册表创建具体方法实例
-- **模板方法模式**：`DatingMethod.validate_calibrations()` 等可选钩子提供默认实现，允许适配器扩展方法专属校验
+- **模板方法模式**：`DatingMethod.validate_calibrations()` 等可选钩子提供默认实现，允许适配器扩展方法专属验证
 
 ### 4. Adapter Layer（适配器层）
 
 **职责**：集成外部定年软件
 
 **主要组件**：
-- `mcmctree_method.py`: PAML MCMCTree 适配器
-- `lsd2_method.py`: IQ-TREE2 LSD2 适配器
+- `mcmctree_method.py`：PAML MCMCTree 适配器
+- `lsd2_method.py`：IQ-TREE2 LSD2 适配器
 - `r8s_pyr8s_method.py`：r8s 与 pyr8s 适配器
-- `treepl_method.py`: treePL 适配器
-- `pathd8_method.py`: PATHd8 适配器
-- `wlogdate_method.py`: wLogDate 适配器
-- `mdcat_method.py`: MD-Cat 适配器
+- `treepl_method.py`：treePL 适配器
+- `pathd8_method.py`：PATHd8 适配器
+- `wlogdate_method.py`：wLogDate 适配器
+- `mdcat_method.py`：MD-Cat 适配器
 
 **设计原则**：
 - **适配器模式**：将不同软件的接口统一为 `DatingMethod` 接口
@@ -101,7 +101,7 @@ PhyloDater 采用分层架构设计，遵循关注点分离原则：
 **职责**：定义领域模型和数据结构
 
 **主要组件**：
-- `constraints.py`：年龄约束类型体系
+- `constraints.py`：年龄约束类型层次结构
 - `calibration.py`：校准点相关模型
 - `results.py`：定年结果模型
 - `tree.py`：系统发育树模型
@@ -167,7 +167,7 @@ PhyloDater 采用分层架构设计，遵循关注点分离原则：
 
 ## 关键设计决策
 
-### 1. 约束类型体系
+### 1. 约束类型层次结构
 
 **决策**：使用 dataclass 实现年龄约束类型层次结构
 
@@ -203,7 +203,7 @@ PhyloDater 采用分层架构设计，遵循关注点分离原则：
 - 错误分类：验证错误、执行错误、结果错误
 - 语义降级警告：非致命问题使用警告而非异常
 
-### 5. 适配器配置类型
+### 5. 适配器配置的类型化
 
 **决策**：抽象基类按"它实际读取的那份配置"参数化 —— `DatingMethod[ConfigT]`，
 每个适配器把该参数钉到自己的配置 dataclass 上
@@ -228,8 +228,8 @@ else:
 super().__init__(method_config, output_dir, software_paths, common_config=common)
 ```
 
-这样对任何读者来说 `self.config` 就是精确的 `TreePLConfig`，全程没有用
-`self.config: Any` 逃生。`DatingMethod.__init__` 同时接收 `common_config` 并归一成
+这样对任何读者来说 `self.config` 就是精确的 `TreePLConfig`，全程没有使用
+`self.config: Any` 这种逃生舱写法。`DatingMethod.__init__` 同时接收 `common_config` 并归一成
 非 `Optional` 的 `CommonConfig`，这是那十五处 `self.common_config.nthreads / .timeout
 / .seed` 读取所需要的。
 
@@ -248,7 +248,18 @@ super().__init__(method_config, output_dir, software_paths, common_config=common
 1. 在 `phylodater/adapters/` 创建新的适配器类
 2. 继承 `DatingMethod` 抽象基类
 3. 实现所有抽象方法
-4. 在文件末尾注册：`DatingMethodRegistry.register("method_name", YourClass)`
+4. 注册这个类 —— 推荐写法是装饰器（审阅项 E-7）：
+
+   ```python
+   @DatingMethodRegistry.register("method_name")
+   class YourMethod(DatingMethod[YourConfig]):
+       ...
+   ```
+
+   显式的两参数调用 `DatingMethodRegistry.register("method_name", YourClass)`
+   仍然可用，行为与历史逐字一致；两种形态都会把键统一转成小写，并原样返回被注册
+   的类，因此模块里的类名仍然是一个可用的类对象。仓库内置的七个适配器现已全部
+   改用装饰器形态。
 5. 添加单元测试
 
 ### 添加新的约束类型

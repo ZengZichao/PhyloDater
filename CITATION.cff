@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it using the metadata below. A preferred article citation will be added once the manuscript is published."
 type: software
-title: "PhyloDater: A multi-software parallel platform for phylogenetic molecular dating"
+title: "PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating"
 abstract: "PhyloDater is a unified phylogenetic dating platform that integrates multiple mainstream dating software, providing consistent interfaces and standardized result outputs."
 authors:
   - family-names: "Zeng"
@@ -9,12 +9,17 @@ authors:
     name: "Zichao Zeng"
     email: "zengzichao@sjtu.edu.cn"
     orcid: "https://orcid.org/0000-0001-6553-970X"
+  - family-names: "Wang"
+    given-names: "Yinzhao"
+    name: "Yinzhao Wang"
+    email: "wyz@sjtu.edu.cn"
+    orcid: "https://orcid.org/0000-0001-8715-1386"
 repository-code: "https://github.com/ZengZichao/phylodater"
 license: MIT
 doi: 10.5281/zenodo.23067037
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.23067037
+    value: "10.5281/zenodo.23067037"
     description: Zenodo record for PhyloDater v0.1.0
 version: 0.1.0
 date-released: 2026-09-30
@@ -26,8 +31,20 @@ keywords:
   - phylogeny
   - divergence-time
   - molecular-clock
-# The Zenodo software DOI above is real and registered (record for v0.1.0,
-# matching the GitHub release published 2026-09-30). `preferred-citation` is
-# still not emitted on purpose: there is no published *article* yet. When the
-# companion article exists, add `preferred-citation` here with the real
-# journal/volume/pages/DOI (the Zenodo DOI stays as the software identifier).
+related-identifiers:
+  - relation: isSupplementTo
+    resource-type: software
+    identifier: "https://github.com/ZengZichao/phylodater/releases/tag/v0.1.0"
+    scheme: url
+  - relation: isVersionOf
+    resource-type: software
+    identifier: "10.5281/zenodo.23066788"
+    scheme: doi
+# The Zenodo record is the registered archive of this exact release (published
+# 2026-09-30, MIT licence, same keyword list); 10.5281/zenodo.23066788 is its
+# concept DOI, i.e. "any version". Both were read back from
+# https://zenodo.org/api/records/23067037 on 2026-10-08.
+#
+# Still no `preferred-citation`: that block is for the companion *article*, and
+# no article has been published yet. It is added once the manuscript appears,
+# together with the real journal/volume/pages/DOI -- see CITATION.md.

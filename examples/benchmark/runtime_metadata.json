@@ -1,0 +1,119 @@
+{
+  "provenance": {
+    "reconstructed": true,
+    "source": "repository documentation only: docs/TEST_RESULTS.md §1 and §1.1, test-data/benchmark/results/validation_log.txt, test-data/benchmark/results/PYTHON_SUPPORT_MATRIX.txt, pyproject.toml, Dockerfile, phylodater/adapters/*.py",
+    "note": "This is a hand-reconstructed environment record, not the file emitted by phylodater.infrastructure.runtime_metadata.RuntimeMetadata.save(); the original examples/benchmark/runtime_metadata.json was a per-run product excluded by .gitignore and was not preserved. Only values evidenced in the files listed under 'source' are filled in; every field that could not be evidenced is null and named in 'gaps'. Rerun scripts/tier1_manual_comparison.py / scripts/degradation_experiment.py (or the pipeline) with the native tools installed to regenerate an authoritative file.",
+    "generated": "2026-10-08",
+    "pipeline_schema": null
+  },
+  "package": {
+    "name": "phylodater",
+    "version": "0.1.0",
+    "source": "pyproject.toml:6-7; phylodater/_version.py"
+  },
+  "interpreter": {
+    "python_version": "3.12.14",
+    "python_implementation": null,
+    "platform": "linux",
+    "os_release": "Ubuntu 22.04.4 LTS",
+    "kernel": "6.8.0-111-generic",
+    "machine": "x86_64",
+    "environment": "conda env 'phylodater'",
+    "source": "docs/TEST_RESULTS.md:20,22; test-data/benchmark/results/validation_log.txt:40 ('platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0')"
+  },
+  "dependencies": {
+    "biopython": "1.88",
+    "dendropy": "5.1.0",
+    "pyyaml": "6.0.3",
+    "scipy": "1.18.1",
+    "numpy": "2.5.3",
+    "matplotlib": "3.11.2",
+    "pandas": "3.0.6",
+    "ete3": "3.1.3",
+    "psutil": null,
+    "pytest": "9.1.1",
+    "pytest-cov": "7.1.0",
+    "source": "docs/TEST_RESULTS.md:24-25 ('Core libraries' / 'Test framework' rows); the same eight core-library versions are the uv-resolved pins for Python 3.12 in PYTHON_SUPPORT_MATRIX.txt §1"
+  },
+  "external_tools": {
+    "paml": {
+      "documented_default_version": "4.10.8",
+      "supported_version_series": [
+        "4.8",
+        "4.10"
+      ],
+      "version_recorded_in_release_validation": "MCMCTREE in paml version 4.10.10, 29 Jan 2026",
+      "version_pinned_in_docker_complete_stage": "4.10.8",
+      "source": "phylodater/infrastructure/configuration.py:84; phylodater/adapters/mcmctree_method.py:5,83-92; docs/TEST_RESULTS.md:31; Dockerfile:95-101"
+    },
+    "iqtree": {
+      "documented_verified_versions": [
+        "2.3.6",
+        "3.1.3"
+      ],
+      "version_recorded_in_release_validation": "IQ-TREE version 3.1.3 for Linux x86 64-bit built Jul 26 2026",
+      "version_pinned_in_docker_complete_stage": "2.3.4",
+      "source": "phylodater/adapters/lsd2_method.py:9-10; docs/TEST_RESULTS.md:32; Dockerfile:103-108"
+    },
+    "pathd8": {
+      "version": null,
+      "note": "PATHd8 prints no version banner (docs/TEST_RESULTS.md:221); Dockerfile:111-120 installs it from the official source without a pinned version",
+      "source": "docs/TEST_RESULTS.md:35,221"
+    },
+    "treepl": {
+      "version": "treePL version 1.0 (2.6.3 build)",
+      "shipped_in_docker_complete_stage": false,
+      "source": "docs/TEST_RESULTS.md:34,219"
+    },
+    "r8s_pyr8s": {
+      "version": "pyr8s 0.3.1 (NPRS only)",
+      "shipped_in_docker_complete_stage": false,
+      "source": "docs/TEST_RESULTS.md:33"
+    },
+    "wlogdate": {
+      "version": "wLogDate 1.0.2",
+      "shipped_in_docker_complete_stage": false,
+      "source": "docs/TEST_RESULTS.md:36"
+    },
+    "mdcat": {
+      "version": "1.0.1",
+      "shipped_in_docker_complete_stage": false,
+      "source": "docs/TEST_RESULTS.md:37"
+    }
+  },
+  "release_validation_tests": {
+    "collected": 1489,
+    "passed": 1487,
+    "skipped": 2,
+    "failed": 0,
+    "duration_seconds": 335.14,
+    "line_coverage_percent_documented": 67.87,
+    "self_test_checks": 26,
+    "source": "validation_log.txt:46,340-341; docs/TEST_RESULTS.md:162-167,186,190; README.md:700"
+  },
+  "fig5_experiment": {
+    "note": "The engines, wall times and seeds actually used for the Fig. 5 wrapper-vs-native and degradation runs were recorded only in the discarded per-run outputs (examples/benchmark/wrapper_rerun/, examples/benchmark/degradation/*_seed*/), which are git-ignored and were not preserved.",
+    "engines_used": null,
+    "engine_versions": null,
+    "run_start_time": null,
+    "run_end_time": null,
+    "run_id": null,
+    "seed": null,
+    "duration_seconds": null,
+    "git_commit": null
+  },
+  "gaps": [
+    "interpreter.python_implementation",
+    "dependencies.psutil (PYTHON_SUPPORT_MATRIX.txt §1 resolves psutil==7.2.2 for Python 3.12, but that is a uv resolver pin for the scratch interpreters, not a version recorded for the release-validation environment)",
+    "external_tools.pathd8.version (the binary prints no banner)",
+    "fig5_experiment.engines_used",
+    "fig5_experiment.engine_versions",
+    "fig5_experiment.run_start_time",
+    "fig5_experiment.run_end_time",
+    "fig5_experiment.run_id",
+    "fig5_experiment.seed",
+    "fig5_experiment.duration_seconds",
+    "fig5_experiment.git_commit (validation_log.txt:7 records HEAD d5093449263a0fad2d4011043c535307137cd95a, which does not exist in the published single-commit history)",
+    "pipeline_schema (the file was not produced by RuntimeMetadata.save(), so its run-level schema is not reproduced here)"
+  ]
+}

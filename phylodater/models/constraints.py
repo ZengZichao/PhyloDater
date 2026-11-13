@@ -8,7 +8,7 @@ import math
 import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from scipy import stats
 
@@ -40,11 +40,86 @@ _MCMCTREE_GA_SIG_DIGITS = 6
 _MCMCTREE_NUMBER_DECIMALS = 10
 
 
-def _emit_degradation_warning(msg: str) -> None:
-    """发出语义降级警告（非致命）"""
+def _canonical_constraint_description(constraint: Any) -> str:
+    """把约束**降级前**的形态写成可审计的规范化串（修复项 E-9）。
+
+    取 dataclass 字段逐项打印，含带默认值的字段，所以
+    ``UniformAgeConstraint(min_age=2.0, max_age=4.0)`` 会写成
+    ``UniformAgeConstraint(min_age=2.0, max_age=4.0, tail_lower=0.0001,
+    tail_upper=0.0001)`` —— 这就是交给引擎之前的完整事前形态，不做省略。
+    非 dataclass 时退化为类名。这是"事前形态"的唯一权威描述：降级一旦交给引擎就
+    不可逆（见 :attr:`NodeAgeEstimate.degraded_from`），但这条串永远能查回来。
+    """
+    fields = getattr(type(constraint), "__dataclass_fields__", None)
+    if not fields:
+        return f"{type(constraint).__name__}()"
+    parts = ", ".join(
+        f"{name}={getattr(constraint, name, None)!r}"
+        for name in fields
+        if not name.startswith("_")
+    )
+    return f"{type(constraint).__name__}({parts})"
+
+
+def _degradation_details(
+    constraint: Any, target_software: Any, degraded_to: str
+) -> Dict[str, Any]:
+    """组装一条结构化降级记录（修复项 E-9）。
+
+    ``message`` 由 :func:`_emit_degradation_warning` 补，调用点只需给出
+    "谁（constraint）、降到哪（degraded_to）、给哪个引擎（target）"。
+    ``node`` 依次尝试 ``label`` → ``name`` → ``taxa_str`` → ``t1|t2``（来自
+    :meth:`AgeConstraint.to_software_format` 暂存的标识），全取不到时留空串。
+    """
+    identifiers = getattr(constraint, "_degradation_identifiers", None) or {}
+    node = ""
+    for key in ("label", "name", "taxa_str"):
+        value = identifiers.get(key)
+        if isinstance(value, str) and value:
+            node = value
+            break
+    if not node:
+        t1 = identifiers.get("t1") or ""
+        t2 = identifiers.get("t2") or ""
+        if t1 or t2:
+            node = f"{t1}|{t2}"
+    describe = getattr(constraint, "describe", None)
+    record: Dict[str, Any] = {
+        "constraint": type(constraint).__name__,
+        "target": str(target_software),
+        # ``original`` 是**规范化**的降级前形态（逐字段打印，可机器比对）；
+        # ``original_description`` 是同一条约束的人类可读摘要（``describe()``）。
+        "original": _canonical_constraint_description(constraint),
+        "degraded_to": str(degraded_to),
+        "node": node,
+    }
+    if callable(describe):
+        record["original_description"] = str(describe())
+    return record
+
+
+def _emit_degradation_warning(
+    msg: str, details: Optional[Dict[str, Any]] = None
+) -> None:
+    """发出语义降级警告（非致命）。
+
+    ``details``（修复项 E-9）给定时，警告以**实例**形式发出：实例上挂着
+    ``degradation`` 字典（含 ``message`` 字段），于是流水线统一出口
+    （:func:`~phylodater.core.pipeline.run_adapter_and_capture_degradations`）
+    既能拿到人类可读的文本，也能拿到"降级前约束的规范化描述"。省略时保持
+    历史的纯文本形态，逐字不变。
+    """
     from ..core.exceptions import SemanticDegradationWarning
 
-    warnings.warn(msg, SemanticDegradationWarning, stacklevel=3)
+    if details is None:
+        warnings.warn(msg, SemanticDegradationWarning, stacklevel=3)
+        return
+
+    record = dict(details)
+    record.setdefault("message", msg)
+    warning = SemanticDegradationWarning(msg)
+    warning.degradation = record  # type: ignore[attr-defined]
+    warnings.warn(warning, stacklevel=3)
 
 
 def _require_finite_number(value: object, name: str) -> float:
@@ -287,6 +362,17 @@ class AgeConstraint(ABC):
             taxa_str: wlogdate/mdcat 使用的叶节点串（'+' 连接，对应模板
                 ``{taxa_str}``）。
         """
+        # 修复项 E-9：先把本次渲染用到的节点标识暂存下来，**再**渲染。
+        # 降级警告是在 ``_render_software_format`` 内部发出的，那里看不到
+        # label/name/t1/t2，于是"这条降级属于哪个节点"就无从回填；
+        # 顺序写反了会让 :func:`_degradation_details` 读到上一次的标识。
+        self._degradation_identifiers = {
+            "label": label,
+            "name": name,
+            "t1": t1,
+            "t2": t2,
+            "taxa_str": taxa_str,
+        }
         template = self._render_software_format(target_software)
         return template.format(label=label, Name=name, t1=t1, t2=t2, taxa_str=taxa_str)
 
@@ -428,7 +514,10 @@ class UniformAgeConstraint(AgeConstraint):
             mid = (self.min_age + self.max_age) / 2
             _emit_degradation_warning(
                 f"wLogDate does not support range constraints. "
-                f"Using midpoint {mid} from range [{self.min_age}, {self.max_age}]"
+                f"Using midpoint {mid} from range [{self.min_age}, {self.max_age}]",
+                details=_degradation_details(
+                    self, "wlogdate", f"point estimate {mid} (range midpoint)"
+                ),
             )
             return f"{{Name}}={{taxa_str}}\t{mid}"
         elif target_software == "mdcat":
@@ -436,7 +525,10 @@ class UniformAgeConstraint(AgeConstraint):
             mid = (self.min_age + self.max_age) / 2
             _emit_degradation_warning(
                 f"MD-Cat does not support range constraints. "
-                f"Using midpoint {mid} from range [{self.min_age}, {self.max_age}]"
+                f"Using midpoint {mid} from range [{self.min_age}, {self.max_age}]",
+                details=_degradation_details(
+                    self, "mdcat", f"point estimate {mid} (range midpoint)"
+                ),
             )
             return f"{{Name}}={{taxa_str}}\t{mid}"
         else:
@@ -573,7 +665,10 @@ class SoftLowerBoundConstraint(AgeConstraint):
             # 其他软件降级为硬下界
             _emit_degradation_warning(
                 f"{target_software} does not support soft lower bounds. "
-                f"Degrading to hard minimum age {self.min_age}"
+                f"Degrading to hard minimum age {self.min_age}",
+                details=_degradation_details(
+                    self, target_software, f"hard minimum age {self.min_age}"
+                ),
             )
             if target_software in ["r8s", "pyr8s"]:
                 return f"constrain taxon={{label}} min_age={self.min_age};"
@@ -658,7 +753,12 @@ class MaximumAgeConstraint(AgeConstraint):
                     f"≤{self.max_age} Ma upper bound to the point estimate {mid} Ma "
                     f"(midpoint of the implied range [0.0, {self.max_age}] Ma). The "
                     f"upper bound itself is NOT enforced: {target_software} may return "
-                    f"an age older than {self.max_age} Ma."
+                    f"an age older than {self.max_age} Ma.",
+                    details=_degradation_details(
+                        self,
+                        target_software,
+                        f"point estimate {mid} (midpoint of [0.0, {self.max_age}])",
+                    ),
                 )
                 return f"{{Name}}={{taxa_str}}\t{mid}"
             else:
@@ -749,7 +849,12 @@ class SoftBoundsConstraint(AgeConstraint):
                     f"{target_software} does not support soft bounds. "
                     f"Degrading to uniform constraint [{self.min_age}, "
                     f"{self.max_age}] (tail probabilities tailL={self.tail_lower}, "
-                    f"tailR={self.tail_upper} are lost)"
+                    f"tailR={self.tail_upper} are lost)",
+                    details=_degradation_details(
+                        self,
+                        target_software,
+                        f"uniform [{self.min_age}, {self.max_age}]; tailL/tailR lost",
+                    ),
                 )
             if target_software in ["r8s", "pyr8s"]:
                 return (
@@ -773,7 +878,10 @@ class SoftBoundsConstraint(AgeConstraint):
                     f"{target_software} only supports point calibrations. Degrading "
                     f"the soft bounds [{self.min_age}, {self.max_age}] Ma to the "
                     f"midpoint {mid}; both bounds and the tail probabilities "
-                    f"(tailL={self.tail_lower}, tailR={self.tail_upper}) are lost."
+                    f"(tailL={self.tail_lower}, tailR={self.tail_upper}) are lost.",
+                    details=_degradation_details(
+                        self, target_software, f"point estimate {mid} (range midpoint)"
+                    ),
                 )
                 return f"{{Name}}={{taxa_str}}\t{mid}"
             else:
@@ -867,7 +975,12 @@ class GammaPriorConstraint(AgeConstraint):
                 f"{target_software} does not support Gamma priors. "
                 f"Degrading to uniform constraint [{ci_lower:.1f}, {ci_upper:.1f}] "
                 f"(derived from Gamma({self.alpha}, {self.beta}, {self.offset}, scale={self.scale}))"
-                + _notes_suffix(notes)
+                + _notes_suffix(notes),
+                details=_degradation_details(
+                    self,
+                    target_software,
+                    f"uniform [{ci_lower:.1f}, {ci_upper:.1f}] credible band",
+                ),
             )
             if target_software in ["r8s", "pyr8s"]:
                 return (
@@ -933,7 +1046,13 @@ class GammaPriorConstraint(AgeConstraint):
                 f"its mode can be arbitrarily close to 0. To express a hard/soft "
                 f"stratigraphic floor, use SoftBoundsConstraint (or "
                 f"UniformAgeConstraint) with min_age={self.offset} Ma instead of a "
-                f"shifted Gamma."
+                f"shifted Gamma.",
+                details=_degradation_details(
+                    self,
+                    "mcmctree",
+                    f"G({self.alpha}, {effective_beta:.6f}) — offset/floor "
+                    f"{self.offset} Ma dropped",
+                ),
             )
         return f"G({self.alpha}, {effective_beta:.6f})"
 
@@ -1022,7 +1141,16 @@ class SkewNormalConstraint(AgeConstraint):
                     f"[{ci_lower:.1f}, {ci_upper:.1f}]"
                 )
                 + f" (derived from SN({self.location}, {self.scale}, {self.shape}))"
-                + _notes_suffix(notes)
+                + _notes_suffix(notes),
+                details=_degradation_details(
+                    self,
+                    target_software,
+                    (
+                        f"point estimate {float(mean):.1f} Ma (prior mean)"
+                        if target_software in ("wlogdate", "mdcat")
+                        else f"uniform [{ci_lower:.1f}, {ci_upper:.1f}]"
+                    ),
+                ),
             )
             if target_software in ["r8s", "pyr8s"]:
                 return (
@@ -1175,7 +1303,16 @@ class SkewTConstraint(AgeConstraint):
                 )
                 + " (derived from "
                 f"ST({self.location}, {self.scale}, {self.shape}, {self.df}))"
-                + _notes_suffix(notes)
+                + _notes_suffix(notes),
+                details=_degradation_details(
+                    self,
+                    target_software,
+                    (
+                        f"point estimate {mean:.1f} Ma (prior mean)"
+                        if target_software in ("wlogdate", "mdcat")
+                        else f"uniform [{ci_lower:.1f}, {ci_upper:.1f}]"
+                    ),
+                ),
             )
             if target_software in ["r8s", "pyr8s"]:
                 return (

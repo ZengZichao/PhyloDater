@@ -17,7 +17,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from phylodater.cli.main import _clamp_threads, _validate_input_files
+from phylodater.cli.main import (
+    _clamp_threads,
+    _resolve_thread_count,
+    _validate_input_files,
+)
 from phylodater.services.input_validator import (
     AlignmentFormat,
     InputValidator,
@@ -408,6 +412,111 @@ class TestClampThreads:
     def test_accepts_string_int(self):
         """接受字符串形式的整数（argparse 可能传入字符串）"""
         assert _clamp_threads("2") == 2
+
+    def test_none_stays_none(self):
+        """E-6：未指定（None）必须一路保持 None，不能被默认值冒充。"""
+        assert _clamp_threads(None) is None
+
+
+class TestResolveThreadCount:
+    """E-6：线程数优先级 CLI > PHYLODATER_THREADS > 配置文件 > 默认 4"""
+
+    def test_cli_value_wins_over_env_and_file(self, monkeypatch):
+        monkeypatch.setenv("PHYLODATER_THREADS", "2")
+        assert _resolve_thread_count(8, 16) == 8
+
+    def test_env_wins_over_config_file(self, monkeypatch):
+        """回归防护：旧版 CLI 恒传默认 4，环境变量从来没有机会生效。"""
+        monkeypatch.setenv("PHYLODATER_THREADS", "3")
+        assert _resolve_thread_count(None, 16) == 3
+
+    def test_config_file_used_when_cli_and_env_silent(self, monkeypatch):
+        monkeypatch.delenv("PHYLODATER_THREADS", raising=False)
+        assert _resolve_thread_count(None, 12) == 12
+
+    def test_builtin_default_when_nothing_specified(self, monkeypatch):
+        monkeypatch.delenv("PHYLODATER_THREADS", raising=False)
+        assert _resolve_thread_count(None, 4) == 4
+
+    def test_illegal_env_is_ignored_and_next_layer_wins(self, monkeypatch):
+        """非法的 ``PHYLODATER_THREADS`` 必须整层退出，而不是回落到硬编码 4。
+
+        ``PHYLODATER_THREADS=abc`` 与 ``=0`` 都是"用户其实没说过要几线程"，
+        所以应当轮到第 3/4 层（配置文件 ``nthreads`` 或内置默认 4）。
+        旧写法 ``get_env_threads(4)`` 会让 ``PHYLODATER_THREADS=0`` 顶掉 YAML 里的
+        ``nthreads: 12``——正是 E-6 要消灭的"默认值冒充显式选择"。
+        """
+        monkeypatch.setenv("PHYLODATER_THREADS", "abc")
+        assert _resolve_thread_count(None, 12) == 12
+        monkeypatch.setenv("PHYLODATER_THREADS", "0")
+        assert _resolve_thread_count(None, 12) == 12
+        monkeypatch.setenv("PHYLODATER_THREADS", "-3")
+        assert _resolve_thread_count(None, 4) == 4
+
+    def test_illegal_env_still_warns(self, monkeypatch, capsys):
+        """非法值被忽略 ≠ 静默忽略：仍然要有一条"忽略非法环境变量"的告警。"""
+        monkeypatch.setenv("PHYLODATER_THREADS", "0")
+        assert _resolve_thread_count(None, 6) == 6
+        captured = capsys.readouterr()
+        assert "PHYLODATER_THREADS" in captured.out + captured.err
+
+    def test_legal_env_beats_config_file(self, monkeypatch):
+        monkeypatch.setenv("PHYLODATER_THREADS", "8")
+        assert _resolve_thread_count(None, 2) == 8
+
+    def test_source_labels(self, monkeypatch):
+        """来源标识用于日志播报"谁说了算"。"""
+        from phylodater.cli.main import (
+            THREAD_SOURCE_CLI,
+            THREAD_SOURCE_CONFIG,
+            THREAD_SOURCE_ENV,
+            _resolve_thread_count_with_source,
+        )
+
+        monkeypatch.setenv("PHYLODATER_THREADS", "8")
+        assert _resolve_thread_count_with_source(3, 2) == (3, THREAD_SOURCE_CLI)
+        assert _resolve_thread_count_with_source(None, 2) == (8, THREAD_SOURCE_ENV)
+        monkeypatch.delenv("PHYLODATER_THREADS", raising=False)
+        assert _resolve_thread_count_with_source(None, 2) == (2, THREAD_SOURCE_CONFIG)
+        monkeypatch.setenv("PHYLODATER_THREADS", "0")  # 非法 ⇒ 不算 env 层胜出
+        assert _resolve_thread_count_with_source(None, 2) == (2, THREAD_SOURCE_CONFIG)
+
+    @staticmethod
+    def _dating_argv(tmp_path):
+        """造一组"文件都存在"的 dating 参数（-t/-s/-c 都走路径校验）。"""
+        tree = tmp_path / "tree.nwk"
+        tree.write_text("((A:0.1,B:0.1):0.1,(C:0.2,D:0.2):0.1);", encoding="utf-8")
+        seq = tmp_path / "aln.fasta"
+        seq.write_text(">A\nATGC\n>B\nATGC\n", encoding="utf-8")
+        cal = tmp_path / "cal.yaml"
+        cal.write_text("calibrations: []\n", encoding="utf-8")
+        return [
+            "dating",
+            "-t",
+            str(tree),
+            "-s",
+            str(seq),
+            "-c",
+            str(cal),
+            "-o",
+            str(tmp_path / "out"),
+            "--method",
+            "r8s",
+        ]
+
+    def test_threads_flag_default_is_none(self, tmp_path):
+        """``--threads`` 的 argparse 默认值必须是 None（不是 4）。"""
+        from phylodater.cli.main import create_parser
+
+        args = create_parser().parse_args(self._dating_argv(tmp_path))
+        assert args.threads is None
+
+    def test_explicit_threads_flag_is_parsed(self, tmp_path):
+        from phylodater.cli.main import create_parser
+
+        argv = self._dating_argv(tmp_path) + ["--threads", "6"]
+        args = create_parser().parse_args(argv)
+        assert args.threads == 6
 
 
 class TestTaxonomyDeepValidationWired:

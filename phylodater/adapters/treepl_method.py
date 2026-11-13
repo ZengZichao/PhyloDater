@@ -70,6 +70,7 @@ class CVResult:
     message: str = ""
 
 
+@DatingMethodRegistry.register("treepl")
 class TreePLMethod(DatingMethod[TreePLConfig]):
     """
     treePL 定年适配器
@@ -128,9 +129,22 @@ class TreePLMethod(DatingMethod[TreePLConfig]):
         # 约束落盘台账（B-12 产物层口径）：written/skipped 都按校准名记
         self._constraint_ledger: Dict[str, List[str]] = {}
 
-        # 设置随机种子
-        if self.common_config.seed is None:
-            self.common_config.seed = secrets.randbelow(1_000_000) + 1
+        # 随机种子：适配器**只在实例上**补一个临时种子，绝不写回共享配置。
+        #
+        # 修复项 E-5：旧实现在这里执行 ``self.common_config.seed = secrets.randbelow(...)``，
+        # 而 ``common_config`` 是跨方法、跨调用共享的同一个 :class:`CommonConfig`
+        # 实例（``DatingMethodRegistry.create`` 直接把 ``ToolConfig.common`` 递进来）。
+        # 于是一次"用户没给种子"的 treePL 运行会把一个随机种子**永久**写进全局配置：
+        # 后续 mcmctree / wLogDate / MD-Cat 都继承这个随机值，同一命令行的第二次运行
+        # 也不再是"未指定种子"的语义。同仓 ``wlogdate_method.py`` 的 B-28 注释已经给出
+        # 正确做法（派生值只写进实例），这里与它保持一致。
+        self._effective_seed: Optional[int] = self.common_config.seed
+        if self._effective_seed is None:
+            self._effective_seed = secrets.randbelow(1_000_000) + 1
+            self.logger.debug(
+                "treePL: no seed given; using the instance-local random seed "
+                f"{self._effective_seed} (the shared CommonConfig was NOT modified)"
+            )
 
     @property
     def method_name(self) -> str:
@@ -427,9 +441,9 @@ class TreePLMethod(DatingMethod[TreePLConfig]):
         # 线程数（使用 common 配置）
         f.write(f"nthreads = {self.common_config.nthreads}\n")
 
-        # 随机种子（使用 common 配置）
-        if self.common_config.seed is not None:
-            f.write(f"seed = {self.common_config.seed}\n")
+        # 随机种子：用本实例的生效种子（E-5：绝不回写共享配置）
+        if self._effective_seed is not None:
+            f.write(f"seed = {self._effective_seed}\n")
 
         # 优化参数
         if self.config.opt is not None:
@@ -1468,7 +1482,9 @@ class TreePLMethod(DatingMethod[TreePLConfig]):
         # 收集元数据（既装 scalar 也装 per-run CV 记录，因此值类型是 Any）
         metadata: Dict[str, Any] = {
             "optimal_smooth": self._optimal_smooth,
-            "seed": self.common_config.seed,
+            # 本实例实际使用的种子（写在控制文件里的那个）。E-5：读实例局部值，
+            # 不是共享的 ``common_config.seed``——后者在用户没给种子时必须保持 None。
+            "seed": self._effective_seed,
             "cv_type": "randomcv" if self.config.randomcv else "cv",
             "cv_replicates": self.config.cv_replicates,
             "prime_replicates": self.config.prime_replicates,
@@ -1801,7 +1817,3 @@ class TreePLMethod(DatingMethod[TreePLConfig]):
             self.logger.warning("ETE3 not available, cannot extract ages from tree")
 
         return node_ages
-
-
-# 注册适配器
-DatingMethodRegistry.register("treepl", TreePLMethod)

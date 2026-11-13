@@ -31,7 +31,9 @@ pandas>=1.3.0
 # conveniences:
 #     pip install 'phylodater[ete4]'                  # works on 3.13/3.14 too
 #     pip install 'phylodater[ete3]'                  # Python <= 3.12 only
+#     pip install 'phylodater[interactive]'           # PlotlyBackend (plotly>=5.0)
 # See QUICKSTART(_EN).md for the same note.
 # ---------------------------------------------------------------------------
 # ete3>=3.1.2,<4.0 ; python_version <= "3.12"
 # ete4>=3.0.0
+# plotly>=5.0

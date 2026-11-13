@@ -5,6 +5,7 @@ Configuration - 三层配置合并机制
 """
 
 import copy
+import hashlib
 import math
 import typing
 from dataclasses import asdict, dataclass, field
@@ -40,6 +41,44 @@ def _as_float(value: Any, name: str) -> float:
             "silently break every threshold comparison in the convergence checks"
         )
     return numeric
+
+
+#: 子种子派生的域分隔前缀。写进哈希输入，一是让"方法名 → 子种子"这张表在
+#: 将来改变派生规则时能被整体换掉（改版本号即可），二是避免与任何其他
+#: "整数 → 整数"派生（例如上游软件的 seed 递增）撞车。
+METHOD_SEED_DOMAIN = "phylodater-v1"
+
+
+def derive_method_seed(base_seed: int, method_name: str) -> int:
+    """由全局种子派生**单个方法**专属的 32-bit 子种子（修复项 E-3）。
+
+    修复的问题：``core/pipeline.py`` 虽然早已为每个并行方法算出互异的子种子，
+    但那批子种子只被喂给进程级 ``random.seed()`` / ``np.random.seed()``，而七个
+    适配器一律读共享的 ``ToolConfig.common.seed``——于是 mcmctree 的
+    ``seed =``、treePL 的 ``seed =``、wLogDate 的 ``-s``、MD-Cat 的
+    ``--randSeed`` 拿到的都是同一个全局种子，"每方法独立子种子"停留在注释里。
+
+    性质（单元测试逐条锁定）：
+
+    * **可复现**：同一 ``(base_seed, method_name)`` 永远得到同一子种子。
+    * **逐方法互异**：不同 ``method_name`` 得到不同子种子。
+    * **与本批运行了几个方法无关**：只依赖方法名本身，因此 ``-j 1`` 串行、
+      三方法并行、七方法并行三种情形下，同一个方法拿到的是同一个子种子
+      （``SeedSequence.spawn(n)`` 做不到这一点：它按 ``n`` 与顺序分流）。
+    * **不依赖 NumPy 版本**：只用 ``hashlib``，因此不同 NumPy/平台给出同值。
+
+    Args:
+        base_seed: 用户给定的全局种子（``--seed`` / ``PHYLODATER_SEED``）。
+        method_name: 方法标识符（大小写不敏感，会转小写）。
+
+    Returns:
+        ``[0, 2**32)`` 区间内的整数子种子。
+    """
+    if base_seed < 0:
+        raise ValueError(f"base_seed must be non-negative, got {base_seed}")
+    key = f"{METHOD_SEED_DOMAIN}|{int(base_seed)}|{method_name.strip().lower()}"
+    digest = hashlib.sha256(key.encode("utf-8")).digest()
+    return int.from_bytes(digest[:4], "big")
 
 
 @dataclass
@@ -326,7 +365,22 @@ class PATHd8Config:
 
 @dataclass
 class LSD2Config:
-    """LSD2 配置"""
+    """LSD2 配置
+
+    修复项 E-4：此前声明并校验、也写进 ``--help`` 与 ``config.example.yaml`` 的
+    ``date_ci``（"置信区间重采样次数"）没有任何适配器消费——它到不了 IQ-TREE 的
+    命令行，却让用户以为 LSD2 给出了区间。本项目的 LSD2 结果
+    （``adapters/lsd2_method.py``）恒为 ``CIType.NONE``：**不发任何区间**。
+    因此 ``date_ci`` 已从字段、CLI 帮助与示例配置中移除；需要向 IQ-TREE 传任何
+    自有选项（包括其自身的日期 CI 相关开关）请走 :attr:`date_options`，它是唯一
+    真正拼进命令行的透传通道。
+
+    .. note::
+       ``clock_sd`` 与 ``date_outlier`` 同样没有被 ``lsd2_method`` 读取（属于同一
+       类残留字段）。它们不在本次修复的分派范围内，因此暂留原状，但**不要**在
+       文档或稿件里把它们描述为生效参数；实际生效的字段只有 ``model``、
+       ``iqtree_bin``、``date_options``。
+    """
 
     # 替换模型。None = 按比对序列类型自动选择（核酸 -> GTR+G，蛋白 -> LG+G）。
     # IQ-TREE2 的 --date 流程必须显式给出 -m（否则跑 modelFinder），但模型与
@@ -334,15 +388,12 @@ class LSD2Config:
     # "ERROR: File not found LG"，因此默认不写死氨基酸模型。
     model: Optional[str] = None
     iqtree_bin: str = "iqtree2"
-    date_ci: int = 100  # 置信区间重采样次数
     clock_sd: float = 0.2
     date_options: Optional[str] = None
     date_outlier: Optional[str] = None
 
     def __post_init__(self) -> None:
         """验证参数范围"""
-        if self.date_ci < 0:
-            raise ValueError(f"date_ci must be >= 0, got {self.date_ci}")
         if self.clock_sd <= 0:
             raise ValueError(f"clock_sd must be > 0, got {self.clock_sd}")
 
@@ -450,6 +501,39 @@ class ToolConfig:
     wlogdate: WLogDateConfig = field(default_factory=WLogDateConfig)
     mdcat: MDCatConfig = field(default_factory=MDCatConfig)
 
+    def clone_for_method(
+        self, method_name: str, base_seed: Optional[int] = None
+    ) -> "ToolConfig":
+        """返回**只属于这一个方法**的配置深拷贝（修复项 E-3）。
+
+        适配器读的是 ``self.common_config.seed``（``DatingMethod.__init__`` 里
+        归一的 ``CommonConfig``），而注册表把 ``ToolConfig.common`` 原样递给每个
+        适配器，所以"逐方法子种子"必须由**配置对象**携带，而不是由调用方的
+        进程级 RNG 携带。本方法就是这个载体：
+
+        * 深拷贝整个容器，因此任何适配器在运行期对子配置做的实例级归一
+          （例如把 ``None`` 补成探测值）都不会写回共享对象；
+        * ``base_seed`` 非 ``None`` 时，副本的 ``common.seed`` 被替换成
+          :func:`derive_method_seed` 按 ``(base_seed, method_name)`` 派生的子种子；
+        * ``base_seed`` 为 ``None`` 时，副本保持 ``common.seed`` 不变（调用方
+          没有可用基准种子，此时不假装能派生）。
+
+        公开 API 兼容：不改变任何字段名/类型，``asdict()`` 与
+        ``save_runtime_config()`` 的输出结构不受影响；``base_seed=None`` 时
+        行为与 ``copy.deepcopy(self)`` 完全一致。
+
+        Args:
+            method_name: 方法标识符（大小写不敏感）。
+            base_seed: 全局基准种子；``None`` 表示不派生。
+
+        Returns:
+            一个新的 :class:`ToolConfig` 实例。
+        """
+        clone = copy.deepcopy(self)
+        if base_seed is not None:
+            clone.common.seed = derive_method_seed(base_seed, method_name)
+        return clone
+
 
 @dataclass
 class SoftwarePaths:
@@ -477,6 +561,21 @@ class Configuration:
     2. YAML 配置文件（中等优先级）
     3. 命令行参数（最高优先级）
     """
+
+    #: YAML 里的历史键名别名：**规范键 → 旧键**（修复项 E-6）。
+    #:
+    #: ``config.example.yaml`` 曾经把线程数写成 ``software.common.threads``，而
+    #: :class:`CommonConfig` 的字段叫 ``nthreads``（treePL/r8s 等适配器写的也是
+    #: ``nthreads``）。两边对不上，用户照模板写的线程数会被
+    #: ``_validate_and_merge`` 当成 "Unknown parameter" 丢弃。现在规范键唯一是
+    #: ``nthreads``；``threads`` 仍被**接受**（双向可用），但会发一条弃用告警，
+    #: 若同一块里两个键都写了，以规范键 ``nthreads`` 为准并同样告警。
+    #:
+    #: 只作用于 YAML 文件通路：``--method-args threads=...`` 依旧按未知参数拒绝
+    #: （那里有 difflib 给出的"是否想输入 nthreads"提示，不需要静默别名）。
+    _LEGACY_YAML_KEYS: Dict[str, Dict[str, str]] = {
+        "common": {"threads": "nthreads"},
+    }
 
     def __init__(self) -> None:
         self.logger = get_logger()
@@ -581,15 +680,57 @@ class Configuration:
             self._final_config = self._merge_configs()
         return self._final_config
 
+    def _apply_yaml_key_aliases(
+        self, tool_name: str, config_dict: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """把 YAML 里的旧键名换成规范键名，并留下弃用告警（修复项 E-6）。
+
+        行为约定（写清楚，避免"双向接受"变成"两个键谁赢不说"）：
+
+        * 只写了旧键（如 ``threads``）→ 按旧键的值生效，发一条弃用告警提示改写；
+        * 两个键都写了（``threads`` 与 ``nthreads``）→ **规范键赢**，旧键被忽略，
+          并同样发告警；
+        * 只写了规范键 → 完全静默，与旧版一致。
+        """
+        aliases = self._LEGACY_YAML_KEYS.get(tool_name)
+        merged = dict(config_dict or {})
+        if not aliases:
+            return merged
+
+        for legacy_key, canonical_key in aliases.items():
+            if legacy_key not in merged:
+                continue
+            legacy_value = merged.pop(legacy_key)
+            if canonical_key in merged:
+                self.logger.warning(
+                    f"配置文件 {tool_name} 块同时写了 {legacy_key} 与规范键 "
+                    f"{canonical_key}：采用 {canonical_key}="
+                    f"{merged[canonical_key]!r}，忽略 {legacy_key}="
+                    f"{legacy_value!r}（请删除旧键，见修复项 E-6）。",
+                    category=UnknownParameterWarning,
+                )
+            else:
+                merged[canonical_key] = legacy_value
+                self.logger.warning(
+                    f"配置文件里的旧键名 {tool_name}.{legacy_key}：规范键名是 "
+                    f"{tool_name}.{canonical_key}。本次已按 {legacy_key}="
+                    f"{legacy_value!r} 生效，但请在 YAML 里改写为 "
+                    f"{canonical_key}（见修复项 E-6）。",
+                    category=UnknownParameterWarning,
+                )
+        return merged
+
     def _validate_and_merge(self, tool_name: str, config_dict: Dict[str, Any]) -> None:
         """验证文件配置并存储覆盖值（不修改 _defaults）
 
         验证字段名和类型后，将有效参数存储到 _file_overrides 中，
-        在 _merge_configs 中统一应用。
+        在 _merge_configs 中统一应用。旧键名先经
+        :meth:`_apply_yaml_key_aliases` 归一（修复项 E-6）。
         """
         tool_obj = getattr(self._defaults, tool_name)
         valid_fields = tool_obj.__dataclass_fields__
 
+        config_dict = self._apply_yaml_key_aliases(tool_name, config_dict)
         overrides = {}
         for key, value in config_dict.items():
             if key in valid_fields:

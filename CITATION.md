@@ -7,32 +7,52 @@ companion manuscript is published, please cite that too.
 
 ## Software citation (plain text)
 
-> Zeng, Zichao. PhyloDater: A multi-software parallel platform for
-> phylogenetic molecular dating. GitHub repository.
+> Zeng, Zichao, & Wang, Yinzhao. PhyloDater: a unified platform integrating
+> multiple methods for phylogenetic molecular dating. GitHub repository.
 > https://github.com/ZengZichao/phylodater
 > DOI: 10.5281/zenodo.23067037 (https://doi.org/10.5281/zenodo.23067037)
-> ORCID: 0000-0001-6553-970X
+> ORCID: 0000-0001-6553-970X (Z. Zeng); 0000-0001-8715-1386 (Y. Wang)
+
+## Archived software citation (Zenodo, version DOI)
+
+The v0.1.0 release is archived on Zenodo and has a registered, resolvable DOI.
+Cite this one when you want a version-pinned reference:
+
+> Zeng, Zichao. (2026). PhyloDater (Version 0.1.0) [Software]. Zenodo.
+> https://doi.org/10.5281/zenodo.23067037
+
+| Identifier | Value | Points at |
+|---|---|---|
+| Version DOI (this release) | `10.5281/zenodo.23067037` | v0.1.0 as archived |
+| Concept DOI (any version) | `10.5281/zenodo.23066788` | all PhyloDater versions |
+| Source tag | https://github.com/ZengZichao/phylodater/releases/tag/v0.1.0 | the GitHub release |
+
+Both DOIs were read back from the Zenodo record itself
+(`https://zenodo.org/api/records/23067037`, retrieved 2026-10-08; the record's
+publication date is 2026-09-30, which is the `date-released` in
+[CITATION.cff](CITATION.cff)): licence MIT, version `v0.1.0`, and the same
+keyword list as [CITATION.cff](CITATION.cff).
 
 ## Software citation (BibTeX)
 
 ```bibtex
 @software{zeng2026phylodater,
-  author = {Zeng, Zichao},
-  title = {PhyloDater: A multi-software parallel platform for phylogenetic molecular dating},
+  author = {Zeng, Zichao and Wang, Yinzhao},
+  title = {PhyloDater: a unified platform integrating multiple methods for phylogenetic molecular dating},
   year = {2026},
   url = {https://github.com/ZengZichao/phylodater},
   doi = {10.5281/zenodo.23067037},
   version = {0.1.0},
-  note = {ORCID: 0000-0001-6553-970X}
+  note = {ORCID: 0000-0001-6553-970X (Z. Zeng); 0000-0001-8715-1386 (Y. Wang)}
 }
 ```
 
 ## Companion paper (preprint / manuscript)
 
-**There is none yet, so none is quoted here.** The only DOI registered for
-PhyloDater is the Zenodo software DOI (`10.5281/zenodo.23067037`) in the
-citation above — it identifies the software record, not a paper. The article
-slot deliberately carries no `10.XXXX/XXXX` placeholder: machine-readable and
+**There is none yet, so no article is quoted here.** The only DOIs registered
+for PhyloDater are the Zenodo software identifiers above — they identify the
+archived code, not a peer-reviewed write-up. This file deliberately does not
+carry a `10.XXXX/XXXX` article placeholder — machine-readable and
 human-readable citation consumers (GitHub, Zenodo, Zotero) cannot tell a
 placeholder from a real identifier, and a fake DOI in a citable record is worse
 than no DOI.
@@ -65,3 +85,9 @@ method by method in [docs/TESTING.md](docs/TESTING.md) §8 and measured in
 PhyloDater is released under the MIT License — see [LICENSE](LICENSE). Optional
 dependencies may carry other terms; see
 [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+
+---
+
+> 📚 The Chinese counterpart of this citation guide is
+> [CITATION_CN.md](CITATION_CN.md), the human-readable Chinese version of the
+> information above and of [CITATION.cff](CITATION.cff).

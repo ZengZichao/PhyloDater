@@ -122,6 +122,7 @@ _AGE_TABLE_HEADER_RE = re.compile(
 _UNNORMALIZED_ROOT_BAND = (0.5, 1.5)
 
 
+@DatingMethodRegistry.register("pathd8")
 class PATHd8Method(DatingMethod[PATHd8Config]):
     """
     PATHd8 定年适配器
@@ -1310,7 +1311,3 @@ class PATHd8Method(DatingMethod[PATHd8Config]):
     def cleanup(self, preserve_intermediates: bool = False) -> Dict[str, Path]:
         """清理临时文件"""
         return {}
-
-
-# 注册适配器
-DatingMethodRegistry.register("pathd8", PATHd8Method)

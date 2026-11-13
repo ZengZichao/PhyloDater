@@ -140,6 +140,18 @@ Environment variables used for runtime overrides:
 - `PHYLODATER_BURNIN`: Number of MCMC burnin generations
 - `PHYLODATER_TIMEOUT`: Execution timeout
 
+Review item E-6 corrected the thread chain so that the documented priority is
+what actually happens. For `phylodater dating` the worker count is resolved as
+`--threads/-j` (only when the flag is given) > `PHYLODATER_THREADS` (only when
+it holds a positive integer) > YAML `software.common.nthreads` > built-in `4`.
+Before the fix the argparse default of `4` was always passed down explicitly, so
+the environment variable and the YAML key could never win, and the example
+config wrote `threads:` while the dataclass field is `nthreads` (the mismatch
+made YAML thread settings be dropped as "Unknown parameter"). `threads` is now
+accepted as a deprecated alias of `software.common.nthreads` — with a warning,
+and `nthreads` wins when both are present. Every run logs the resolved value
+together with the layer it came from.
+
 **Consequences**:
 - **Positive**: Flexible configuration adapts to different usage scenarios
 - **Positive**: Configuration files can be version-controlled
@@ -272,6 +284,8 @@ def classify_execution_error(stderr: str, returncode: int) -> tuple:
         return (ErrorCategory.RESOURCE_LIMITED, "请尝试减少数据规模...")
 ```
 
+The suggestion string in the snippet above is a built-in Chinese-language hint, quoted verbatim from `phylodater/core/exceptions.py:151`.
+
 **Consequences**:
 - **Positive**: Users can quickly determine the error type and solution
 - **Positive**: Supports automated error handling strategies
@@ -296,7 +310,7 @@ class DatingMethod(ABC):
         return []
 ```
 
-The pipeline calls this hook after `validate_environment()` and before `prepare_inputs()`. If non-empty errors are returned, the method is marked failed and the pipeline continues with the remaining methods.
+The pipeline calls this hook after `validate_environment()` and before `prepare_inputs()`. If non-empty errors are returned, an ERROR is logged, the method is marked failed and the pipeline continues with the remaining methods.
 
 **Options considered**:
 - **Option A (chosen)**: Base-class hook + adapter override
@@ -350,7 +364,7 @@ The pipeline calls this hook after `validate_environment()` and before `prepare_
 
 1. Add a new section at the end of this document
 2. Include: Status, Context, Decision, Choices, Consequences
-3. Status options: Proposed, Accepted, Accepted, Superseded, Deprecated
+3. Status options: Proposed, Accepted, Superseded, Deprecated
 
 ### How to Update an Existing ADR
 

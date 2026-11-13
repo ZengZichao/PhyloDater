@@ -12,21 +12,21 @@
 
 ## 错误码 3 的常见场景
 
-- **File not found**：`--tree`、`--sequence`、`--calibrations` 的路径不存在
-- **Negative branch lengths**：树的某些分支长度为负值（可使用 `--skip-length-check` 跳过）
-- **PHYLIP format**：不支持 PHYLIP 比对格式，请转为 FASTA（可使用 `--ignore-malformed` 以警告方式继续）
-- **Empty calibration**：校准文件的有效约束为空
-- **Label mismatch**：树与序列文件的末端标签不匹配
-- **Input too large**：文件超过 500 MB 大小限制
-- **Invalid tree structure**：括号不平衡、重复名称
-- **Unsupported format**：PhyloDater 无法识别系统树或比对格式
-- **Circular taxonomy dependencies**：分类表包含循环引用
+- **文件未找到**（File not found）：`--tree`、`--sequence`、`--calibrations` 的路径不存在
+- **负分支长度**（Negative branch lengths）：树的某些分支长度为负值（可使用 `--skip-length-check` 跳过）
+- **PHYLIP 格式**（PHYLIP format）：不支持 PHYLIP 比对格式，请转为 FASTA（可使用 `--ignore-malformed` 以警告方式继续）
+- **空校准**（Empty calibration）：校准文件加载到 0 个有效约束
+- **标签不匹配**（Label mismatch）：树与序列文件的末端标签不匹配
+- **输入文件过大**（Input too large）：文件超过 500 MB 大小限制
+- **树结构无效**（Invalid tree structure）：括号不平衡、重复名称
+- **不支持的格式**（Unsupported format）：PhyloDater 无法识别树或比对格式
+- **分类表循环依赖**（Circular taxonomy dependencies）：分类表包含循环引用
 
 ## 方法专属校准错误
 
 部分定年方法对校准约束有额外限制，PhyloDater 会在执行前调用各适配器的 `validate_calibrations()` 钩子检查，避免运行到一半才失败。
 
-### MCMCTree 不支持固定根节点
+### MCMCTree 不支持固定根节点年龄
 
 **错误信息示例**：
 ```
@@ -39,14 +39,16 @@
     3) 如果必须精确固定根节点，请改用 treePL/pathd8/lsd2 等方法。
 ```
 
+**说明**：上方代码块为程序原样输出的内容，该错误信息仅以中文输出。
+
 **原因**：MCMCTree 的 `RootAge` 控制文件参数只能设置上界（如 `<500`），无法真正固定根节点年龄。若用户提供 `fixed` 约束，MCMC 采样后根节点年龄会收敛到低于该值的某一点，导致结果偏离预期。
 
 **解决方案**：
 1. 将根节点约束改为 `uniform`，例如 `min=499.9, max=500.1`；
 2. 将根节点约束改为 `maximum`，例如 `max=500.0`；
-3. 如需严格固定根节点，改用 treePL、PATHd8 或 LSD2 等方法。
+3. 如需严格固定根节点，改用 treePL、PATHd8 或 LSD2。
 
-> **提示**：不同定年方法可使用不同的校准配置文件。例如 MCMCTree 使用 `maximum` 根节点约束，而其他方法继续使用 `fixed` 根节点约束。
+> **提示**：不同定年方法可使用不同的校准配置文件。例如 MCMCTree 可使用 `maximum` 根节点约束，而其他方法继续使用 `fixed` 根节点约束。
 
 ## 异常类
 
@@ -73,17 +75,17 @@ PhyloDater 使用结构化的异常类实现精确定位的错误处理：
 | `ExecutionTimeoutError` | ExecutionError | 1 | 外部软件超时 |
 | `ResultParsingError` | PhyloDaterError | 1 | 解析外部软件输出失败 |
 
-### 告警类
+### 警告类
 
-非致命问题使用告警类（仅记录，不终止运行）：
+非致命问题使用警告类（仅记录，不终止运行）：
 
-| 告警类 | 父类 | 说明 |
+| 警告类 | 父类 | 说明 |
 |---------------|--------|-------------|
-| `ConvergenceWarning` | PhyloDaterWarning | MCMC 收敛诊断阈值超限 |
-| `SemanticDegradationWarning` | PhyloDaterWarning | 输入语义降级（如约束类型降级） |
-| `EnvironmentWarning` | PhyloDaterWarning | 环境问题（如可选依赖缺失） |
-| `ResourceWarning` | PhyloDaterWarning | 资源使用告警（如检测到大型树） |
-| `UnknownParameterWarning` | PhyloDaterWarning | 遇到未知的 method-args 参数 |
+| `ConvergenceWarning` | ExecutionError | MCMC 收敛诊断阈值超限 |
+| `SemanticDegradationWarning` | PhyloDaterError, UserWarning | 输入语义降级（如约束类型降级） |
+| `EnvironmentWarning` | PhyloDaterError | 环境问题（如可选依赖缺失） |
+| `ResourceWarning` | PhyloDaterError | 资源使用警告（如检测到大型树） |
+| `UnknownParameterWarning` | PhyloDaterError | 遇到未知的 method-args 参数 |
 
 ## 分类表格式
 

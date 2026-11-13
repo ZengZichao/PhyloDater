@@ -23,6 +23,7 @@ from .configuration import (
     ToolConfig,
     TreePLConfig,
     WLogDateConfig,
+    derive_method_seed,
 )
 from .container import (
     ContainerEnvironment,
@@ -82,6 +83,7 @@ __all__ = [
     "LSD2Config",
     "WLogDateConfig",
     "MDCatConfig",
+    "derive_method_seed",
     # 比对元数据
     "AlignmentMetadataExtractor",
     "AlignmentMetadata",

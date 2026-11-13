@@ -2,14 +2,14 @@
 
 # test-data
 
-随包发布的测试数据，目的是让 [docs/TEST_RESULTS_CN.md](../docs/TEST_RESULTS_CN.md)
+**随包**发布的测试数据，目的是让 [docs/TEST_RESULTS_CN.md](../docs/TEST_RESULTS_CN.md)
 记录的验证工作可以被重新运行（或重新核查），无需重建任何东西。
 
 本目录包含两类数据，用途不同：
 
 | 路径 | 角色 | 被谁使用 |
 |------|------|----------|
-| `benchmark/` | **定量**：已知分歧时间的仿真数据集，用于给每个方法的估计值与真值的接近程度打分 | `scripts/run_reference_benchmark.py`、`tests/validation/integration/` |
+| `benchmark/` | **定量**：已知分歧时间的仿真数据集，用于给每个方法的估计值与真值的接近程度评分 | `scripts/run_reference_benchmark.py`、`tests/validation/integration/` |
 | `input/` | **定性**：合法 / 非法 / 边界场景输入，用于手工端到端核查工作流及其错误处理 | QA 走查、`tests/functional/` 的 fixture |
 
 本目录内不含自动化测试；测试位于 [`tests/`](../tests/)。
@@ -26,12 +26,12 @@
 | `generate_benchmark_dataset.py` | 确定性生成脚本；`--include-ml-tree` 会用 IQ-TREE 2 重新生成 `tree_ml.nwk` |
 | `results/` | 发布运行的归档结果：`scorecard.tsv`、`node_ages.tsv`、`benchmark_results.json`，以及 ML 变体的 `ml_tree/` |
 | `results/PYTHON_SUPPORT_MATRIX.txt` | 已声明 Python 支持矩阵背后的证据：逐版本的依赖解析结果，以及在 3.8–3.14 上实跑的 `tests/unit` 结论 |
-| `results/validation_log.txt` | 发布门禁命令集的原样终端输出（pytest、`phylodater check`、格式化器、`check_docs.py`、mypy、两个基准变体） |
+| `results/validation_log.txt` | 最终验证命令集的原样终端输出（pytest、`phylodater check`、格式化器、`check_docs.py`、mypy、两个基准变体） |
 | `checksums.sha256` | 上述所有文件的 SHA-256（`results/runs/` 下的单次运行产物除外） |
 
 为什么用仿真数据：真实化石校准不能充当真值，因为那样等于用方法被告知的数字去给方法
-打分。严格钟 + JC69 仿真为每个估计器提供了明确的参照。拓扑与年龄是合成的但合理，它们
-是数值参照，不构成任何演化史结论。完整设计理由与验收门槛见
+评分。严格钟 + JC69 仿真为每个估计器提供了明确的参照。拓扑与年龄是合成的但合理，它们
+是数值参照，不构成任何演化史结论。完整设计理由与验收门禁见
 [docs/TESTING_CN.md](../docs/TESTING_CN.md) §3–§4。
 
 重新生成并重新评分：
@@ -60,7 +60,7 @@ python scripts/run_reference_benchmark.py --tree-file tree_ml.nwk \
 | `input/invalid/` | 必须触发错误处理的输入（非法字符、畸形格式、重复标签等） |
 | `input/boundary/` | 边界条件（空树、多棵树、BOM、GBK 编码等） |
 
-使用方式：从对应子目录选取文件，运行 `phylodater dating`，再把观察到的行为（退出码、
+使用方式：从对应子目录选取文件，运行 `phylodater dating`，再把程序报告的行为（退出码、
 日志、披露的告警）与预期比对。
 
 ## 与自动化测试的关系

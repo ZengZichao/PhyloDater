@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Dict,
     Generic,
     List,
@@ -21,6 +22,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    overload,
 )
 
 if TYPE_CHECKING:
@@ -37,6 +39,11 @@ from .exceptions import ExecutionError
 #: 设计取舍见 ``docs/ARCHITECTURE.md`` §Key Design Decisions 第 5 节
 #: （中文版：``docs/ARCHITECTURE_CN.md`` §关键设计决策 5「适配器配置类型」）。
 ConfigT = TypeVar("ConfigT")
+
+#: 被注册进 :class:`DatingMethodRegistry` 的适配器类类型（修复项 E-7）。
+#: 装饰器形态 ``@DatingMethodRegistry.register("name")`` 靠它把"被装饰的类"原样
+#: 返回，从而不会把模块里的类名变成 ``None`` 或某个代理对象。
+MethodT = TypeVar("MethodT", bound="DatingMethod")
 
 #: ``prepare_inputs()`` 返回的“输入文件信息字典”里允许出现的值。它既装文件
 #: 路径，也装适配器随调用带出的**执行统计量**（位点数、耗时、对数似然）——
@@ -79,8 +86,46 @@ class DatingMethod(ABC, Generic[ConfigT]):
         self._software_paths = software_paths or SoftwarePaths()
         # 后端软件版本横幅/版本号，由 ``validate_environment()`` 在探测成功时写入，
         # 并被 pipeline 记录到 runtime_metadata.json 的 ``software_versions``。
-        # 定年结果只有在知道是哪个版本的引擎产出时才可复现，因此这里不留空。
+        # 定年结果只有在知道是哪个引擎产出的、用的是什么种子时才可复现，因此这里不留空。
         self.software_version: Optional[str] = None
+        #: 本适配器**本次运行**实际使用的子种子（修复项 E-3）。
+        #: 由流水线在 ``create()`` 之后经 :meth:`bind_randomness` 写入；直接实例化
+        #: 适配器的调用方保留 ``None``，此时适配器退回读 ``common_config.seed``。
+        self.method_seed: Optional[int] = None
+        #: 本适配器专属的显式随机流（修复项 E-3）。
+        #: 流水线不再在并行 worker 里给进程级 ``random`` / ``np.random`` 播种，
+        #: 而是把 :func:`numpy.random.default_rng` 生成的 Generator 交到这里：
+        #: Python 侧若有随机性（目前七个适配器都没有），它只能取自本方法自己的
+        #: 流，因此并行方法之间不可能再互相污染。类型写成 ``Any``：NumPy 是延迟
+        #: 导入的可选重依赖，不应因为一个类型标注就把适配器 import 链路压上 numpy。
+        self.rng: Any = None
+
+    def bind_randomness(self, seed: int) -> Any:
+        """把本方法专属的子种子与显式随机流绑定到适配器实例（修复项 E-3）。
+
+        替代此前"在并行 worker 里调用进程级 ``random.seed()`` /
+        ``np.random.seed()``"的做法：那两个调用改写的是**整个进程**共享的全局
+        RNG，七个线程同时改写同一份状态，既谈不上"每方法独立"，也不是线程安全的；
+        而适配器真正读取的种子来自 ``common_config.seed``，全局播种对它们没有任何
+        影响（旧注释里"已改用现代 Generator"的说法与代码不符——Generator 从未被
+        创建）。这里改为：记录子种子 + 建一个只属于本实例的 Generator。
+
+        Args:
+            seed: 由 :func:`~phylodater.infrastructure.configuration.derive_method_seed`
+                按 ``(全局种子, 方法名)`` 派生的 32-bit 子种子。
+
+        Returns:
+            新建的 :class:`numpy.random.Generator`；NumPy 不可用时返回 ``None``
+            （此时只有 ``method_seed`` 生效，引擎侧种子仍由配置文件/命令行承载）。
+        """
+        self.method_seed = int(seed)
+        try:
+            import numpy as np
+        except ImportError:  # pragma: no cover - numpy 是硬依赖，缺失属于异常安装
+            self.rng = None
+            return None
+        self.rng = np.random.default_rng(self.method_seed)
+        return self.rng
 
     @staticmethod
     def _package_version(package: str) -> Optional[str]:
@@ -467,16 +512,68 @@ class DatingMethodRegistry:
 
     _registry: Dict[str, Type[DatingMethod]] = {}
 
+    @overload
     @classmethod
-    def register(cls, name: str, method_class: Type[DatingMethod]) -> None:
-        """
-        注册定年方法
+    def register(
+        cls, name: str, method_class: Type[MethodT]
+    ) -> Type[MethodT]:  # pragma: no cover - typing overload
+        ...
+
+    @overload
+    @classmethod
+    def register(
+        cls, name: str, method_class: None = None
+    ) -> Callable[[Type[MethodT]], Type[MethodT]]:  # pragma: no cover
+        ...
+
+    @classmethod
+    def register(
+        cls,
+        name: str,
+        method_class: Optional[Type[DatingMethod]] = None,
+    ) -> Any:
+        """注册定年方法——两种调用形态都支持（修复项 E-7）。
+
+        修复的问题：稿件 §2.1.1 一度把注册描述成
+        ``@DatingMethodRegistry.register("method_name")`` **装饰器**用法，而当时的
+        实现是一个必须给两个参数的 ``@classmethod``（返回 ``None``）——照装饰器写法
+        使用会当场 ``TypeError: register() missing 1 required positional argument``。
+        现在 ``register`` 在只给方法名时返回真正的类装饰器，给了第二个参数时保持
+        逐字不变的历史行为，因此既有调用点（七个适配器、测试与外部插件）不受影响。
+
+        形态一 —— 装饰器（推荐，七个适配器已改用它）::
+
+            @DatingMethodRegistry.register("treepl")
+            class TreePLMethod(DatingMethod[TreePLConfig]):
+                ...
+
+        形态二 —— 两参数显式调用（历史形态，继续有效）::
+
+            DatingMethodRegistry.register("treepl", TreePLMethod)
+
+        两种形态等价：键统一小写入库，装饰器**原样返回被装饰的类**，所以
+        ``TreePLMethod`` 在模块里仍然是一个可用的类对象（不是 ``None``、也不是
+        包装过的代理）。大小写不敏感由 :meth:`create` / :meth:`get_method_names`
+        的 ``name.lower()`` 查询保证。
 
         Args:
-            name: 方法名称
-            method_class: 方法类
+            name: 方法名称（入库前转小写）。
+            method_class: 方法类；省略时表示"以装饰器方式使用"。
+
+        Returns:
+            传入 ``method_class`` 时原样返回该类（历史返回值为 ``None``，
+            返回值未被任何调用点使用）；省略时返回一个类装饰器。
         """
+        if method_class is None:
+
+            def _decorator(klass: Type[MethodT]) -> Type[MethodT]:
+                cls._registry[name.lower()] = klass
+                return klass
+
+            return _decorator
+
         cls._registry[name.lower()] = method_class
+        return method_class
 
     @classmethod
     def create(

@@ -253,7 +253,19 @@ the surface where a misspelled engine parameter goes silently missing.
 1. Create a new adapter class in `phylodater/adapters/`
 2. Inherit from `DatingMethod` abstract base class
 3. Implement all abstract methods
-4. Register at end of file: `DatingMethodRegistry.register("method_name", YourClass)`
+4. Register the class — the recommended form is the decorator (review item E-7):
+
+   ```python
+   @DatingMethodRegistry.register("method_name")
+   class YourMethod(DatingMethod[YourConfig]):
+       ...
+   ```
+
+   The explicit two-argument call `DatingMethodRegistry.register("method_name",
+   YourClass)` remains supported and is byte-for-byte the historical behaviour;
+   both forms lowercase the key and return the class unchanged, so the class
+   name in the module stays a usable class object. All seven shipped adapters
+   now use the decorator form.
 5. Add unit tests
 
 ### Adding a New Constraint Type

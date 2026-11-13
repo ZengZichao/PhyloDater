@@ -22,7 +22,9 @@ software:
   # 全局共享参数（可选）
   common:
     seed: 42                   # 全局随机种子
-    threads: 4                 # 默认线程数
+    # 线程数的规范键名是 nthreads（与 CommonConfig 字段、treePL/r8s 控制文件一致）。
+    # 旧键名 threads 仍被接受但会打印弃用告警；两个都写时 nthreads 优先。见 E-6。
+    nthreads: 4                # 默认线程数
     timeout: 3600              # 单方法超时时间（秒）
 
   # ===== MCMCTree 参数 =====
@@ -57,9 +59,11 @@ software:
     cvmultstep: 0.1              # 交叉验证乘子步长
 
   # ===== LSD2 参数 =====
+  # 注意：本通路不输出日期置信区间（结果恒为 CIType.NONE）。原先列在这里的
+  # date_ci 从未被任何适配器传给 IQ-TREE，已随修复项 E-4 移除；需要 IQ-TREE
+  # 自有的日期相关开关请用 date_options 原样透传。
   lsd2:
     model: "LG+G"                # 替换模型
-    date_ci: 100                 # 置信区间自助重复次数
     clock_sd: 0.2                # 分子钟标准差
 
   # ===== wLogDate 参数 =====

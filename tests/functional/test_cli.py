@@ -4,8 +4,11 @@
 验证子命令路由、通用参数、dating 参数解析及退出码。
 """
 
+from pathlib import Path
+
 import pytest
 
+from phylodater.cli.main import EXIT_RUNTIME_ERROR
 from tests.functional.conftest import run_phylodater_cli
 
 
@@ -334,6 +337,8 @@ class TestCLIDatingArguments:
         前几行与已实现子命令毫无区别），并且不得留下任何看似产物的文件。
         """
         output_dir = tmp_path / "out"
+        tree_path = Path(normal_tree)
+        tree_before = tree_path.read_bytes()
         result = run_phylodater_cli(
             ["fold", "-t", str(normal_tree), "-o", str(output_dir)]
         )
@@ -350,6 +355,28 @@ class TestCLIDatingArguments:
         # 只允许日志文件存在，不得有"折叠树"产物
         produced = sorted(p.name for p in output_dir.iterdir())
         assert all(name.endswith(".log") for name in produced), produced
+
+        # --- 契约锁定（C-36 / §17）：exit 1 且**确实不产出折叠树** ---
+        # 退出码钉在具名常量上，而不是裸数字 1（改错误码分类时必须显式改这里）。
+        assert result.returncode == EXIT_RUNTIME_ERROR, combined
+        # 输出目录被真实创建且非空 —— 否则下一条断言会对空目录**恒真**地通过。
+        assert output_dir.is_dir() and produced, f"输出目录为空/缺失：{produced}"
+        # 内容级兜底：按树扩展名找产物，避免"改了后缀名但仍是树"蒙混过关。
+        tree_suffixes = {
+            ".nwk",
+            ".nwk.gz",
+            ".newick",
+            ".nexus",
+            ".nex",
+            ".tree",
+            ".tre",
+        }
+        artifacts = [
+            p for p in output_dir.rglob("*") if p.suffix.lower() in tree_suffixes
+        ]
+        assert not artifacts, f"fold 自称未实现，却写出了树文件：{artifacts}"
+        # 未实现不得"就地折叠"：输入树逐字节不变。
+        assert tree_path.read_bytes() == tree_before, "fold 改动了输入树"
 
     def test_cli_fold_unknown_rank_is_still_usage_error(self, normal_tree, tmp_path):
         """CLI-028b: 参数面照常校验（标注未实现不等于放松解析）。"""

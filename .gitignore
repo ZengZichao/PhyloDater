@@ -80,7 +80,8 @@ figures/out/
 *.pem
 *.key
 
-# ---------------- Benchmark 输出结果（仅保留输入文件）----------------
+# ---------------- Benchmark 输出结果（仅保留输入文件与结果快照）----------------
+# 每次运行的原始输出目录/中间产物仍然屏蔽（噪声大、可重跑生成）。
 examples/benchmark/lsd2/
 examples/benchmark/mcmctree/
 examples/benchmark/pathd8/
@@ -91,11 +92,15 @@ examples/benchmark/failed_mcmctree/
 examples/benchmark/failed_mdcat/
 examples/benchmark/degradation/gamma_seed*/
 examples/benchmark/degradation/uniform_seed*/
-examples/benchmark/comparison_table.tsv
-examples/benchmark/runtime_metadata.json
 examples/benchmark/summary.txt
-examples/benchmark/degradation_results.json
-examples/benchmark/tier1_manual_results.json
+# 下面四份是手稿 Data availability 点名的机器可读结果快照，**必须随仓库归档**
+# （图 5 的绘图脚本 scripts/make_manuscript_figures.py 直接读取其中两份），
+# 因此不再列入忽略清单；重跑 scripts/tier1_manual_comparison.py 与
+# scripts/degradation_experiment.py 会覆盖它们。
+# examples/benchmark/comparison_table.tsv
+# examples/benchmark/runtime_metadata.json
+# examples/benchmark/degradation_results.json
+# examples/benchmark/tier1_manual_results.json
 
 # ---------------- Sphinx 文档构建产物 ----------------
 docs/api/_build/
